@@ -1,3 +1,4 @@
+import LiveSession from "@/components/LiveSession";
 import SessionCard from "@/components/SessionCard";
 import { Text, View } from "@/components/Themed";
 import { getSessions, ScheduledSession } from "@/services/Database";
@@ -11,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function DashboardScreen() {
   const isFocused = useIsFocused();
   const [dailySessions, setDailySessions] = useState<ScheduledSession[]>([]);
+  const [liveSession, setLiveSession] = useState<ScheduledSession | null>(null);
 
   const currentDate = new Date()
     .toLocaleDateString("en-US", {
@@ -96,7 +98,11 @@ export default function DashboardScreen() {
 
         {dailySessions.length > 0 ? (
           dailySessions.map((session) => (
-            <SessionCard key={session.id} session={session} />
+            <SessionCard
+              key={session.id}
+              session={session}
+              onPress={() => setLiveSession(session)}
+            />
           ))
         ) : (
           <View style={styles.emptyContainer}>
@@ -107,6 +113,16 @@ export default function DashboardScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Live Session Modal */}
+      <LiveSession
+        visible={!!liveSession}
+        session={liveSession}
+        onClose={() => setLiveSession(null)}
+        onComplete={(data) => {
+          setLiveSession(null);
+        }}
+      />
     </SafeAreaView>
   );
 }

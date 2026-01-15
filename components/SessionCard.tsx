@@ -38,44 +38,47 @@ export default function SessionCard({ session, onPress }: SessionCardProps) {
   }, [session.exercises]);
 
   return (
-    <LinearGradient
-      colors={[gradientStart, "#1E1E22"]} // Dark Color -> Card Dark (Placeholder style)
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.card}
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        marginBottom: 20,
+        opacity: pressed ? 0.9 : 1,
+        transform: [{ scale: pressed ? 0.98 : 1 }],
+      })}
     >
-      <View style={styles.header}>
-        <Text style={styles.title}>{session.title}</Text>
-      </View>
+      <LinearGradient
+        colors={[gradientStart, "#1E1E22"]} // Dark Color -> Card Dark (Placeholder style)
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.card}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>{session.title}</Text>
+        </View>
 
-      <View style={styles.footer}>
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>EXP</Text>
-            <Text style={styles.statValue}>+{totalSets * 10}</Text>
+        <View style={styles.footer}>
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>EXP</Text>
+              <Text style={styles.statValue}>+{totalSets * 10}</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>VOLUME</Text>
+              <Text style={styles.statValue}>{totalSets} Sets</Text>
+            </View>
           </View>
-          <View style={styles.divider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>VOLUME</Text>
-            <Text style={styles.statValue}>{totalSets} Sets</Text>
+          <View style={[styles.playButton, { backgroundColor: session.color }]}>
+            <FontAwesome
+              name="play"
+              size={16}
+              color="#fff" // White icon as requested
+              style={{ marginLeft: 2 }}
+            />
           </View>
         </View>
-        <Pressable
-          style={({ pressed }) => [
-            styles.playButton,
-            { backgroundColor: session.color, opacity: pressed ? 0.8 : 1 },
-          ]}
-          onPress={onPress}
-        >
-          <FontAwesome
-            name="play"
-            size={16}
-            color="#fff" // White icon as requested
-            style={{ marginLeft: 2 }}
-          />
-        </Pressable>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </Pressable>
   );
 }
 
@@ -86,7 +89,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 160,
     justifyContent: "space-between",
-    marginBottom: 20,
   },
   header: {
     flexDirection: "row",
