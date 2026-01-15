@@ -3,6 +3,7 @@ import {
   addSession,
   getExercises,
   ScheduledSession,
+  updateSession,
 } from "@/services/Database";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -26,6 +27,7 @@ interface SessionWizardProps {
   selectedDate: Date;
   onClose: () => void;
   onSave: () => void;
+  initialSession?: ScheduledSession | null;
 }
 
 interface SessionExercise extends Exercise {
@@ -37,6 +39,7 @@ export default function SessionWizard({
   selectedDate,
   onClose,
   onSave,
+  initialSession,
 }: SessionWizardProps) {
   const [step, setStep] = useState(1);
   const [sessionExercises, setSessionExercises] = useState<SessionExercise[]>(
@@ -60,8 +63,22 @@ export default function SessionWizard({
   useEffect(() => {
     if (visible) {
       loadExercises();
+      if (initialSession) {
+        // Pre-fill for editing
+        setTitle(initialSession.title);
+        setSelectedColor(initialSession.color as any);
+        setFrequency(initialSession.frequency as any);
+        try {
+          setSessionExercises(JSON.parse(initialSession.exercises));
+        } catch (e) {
+          setSessionExercises([]);
+        }
+        setStep(1);
+      } else {
+        resetWizard(); // Reset if new
+      }
     }
-  }, [visible]);
+  }, [visible, initialSession]);
 
   const loadExercises = async () => {
     const data = await getExercises();
@@ -160,16 +177,30 @@ export default function SessionWizard({
   // --- Logic Step 4 (Save) ---
   const handleSaveSession = async () => {
     if (!title) return;
-    const newSession: ScheduledSession = {
-      id: generateUUID(),
-      title,
-      date: selectedDate.toISOString(),
-      frequency,
-      color: selectedColor,
-      exercises: JSON.stringify(sessionExercises),
-    };
-    await addSession(newSession);
-    onSave();
+
+    // Check if updating or creating
+    if (initialSession) {
+      const updatedSession: ScheduledSession = {
+        ...initialSession,
+        title,
+        date: selectedDate.toISOString(), // Or keep original date? Usually updating implies same slot unless moved. User said "edit it... update database".
+        frequency,
+        color: selectedColor,
+        exercises: JSON.stringify(sessionExercises),
+      };
+      await updateSession(updatedSession);
+    } else {
+      const newSession: ScheduledSession = {
+        id: generateUUID(),
+        title,
+        date: selectedDate.toISOString(),
+        frequency,
+        color: selectedColor,
+        exercises: JSON.stringify(sessionExercises),
+      };
+      await addSession(newSession);
+    }
+    onSave(); // Refresh parent
     handleClose();
   };
 

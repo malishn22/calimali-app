@@ -32,6 +32,9 @@ export default function PlannerScreen() {
 
   // Wizard
   const [wizardVisible, setWizardVisible] = useState(false);
+  const [editingSession, setEditingSession] = useState<ScheduledSession | null>(
+    null
+  );
 
   useEffect(() => {
     loadSessions();
@@ -271,9 +274,16 @@ export default function PlannerScreen() {
 
       <SessionWizard
         visible={wizardVisible}
-        onClose={() => setWizardVisible(false)}
-        onSave={loadSessions}
+        onClose={() => {
+          setWizardVisible(false);
+          setEditingSession(null);
+        }}
+        onSave={() => {
+          loadSessions();
+          setEditingSession(null);
+        }}
         selectedDate={selectedDate}
+        initialSession={editingSession}
       />
     </SafeAreaView>
   );

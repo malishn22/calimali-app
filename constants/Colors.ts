@@ -75,6 +75,7 @@ export const SessionColors = {
   ORANGE: "#F97316", // Palette.orange500
   PURPLE: "#A855F7", // Palette.purple500
   PINK: "#EC4899", // New Pink
+  YELLOW: "#FACC15", // Palette.yellow400
 };
 
 export default Colors;

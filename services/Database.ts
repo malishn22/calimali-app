@@ -60,7 +60,7 @@ export const initDatabase = async () => {
     `);
 
     // For development, dropping to ensure schema update
-    await db.execAsync(`DROP TABLE IF EXISTS scheduled_sessions;`);
+    // await db.execAsync(`DROP TABLE IF EXISTS scheduled_sessions;`);
 
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS scheduled_sessions (
@@ -72,6 +72,9 @@ export const initDatabase = async () => {
         exercises TEXT NOT NULL
       );
     `);
+
+    // Removed DROP TABLE to fix locking and persistence
+    // await db.execAsync(`DROP TABLE IF EXISTS session_history;`);
 
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS session_history (
@@ -85,6 +88,21 @@ export const initDatabase = async () => {
     console.log("Database initialized successfully");
   } catch (error) {
     console.error("Error initializing database:", error);
+  }
+};
+
+// ... (existing exports) ...
+
+export const clearAllData = async () => {
+  try {
+    await db.runAsync("DELETE FROM scheduled_sessions");
+    await db.runAsync("DELETE FROM session_history");
+    await db.runAsync("DELETE FROM exercises"); // Optional: if user wants full reset
+    // Re-seed default exercises would be needed if we delete them.
+    // For now let's just clear user generated data: sessions and history.
+    console.log("All user data cleared");
+  } catch (e) {
+    console.error("Failed to clear data", e);
   }
 };
 
@@ -161,6 +179,54 @@ export const deleteSession = async (id: string) => {
     await db.runAsync("DELETE FROM scheduled_sessions WHERE id = ?", [id]);
   } catch (e) {
     console.error("Failed to delete session", e);
+  }
+};
+
+export const updateSession = async (session: ScheduledSession) => {
+  try {
+    await db.runAsync(
+      `UPDATE scheduled_sessions SET title = ?, date = ?, frequency = ?, color = ?, exercises = ? WHERE id = ?;`,
+      [
+        session.title,
+        session.date,
+        session.frequency,
+        session.color,
+        session.exercises,
+        session.id,
+      ]
+    );
+  } catch (e) {
+    console.error("Failed to update session", e);
+  }
+};
+
+export interface SessionHistory {
+  id: string;
+  session_id: string;
+  date: string;
+  performance_data: string; // JSON of what happened
+}
+
+export const addSessionHistory = async (history: SessionHistory) => {
+  try {
+    await db.runAsync(
+      `INSERT INTO session_history (id, session_id, date, performance_data) VALUES (?, ?, ?, ?);`,
+      [history.id, history.session_id, history.date, history.performance_data]
+    );
+  } catch (e) {
+    console.error("Failed to add session history", e);
+  }
+};
+
+export const getSessionHistory = async (): Promise<SessionHistory[]> => {
+  try {
+    const res = await db.getAllAsync<SessionHistory>(
+      "SELECT * FROM session_history ORDER BY date DESC"
+    );
+    return res;
+  } catch (e) {
+    console.error("Failed to get session history", e);
+    return [];
   }
 };
 

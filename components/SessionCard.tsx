@@ -10,6 +10,7 @@ import { SessionColors } from "@/constants/Colors";
 interface SessionCardProps {
   session: ScheduledSession;
   onPress?: () => void;
+  isCompleted?: boolean;
 }
 
 // Map SessionColors (Bright) to Mid-Dark Variants (700-ish) for smoother Gradient
@@ -22,7 +23,11 @@ const GradientMap: Record<string, string> = {
   [SessionColors.PINK]: "#BE185D", // Pink 700
 };
 
-export default function SessionCard({ session, onPress }: SessionCardProps) {
+export default function SessionCard({
+  session,
+  onPress,
+  isCompleted = false,
+}: SessionCardProps) {
   const gradientStart = GradientMap[session.color] || session.color; // Fallback
 
   const totalSets = useMemo(() => {
@@ -39,25 +44,72 @@ export default function SessionCard({ session, onPress }: SessionCardProps) {
 
   return (
     <Pressable
-      onPress={onPress}
+      onPress={isCompleted ? undefined : onPress}
+      disabled={isCompleted}
       style={({ pressed }) => ({
         marginBottom: 20,
-        opacity: pressed ? 0.9 : 1,
+        opacity: isCompleted ? 0.9 : pressed ? 0.9 : 1,
         transform: [{ scale: pressed ? 0.98 : 1 }],
       })}
     >
       <LinearGradient
-        colors={[gradientStart, "#1E1E22"]} // Dark Color -> Card Dark (Placeholder style)
+        colors={
+          isCompleted
+            ? ["#2f2f35", "#18181b"] // Subtle dark gradient, almost black but with hint
+            : [gradientStart, "#1E1E22"]
+        }
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.card}
+        style={[
+          styles.card,
+          isCompleted && {
+            borderColor: "#22C55E",
+            borderWidth: 1,
+            borderStyle: "solid",
+          },
+        ]}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>{session.title}</Text>
+          <Text
+            style={[
+              styles.title,
+              isCompleted && {
+                color: "#A1A1AA",
+                textDecorationLine: "line-through",
+              },
+            ]}
+          >
+            {session.title}
+          </Text>
+          {isCompleted && (
+            <View
+              style={{
+                backgroundColor: "rgba(34, 197, 94, 0.15)",
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: "rgba(34, 197, 94, 0.3)",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontWeight: "800",
+                  color: "#22C55E",
+                  letterSpacing: 0.5,
+                }}
+              >
+                COMPLETED
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.footer}>
-          <View style={styles.statsContainer}>
+          <View
+            style={[styles.statsContainer, isCompleted && { opacity: 0.4 }]}
+          >
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>EXP</Text>
               <Text style={styles.statValue}>+{totalSets * 10}</Text>
@@ -68,14 +120,35 @@ export default function SessionCard({ session, onPress }: SessionCardProps) {
               <Text style={styles.statValue}>{totalSets} Sets</Text>
             </View>
           </View>
-          <View style={[styles.playButton, { backgroundColor: session.color }]}>
-            <FontAwesome
-              name="play"
-              size={16}
-              color="#fff" // White icon as requested
-              style={{ marginLeft: 2 }}
-            />
-          </View>
+
+          {isCompleted ? (
+            <View
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: "#22C55E",
+                alignItems: "center",
+                justifyContent: "center",
+                shadowColor: "#22C55E",
+                shadowOpacity: 0.4,
+                shadowRadius: 10,
+              }}
+            >
+              <FontAwesome name="check" size={20} color="#000" />
+            </View>
+          ) : (
+            <View
+              style={[styles.playButton, { backgroundColor: session.color }]}
+            >
+              <FontAwesome
+                name="play"
+                size={16}
+                color="#fff" // White icon as requested
+                style={{ marginLeft: 2 }}
+              />
+            </View>
+          )}
         </View>
       </LinearGradient>
     </Pressable>

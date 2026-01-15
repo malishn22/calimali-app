@@ -1,6 +1,7 @@
 import Colors, { SessionColors } from "@/constants/Colors";
-import { ScheduledSession } from "@/services/Database";
+import { ScheduledSession, addSessionHistory } from "@/services/Database";
 import Feather from "@expo/vector-icons/Feather";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -45,15 +46,19 @@ export default function LiveSession({
     setIndex: number;
   } | null>(null);
 
+  // Completion Flow State
+  // 0: Active, 1: XP Reward, 2: Level Progress
+  const [completionStep, setCompletionStep] = useState<0 | 1 | 2>(0);
+
   useEffect(() => {
     if (visible && session) {
       // Reset state on open
       setIsStarted(false);
       setTimer(0);
       setCurrentExIndex(0);
+      setCompletionStep(0);
       setCompletedSetIds(new Set());
       try {
-        // Handle both string and pre-parsed array if needed, but DB returns string
         const parsed =
           typeof session.exercises === "string"
             ? JSON.parse(session.exercises)
@@ -165,6 +170,133 @@ export default function LiveSession({
     }
   };
 
+  const handleFinishWorkout = async () => {
+    // 1. Transition to XP Screen
+    setCompletionStep(1);
+
+    // 2. Wait 2.5 seconds then transition to Level Screen
+    setTimeout(() => {
+      setCompletionStep(2);
+    }, 2500);
+  };
+
+  const handleFinalContinue = async () => {
+    // Save to DB
+    const historyId = Date.now().toString(); // Simple ID
+    const perfData = JSON.stringify({
+      elapsedTime: timer,
+      exercises: exercises,
+    });
+
+    if (session) {
+      await addSessionHistory({
+        id: historyId,
+        session_id: session.id,
+        date: new Date().toISOString(),
+        performance_data: perfData,
+      });
+    }
+
+    onComplete(null);
+  };
+
+  // --- Renderers ---
+  const renderSuccessXP = () => (
+    <View style={styles.successContainer}>
+      <FontAwesome
+        name="trophy"
+        size={80}
+        color={SessionColors.YELLOW}
+        style={{ marginBottom: 24 }}
+      />
+      <Text style={styles.successTitle}>Session Complete!</Text>
+      <Text style={styles.successSub}>REWARDS EARNED</Text>
+
+      <View style={styles.rewardCard}>
+        <Text style={styles.rewardValue}>+60</Text>
+        <Text style={styles.rewardLabel}>EXPERIENCE POINTS</Text>
+      </View>
+
+      <View
+        style={{
+          position: "absolute",
+          top: 100,
+          left: 50,
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          backgroundColor: SessionColors.BLUE,
+        }}
+      />
+      <View
+        style={{
+          position: "absolute",
+          top: 150,
+          right: 60,
+          width: 12,
+          height: 12,
+          borderRadius: 6,
+          backgroundColor: SessionColors.YELLOW,
+        }}
+      />
+    </View>
+  );
+
+  const renderSuccessLevel = () => (
+    <View style={styles.successContainer}>
+      <View style={styles.starCircle}>
+        <FontAwesome name="star" size={40} color="black" />
+      </View>
+
+      <Text style={styles.successTitle}>Session Cleared</Text>
+      <Text style={styles.successSub}>Great work, Mali.</Text>
+
+      <View style={styles.levelCard}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 8,
+          }}
+        >
+          <Text style={styles.levelLabel}>LEVEL 1</Text>
+          <Text style={styles.levelLabel}>13%</Text>
+        </View>
+        <View style={styles.levelBarBg}>
+          <View style={[styles.levelBarFill, { width: "13%" }]} />
+        </View>
+      </View>
+
+      <Pressable style={styles.continueBtn} onPress={handleFinalContinue}>
+        <Text style={styles.continueBtnText}>CONTINUE</Text>
+        <Feather name="arrow-right" size={20} color="black" />
+      </Pressable>
+
+      <View
+        style={{
+          position: "absolute",
+          top: 100,
+          left: 60,
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: SessionColors.BLUE,
+        }}
+      />
+      <View
+        style={{
+          position: "absolute",
+          top: 140,
+          right: 50,
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          backgroundColor: SessionColors.YELLOW,
+        }}
+      />
+    </View>
+  );
+
   // Derived State
   const currentExercise = exercises[currentExIndex];
   const totalSets = exercises.reduce(
@@ -172,12 +304,33 @@ export default function LiveSession({
     0
   );
   const completedCount = completedSetIds.size;
-  // Progress %
   const progressPercent =
     totalSets > 0 ? (completedCount / totalSets) * 100 : 0;
   const isAllComplete = completedCount === totalSets && totalSets > 0;
 
   if (!session || !currentExercise) return null;
+
+  // Main Render Switch
+  if (completionStep === 1)
+    return (
+      <Modal
+        visible={visible}
+        animationType="fade"
+        presentationStyle="fullScreen"
+      >
+        {renderSuccessXP()}
+      </Modal>
+    );
+  if (completionStep === 2)
+    return (
+      <Modal
+        visible={visible}
+        animationType="fade"
+        presentationStyle="fullScreen"
+      >
+        {renderSuccessLevel()}
+      </Modal>
+    );
 
   return (
     <Modal
@@ -188,7 +341,6 @@ export default function LiveSession({
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          {/* Extended Progress Bar - Takes Left Space */}
           <View style={styles.progressContainer}>
             <View
               style={{
@@ -217,7 +369,6 @@ export default function LiveSession({
 
         {/* Exercise Content */}
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Category Chip */}
           <View style={styles.tagContainer}>
             <View style={styles.categoryChip}>
               <Text style={styles.categoryText}>
@@ -232,7 +383,6 @@ export default function LiveSession({
             {currentExercise.description || "No description"}"
           </Text>
 
-          {/* Sets List */}
           <View style={styles.setsList}>
             {currentExercise.sets.map((set: any, idx: number) => {
               const isCompleted = completedSetIds.has(
@@ -263,7 +413,7 @@ export default function LiveSession({
                     <Pressable
                       style={[styles.actionBtn, styles.editBtn]}
                       onPress={(e) => {
-                        e.stopPropagation(); // Don't toggle check
+                        e.stopPropagation();
                         handleEditSet(currentExIndex, idx);
                       }}
                       disabled={!isStarted}
@@ -311,8 +461,10 @@ export default function LiveSession({
 
         {/* Footer */}
         <View style={styles.footer}>
-          {/* Back / Exit Button (25%) */}
-          <Pressable style={styles.navBtn} onPress={handleClose}>
+          <Pressable
+            style={styles.navBtn}
+            onPress={currentExIndex > 0 ? handlePrevExercise : handleClose}
+          >
             <Feather
               name="chevron-left"
               size={24}
@@ -320,7 +472,6 @@ export default function LiveSession({
             />
           </Pressable>
 
-          {/* Action Button (75%) */}
           {!isStarted ? (
             <Pressable style={styles.startBtn} onPress={handleStartSession}>
               <Text style={styles.startBtnText}>START SESSION</Text>
@@ -348,7 +499,7 @@ export default function LiveSession({
                 isAllComplete && styles.completeBtnActive,
               ]}
               disabled={!isAllComplete}
-              onPress={() => onComplete({ elapsedTime: timer, exercises })}
+              onPress={handleFinishWorkout}
             >
               <Text
                 style={[
@@ -408,6 +559,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  closeBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#1E1E22",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   timerText: {
     color: "white",
     fontSize: 20,
@@ -417,8 +576,8 @@ const styles = StyleSheet.create({
     minWidth: 60,
   },
   progressContainer: {
-    flex: 1, // Take up remaining space
-    marginRight: 24, // Space between bar and timer
+    flex: 1,
+    marginHorizontal: 24,
   },
   progressLabel: {
     color: Colors.palette.zinc500,
@@ -549,7 +708,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   navBtn: {
-    flex: 1, // 25% Ratio
+    flex: 1, // 25%
     height: 60,
     borderRadius: 20,
     backgroundColor: "#1E1E22",
@@ -557,7 +716,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   startBtn: {
-    flex: 3, // 75% Ratio
+    flex: 3, // 75%
     height: 60,
     backgroundColor: "white",
     borderRadius: 20,
@@ -576,7 +735,7 @@ const styles = StyleSheet.create({
   },
 
   nextBtn: {
-    flex: 3,
+    flex: 3, // 75%
     height: 60,
     backgroundColor: SessionColors.BLUE,
     borderRadius: 20,
@@ -591,7 +750,7 @@ const styles = StyleSheet.create({
   },
 
   completeBtn: {
-    flex: 3,
+    flex: 3, // 75%
     height: 60,
     backgroundColor: "#1E1E22",
     borderRadius: 20,
@@ -605,5 +764,98 @@ const styles = StyleSheet.create({
   completeBtnText: {
     fontWeight: "800",
     fontSize: 16,
+  },
+
+  // SUCCESS SCREENS
+  successContainer: {
+    flex: 1,
+    backgroundColor: Colors.dark.background,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  successTitle: {
+    color: "white",
+    fontSize: 32,
+    fontWeight: "800",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  successSub: {
+    color: Colors.palette.zinc500,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 40,
+  },
+  rewardCard: {
+    backgroundColor: "#1E1E22",
+    borderRadius: 24,
+    paddingVertical: 40,
+    paddingHorizontal: 60,
+    alignItems: "center",
+    marginBottom: 40,
+    width: "100%",
+  },
+  rewardValue: {
+    fontSize: 64,
+    fontWeight: "800",
+    color: SessionColors.BLUE,
+    marginBottom: 8,
+  },
+  rewardLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: Colors.palette.zinc500,
+    letterSpacing: 1,
+  },
+  starCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: SessionColors.GREEN,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 32,
+  },
+  levelCard: {
+    width: "100%",
+    backgroundColor: "#1E1E22",
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 40,
+  },
+  levelLabel: {
+    color: "white",
+    fontWeight: "700",
+    fontSize: 12,
+    letterSpacing: 0.5,
+  },
+  levelBarBg: {
+    height: 8,
+    backgroundColor: "#27272A",
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  levelBarFill: {
+    height: "100%",
+    backgroundColor: SessionColors.BLUE,
+  },
+  continueBtn: {
+    backgroundColor: SessionColors.GREEN,
+    width: "100%",
+    height: 60,
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  continueBtnText: {
+    color: "black",
+    fontWeight: "800",
+    fontSize: 16,
+    letterSpacing: 1,
   },
 });

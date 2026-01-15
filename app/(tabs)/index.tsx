@@ -1,7 +1,11 @@
 import LiveSession from "@/components/LiveSession";
 import SessionCard from "@/components/SessionCard";
 import { Text, View } from "@/components/Themed";
-import { getSessions, ScheduledSession } from "@/services/Database";
+import {
+  getSessionHistory,
+  getSessions,
+  ScheduledSession,
+} from "@/services/Database";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useIsFocused } from "@react-navigation/native";
@@ -13,6 +17,9 @@ export default function DashboardScreen() {
   const isFocused = useIsFocused();
   const [dailySessions, setDailySessions] = useState<ScheduledSession[]>([]);
   const [liveSession, setLiveSession] = useState<ScheduledSession | null>(null);
+  const [completedSessionIds, setCompletedSessionIds] = useState<Set<string>>(
+    new Set()
+  );
 
   const currentDate = new Date()
     .toLocaleDateString("en-US", {
@@ -30,7 +37,21 @@ export default function DashboardScreen() {
 
   const loadDailySessions = async () => {
     const allSessions = await getSessions();
+    const history = await getSessionHistory();
     const today = new Date();
+
+    // Find completed sessions for TODAY
+    const completedIds = new Set<string>();
+    history.forEach((h) => {
+      const hDate = new Date(h.date);
+      if (
+        hDate.getDate() === today.getDate() &&
+        hDate.getMonth() === today.getMonth() &&
+        hDate.getFullYear() === today.getFullYear()
+      ) {
+        completedIds.add(h.session_id);
+      }
+    });
 
     // Filter for today
     const todays = allSessions.filter((session) => {
@@ -56,6 +77,7 @@ export default function DashboardScreen() {
     });
 
     setDailySessions(todays);
+    setCompletedSessionIds(completedIds);
   };
 
   return (
@@ -102,6 +124,7 @@ export default function DashboardScreen() {
               key={session.id}
               session={session}
               onPress={() => setLiveSession(session)}
+              isCompleted={completedSessionIds.has(session.id)}
             />
           ))
         ) : (
@@ -121,6 +144,7 @@ export default function DashboardScreen() {
         onClose={() => setLiveSession(null)}
         onComplete={(data) => {
           setLiveSession(null);
+          loadDailySessions(); // Refresh UI
         }}
       />
     </SafeAreaView>
