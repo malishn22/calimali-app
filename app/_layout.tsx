@@ -14,11 +14,12 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
+import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { cssInterop } from "nativewind";
 import { useEffect } from "react";
-import { useColorScheme } from "react-native";
+import { Platform, useColorScheme } from "react-native";
 import "react-native-reanimated";
 import {
   configureReanimatedLogger,
@@ -80,6 +81,15 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setPositionAsync("absolute");
+      NavigationBar.setBackgroundColorAsync("#ffffff00");
+      NavigationBar.setVisibilityAsync("hidden");
+      NavigationBar.setBehaviorAsync("overlay-swipe");
+    }
+  }, []);
 
   return (
     <CacheProvider>
