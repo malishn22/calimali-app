@@ -2,6 +2,13 @@ import Colors from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 interface ButtonProps {
   onPress?: () => void;
@@ -36,8 +43,29 @@ export function Button({
   style,
   children,
 }: ButtonProps) {
+  // Animation State
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+
+  const handlePressIn = () => {
+    if (!disabled) {
+      scale.value = withSpring(0.99, { damping: 20, stiffness: 500 });
+    }
+  };
+
+  const handlePressOut = () => {
+    if (!disabled) {
+      scale.value = withSpring(1, { damping: 20, stiffness: 500 });
+    }
+  };
+
   // Base styles
-  const baseContainer = "items-center justify-center flex-row"; // Removed rounded-2xl from base to allow override
+  const baseContainer = "items-center justify-center flex-row";
   const disabledStyle = "opacity-50";
 
   // Variant Styles
@@ -85,7 +113,7 @@ export function Button({
   let sizeText = "";
   let iconSize = 16;
 
-  // If no title (Icon Only), we adjust padding/min-width to ensure square/circle shape is easier
+  // If no title (Icon Only)
   const isIconOnly = !title && !children && !!icon;
 
   switch (size) {
@@ -116,17 +144,19 @@ export function Button({
     baseContainer,
     variantContainer,
     sizeContainer,
-    disabled ? disabledStyle : "active:scale-95 active:opacity-90",
+    disabled ? disabledStyle : "", // Removed active:scale-95 since we handle it manually
     className,
   ].join(" ");
 
   const textClasses = [variantText, sizeText].join(" ");
 
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={disabled ? undefined : onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       className={containerClasses}
-      style={style}
+      style={[style, animatedStyle]}
     >
       {children ? (
         children
@@ -151,6 +181,6 @@ export function Button({
           )}
         </>
       )}
-    </Pressable>
+    </AnimatedPressable>
   );
 }

@@ -1,7 +1,6 @@
 import React from "react";
-import { View } from "react-native";
-import { Button } from "../ui/Button";
-import { WizardStep } from "./index";
+import { WizardActionPanel } from "./WizardActionPanel";
+import { WizardStep } from "./types";
 
 interface Props {
   step: WizardStep;
@@ -18,34 +17,36 @@ export function WizardFooter({
   onSave,
   canGoNext,
 }: Props) {
-  if (step === "CONFIG") return null; // Config has its own confirm button
+  if (step === "CONFIG") return null; // Config has its own footer
 
-  return (
-    <View className="px-6 pb-2 pt-4 flex-row gap-4">
-      <Button
-        variant="ghost"
-        title={step === "LIST" ? "Cancel" : "Back"}
-        onPress={onBack}
-        className="flex-1"
+  // Case: List Step with no items -> Full width Back
+  if (step === "LIST" && !canGoNext) {
+    return <WizardActionPanel onBack={onBack} fullWidthBack />;
+  }
+
+  // Case: Search Step -> Full width Back
+  if (step === "SEARCH") {
+    return <WizardActionPanel onBack={onBack} fullWidthBack />;
+  }
+
+  // Case: Final Step -> SAVE (Green)
+  if (step === "FINAL") {
+    return (
+      <WizardActionPanel
+        primaryLabel="SAVE"
+        onPrimaryPress={onSave}
+        primaryVariant="completed" // Using 'completed' for green style (was bg-green-600)
+        onBack={onBack}
       />
-      {step === "FINAL" ? (
-        <Button
-          variant="primary"
-          title="Save Session"
-          onPress={onSave}
-          className="flex-[2]"
-        />
-      ) : (
-        step !== "SEARCH" && (
-          <Button
-            variant={canGoNext ? "primary" : "secondary"}
-            title="Next"
-            onPress={onNext}
-            disabled={!canGoNext}
-            className="flex-[2]"
-          />
-        )
-      )}
-    </View>
+    );
+  }
+
+  // Default: List Step with items (NEXT)
+  return (
+    <WizardActionPanel
+      primaryLabel="NEXT"
+      onPrimaryPress={onNext}
+      onBack={onBack}
+    />
   );
 }

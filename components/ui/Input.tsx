@@ -7,7 +7,8 @@ interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
   icon?: keyof typeof FontAwesome.glyphMap;
-  containerClassName?: string;
+  containerClassName?: string; // For the outer wrapper (margin, width)
+  inputContainerClassName?: string; // For the box (bg, border, rounded)
 }
 
 export function Input({
@@ -15,6 +16,7 @@ export function Input({
   error,
   icon,
   containerClassName = "",
+  inputContainerClassName = "",
   className = "",
   ...props
 }: InputProps) {
@@ -25,7 +27,9 @@ export function Input({
           {label}
         </Text>
       )}
-      <View className="flex-row items-center bg-card-dark rounded-xl px-4 py-3.5 border border-transparent focus:border-blue-500">
+      <View
+        className={`flex-row items-center bg-card-dark rounded-xl px-4 py-3.5 border border-transparent focus:border-blue-500 ${inputContainerClassName}`}
+      >
         {icon && (
           <FontAwesome
             name={icon}
@@ -36,7 +40,7 @@ export function Input({
         )}
         <TextInput
           placeholderTextColor={Colors.palette.zinc600}
-          className={`flex-1 text-white text-base font-semibold h-6 leading-5 ${className}`} // h-6 fixes vertical alignment
+          className={`flex-1 text-white text-base font-semibold ${className}`}
           {...props}
         />
       </View>

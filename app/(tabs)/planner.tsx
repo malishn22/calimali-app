@@ -116,7 +116,7 @@ export default function PlannerScreen() {
   return (
     <SafeAreaView
       className="flex-1 bg-background-dark"
-      edges={["top"]}
+      edges={["left", "right", "bottom"]}
       style={{
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
       }}
@@ -241,8 +241,12 @@ export default function PlannerScreen() {
             displayedSessions.map((session) => {
               const exCount = JSON.parse(session.exercises || "[]").length;
               return (
-                <View
+                <Pressable
                   key={session.id}
+                  onPress={() => {
+                    setEditingSession(session);
+                    setWizardVisible(true);
+                  }}
                   className="flex-row justify-between items-center bg-card-dark rounded-2xl p-4 mb-3 border border-zinc-800"
                 >
                   <View className="flex-row items-center bg-transparent">
@@ -262,7 +266,7 @@ export default function PlannerScreen() {
                   <Pressable onPress={() => handleDeleteSession(session.id)}>
                     <FontAwesome name="trash" size={16} color="#3F3F46" />
                   </Pressable>
-                </View>
+                </Pressable>
               );
             })
           )}

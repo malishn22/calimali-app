@@ -71,7 +71,12 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={DarkTheme}>
-      <Stack>
+      <Stack
+        screenOptions={{
+          animation: "slide_from_right",
+          contentStyle: { backgroundColor: "#09090b" }, // Corrects black flicker by ensuring background
+        }}
+      >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
       </Stack>

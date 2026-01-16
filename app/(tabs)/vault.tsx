@@ -3,10 +3,9 @@ import { Input } from "@/components/ui/Input";
 import Colors, { CategoryColors } from "@/constants/Colors";
 import { ExerciseCategory } from "@/constants/Enums";
 import { Exercise, getExercises } from "@/services/Database";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  FlatList,
   Platform,
   Pressable,
   ScrollView,
@@ -14,6 +13,10 @@ import {
   Text,
   View,
 } from "react-native";
+import Animated, {
+  FadeInDown,
+  LinearTransition,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const FILTERS = ["All", ...Object.values(ExerciseCategory)];
@@ -52,7 +55,7 @@ export default function VaultScreen() {
   return (
     <SafeAreaView
       className="flex-1 bg-background-dark"
-      edges={["top"]}
+      edges={["left", "right", "bottom"]}
       style={{
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
       }}
@@ -109,12 +112,17 @@ export default function VaultScreen() {
         </View>
 
         {/* Exercise List */}
-        <FlatList
+        <Animated.FlatList
           data={filteredExercises}
           keyExtractor={(item) => item.id}
+          itemLayoutAnimation={LinearTransition}
           contentContainerStyle={{ paddingBottom: 20 }}
-          renderItem={({ item }) => (
-            <View className="bg-card-dark rounded-2xl p-5 mb-3 flex-row justify-between items-center">
+          renderItem={({ item, index }) => (
+            <Animated.View
+              entering={FadeInDown.delay(index * 50).springify()}
+              layout={LinearTransition}
+              className="bg-card-dark rounded-2xl p-5 mb-3 flex-row justify-between items-center"
+            >
               <View className="flex-1 bg-transparent flex-row items-center">
                 <Text className="text-sm font-bold text-white">
                   {item.name}
@@ -141,7 +149,7 @@ export default function VaultScreen() {
                   {item.category}
                 </Text>
               </View>
-            </View>
+            </Animated.View>
           )}
         />
       </View>

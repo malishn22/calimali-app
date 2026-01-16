@@ -20,6 +20,14 @@ export interface Exercise {
   is_unilateral: boolean;
 }
 
+export interface SessionExercise {
+  exerciseId: string;
+  name: string;
+  sets: number;
+  reps: number | number[]; // Can be a single number (legacy) or array per set
+  weight?: number;
+}
+
 export interface ScheduledSession {
   id: string;
   title: string;
@@ -86,6 +94,122 @@ export const initDatabase = async () => {
     `);
 
     console.log("Database initialized successfully");
+
+    // Seed Data Check
+    const countResult = await db.getFirstAsync<{ count: number }>(
+      "SELECT COUNT(*) as count FROM exercises"
+    );
+    if (countResult && countResult.count === 0) {
+      console.log("Seeding default exercises...");
+      const defaultExercises = [
+        {
+          id: "1",
+          name: "Push Up",
+          category: "PUSH",
+          difficulty: "BEGINNER",
+          description: "Standard push up",
+          equipment: "NONE",
+          default_reps: 15,
+          unit: "REPS",
+          is_unilateral: 0,
+        },
+        {
+          id: "2",
+          name: "Pull Up",
+          category: "PULL",
+          difficulty: "INTERMEDIATE",
+          description: "Standard chin over bar pull up",
+          equipment: "BAR",
+          default_reps: 8,
+          unit: "REPS",
+          is_unilateral: 0,
+        },
+        {
+          id: "3",
+          name: "Dip",
+          category: "PUSH",
+          difficulty: "INTERMEDIATE",
+          description: "Parallel bar dips",
+          equipment: "PARALLETTES",
+          default_reps: 10,
+          unit: "REPS",
+          is_unilateral: 0,
+        },
+        {
+          id: "4",
+          name: "Squat",
+          category: "LEGS",
+          difficulty: "BEGINNER",
+          description: "Bodyweight squat",
+          equipment: "NONE",
+          default_reps: 20,
+          unit: "REPS",
+          is_unilateral: 0,
+        },
+        {
+          id: "5",
+          name: "L-Sit",
+          category: "CORE",
+          difficulty: "INTERMEDIATE",
+          description: "Hold L-shape on ground or bars",
+          equipment: "NONE",
+          default_reps: 15,
+          unit: "SECS",
+          is_unilateral: 0,
+        },
+        {
+          id: "6",
+          name: "Muscle Up",
+          category: "PULL",
+          difficulty: "ELITE",
+          description: "Explosive pull up to support",
+          equipment: "BAR",
+          default_reps: 3,
+          unit: "REPS",
+          is_unilateral: 0,
+        },
+        {
+          id: "7",
+          name: "Handstand Push Up",
+          category: "PUSH",
+          difficulty: "ADVANCED",
+          description: "Vertical push up against wall or free",
+          equipment: "NONE",
+          default_reps: 5,
+          unit: "REPS",
+          is_unilateral: 0,
+        },
+        {
+          id: "8",
+          name: "Dragon Flag",
+          category: "CORE",
+          difficulty: "ELITE",
+          description: "Bruce Lee's favorite ab exercise",
+          equipment: "NONE",
+          default_reps: 5,
+          unit: "REPS",
+          is_unilateral: 0,
+        },
+      ];
+
+      for (const ex of defaultExercises) {
+        await db.runAsync(
+          `INSERT INTO exercises (id, name, category, difficulty, description, equipment, default_reps, unit, is_unilateral) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+          [
+            ex.id,
+            ex.name,
+            ex.category,
+            ex.difficulty,
+            ex.description,
+            ex.equipment,
+            ex.default_reps,
+            ex.unit,
+            ex.is_unilateral,
+          ]
+        );
+      }
+      console.log("Seeding complete.");
+    }
   } catch (error) {
     console.error("Error initializing database:", error);
   }
@@ -113,6 +237,19 @@ export const getExercises = async (): Promise<Exercise[]> => {
   } catch (e) {
     console.error("Failed to get exercises", e);
     return [];
+  }
+};
+
+export const getExercise = async (id: string): Promise<Exercise | null> => {
+  try {
+    const result = await db.getFirstAsync<any>(
+      "SELECT * FROM exercises WHERE id = ?",
+      [id]
+    );
+    return result ? createExerciseFromRow(result) : null;
+  } catch (e) {
+    console.error("Failed to get exercise", e);
+    return null;
   }
 };
 

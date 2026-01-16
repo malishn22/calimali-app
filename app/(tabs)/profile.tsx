@@ -9,7 +9,15 @@ import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
@@ -241,7 +249,13 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-dark" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1 bg-background-dark"
+      edges={["left", "right", "bottom"]}
+      style={{
+        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+      }}
+    >
       <ScrollView contentContainerStyle={{ padding: 24 }}>
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-3xl font-extrabold text-white">

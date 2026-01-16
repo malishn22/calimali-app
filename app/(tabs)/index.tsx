@@ -82,7 +82,7 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView
       className="flex-1 bg-background-dark"
-      edges={["top"]}
+      edges={["left", "right", "bottom"]}
       style={{
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
       }}
