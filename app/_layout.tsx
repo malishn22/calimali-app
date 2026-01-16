@@ -7,11 +7,20 @@ import {
 } from "@expo-google-fonts/inter";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import { cssInterop } from "nativewind";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import "../global.css";
+
+cssInterop(LinearGradient, {
+  className: {
+    target: "style",
+  },
+});
 
 import { useColorScheme } from "@/components/useColorScheme";
 import { initDatabase } from "@/services/Database"; // Import DB init

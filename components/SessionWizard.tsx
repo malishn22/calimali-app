@@ -15,7 +15,6 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -207,29 +206,38 @@ export default function SessionWizard({
   // --- Renders ---
 
   const renderStep1 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.title}>Plan Routine</Text>
+    <View className="flex-1 p-6">
+      <Text className="text-xl font-bold text-zinc-500 text-center mb-8">
+        Plan Routine
+      </Text>
 
-      <Pressable style={styles.addExerciseBtn} onPress={() => setStep(2)}>
+      <Pressable
+        className="flex-row items-center justify-center bg-card-dark p-4 rounded-2xl mb-6 border border-zinc-800"
+        onPress={() => setStep(2)}
+      >
         <FontAwesome name="plus" size={16} color={Colors.palette.white} />
-        <Text style={styles.addExerciseText}>Add movement</Text>
+        <Text className="text-white font-bold ml-2">Add movement</Text>
       </Pressable>
 
       <FlatList
         data={sessionExercises}
         keyExtractor={(item, index) => item.id + index}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>NO EXERCISES ADDED YET</Text>
+          <Text className="text-zinc-600 text-center mt-24 font-bold tracking-widest">
+            NO EXERCISES ADDED YET
+          </Text>
         }
         renderItem={({ item }) => (
-          <View style={styles.sessionItem}>
+          <View className="bg-card-dark p-4 rounded-xl mb-3 flex-row justify-between items-center">
             <View>
-              <Text style={styles.itemTitle}>{item.name}</Text>
-              <Text style={styles.itemSubtitle}>
+              <Text className="text-white font-bold text-base">
+                {item.name}
+              </Text>
+              <Text className="text-blue-500 text-xs font-bold mt-1 uppercase">
                 {item.sets.length} SETS • {item.category}
               </Text>
             </View>
-            <View style={styles.itemActions}>
+            <View className="flex-row gap-3">
               {/* Delete/Edit placeholders */}
               <FontAwesome
                 name="trash"
@@ -245,19 +253,20 @@ export default function SessionWizard({
         contentContainerStyle={{ paddingBottom: 20 }}
       />
 
-      <View style={styles.footer}>
-        <Pressable style={styles.footerBtnSecondary} onPress={handleClose}>
-          <Text style={styles.footerBtnTextSec}>Cancel</Text>
+      <View className="flex-row justify-between mt-auto pt-5">
+        <Pressable
+          className="py-4 px-8 rounded-2xl bg-card-dark min-w-[100px] items-center"
+          onPress={handleClose}
+        >
+          <Text className="text-zinc-400 font-bold">Cancel</Text>
         </Pressable>
         {sessionExercises.length > 0 && (
           <Pressable
-            style={[
-              styles.footerBtnPrimary,
-              { backgroundColor: SessionColors.BLUE },
-            ]}
+            className="py-4 px-8 rounded-2xl bg-blue-500 flex-1 ml-4 items-center flex-row justify-center"
+            style={{ backgroundColor: SessionColors.BLUE }}
             onPress={() => setStep(4)}
           >
-            <Text style={styles.footerBtnTextPrimary}>NEXT</Text>
+            <Text className="text-black font-bold">NEXT</Text>
           </Pressable>
         )}
       </View>
@@ -270,10 +279,12 @@ export default function SessionWizard({
       e.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     return (
-      <View style={styles.stepContainer}>
-        <Text style={styles.title}>Search Movement</Text>
+      <View className="flex-1 p-6">
+        <Text className="text-xl font-bold text-zinc-500 text-center mb-8">
+          Search Movement
+        </Text>
         <TextInput
-          style={styles.searchInput}
+          className="bg-card-dark p-4 rounded-xl text-white border border-blue-500 mb-6"
           placeholder="Find movement..."
           placeholderTextColor={Colors.palette.zinc600}
           value={searchQuery}
@@ -284,13 +295,13 @@ export default function SessionWizard({
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <Pressable
-              style={styles.searchItem}
+              className="bg-card-dark p-4 rounded-xl mb-3 justify-center"
               onPress={() => handleSelectExercise(item)}
             >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-              >
-                <Text style={styles.searchItemName}>{item.name}</Text>
+              <View className="flex-row items-center gap-1.5">
+                <Text className="text-white font-bold text-base">
+                  {item.name}
+                </Text>
                 {item.is_unilateral && (
                   <MaterialCommunityIcons
                     name="alpha-u-box"
@@ -299,7 +310,7 @@ export default function SessionWizard({
                   />
                 )}
               </View>
-              <Text style={styles.searchItemSub}>
+              <Text className="text-zinc-500 text-xs uppercase mt-1 font-semibold">
                 <Text style={{ color: CategoryColors[item.category] }}>
                   {item.category}
                 </Text>{" "}
@@ -314,28 +325,36 @@ export default function SessionWizard({
             </Pressable>
           )}
         />
-        <Pressable style={styles.backBtnAbsolute} onPress={() => setStep(1)}>
-          <Text style={styles.footerBtnTextSec}>Back</Text>
+        <Pressable
+          className="bg-card-dark py-4 px-8 rounded-2xl absolute bottom-6 left-6"
+          onPress={() => setStep(1)}
+        >
+          <Text className="text-zinc-400 font-bold">Back</Text>
         </Pressable>
       </View>
     );
   };
 
   const renderStep3 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.title}>Configure Sets</Text>
-      <Text style={styles.exerciseTitleBig}>
+    <View className="flex-1 p-6">
+      <Text className="text-xl font-bold text-zinc-500 text-center mb-8">
+        Configure Sets
+      </Text>
+      <Text className="text-3xl font-extrabold text-white text-center">
         {selectedExerciseForConfig?.name}
       </Text>
-      <Text style={styles.categoryTag}>
+      <Text className="text-blue-500 text-center font-bold uppercase mb-8">
         {selectedExerciseForConfig?.category}
       </Text>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         {newSets.map((set, idx) => (
-          <View key={idx} style={styles.setConfigRow}>
-            <View style={styles.setLabel}>
-              <Text style={styles.setLabelText}>
+          <View
+            key={idx}
+            className="bg-card-dark p-4 rounded-2xl flex-row items-center mb-3 justify-between"
+          >
+            <View>
+              <Text className="text-zinc-400 font-bold text-sm">
                 Set{" "}
                 {selectedExerciseForConfig?.is_unilateral
                   ? Math.floor(idx / 2) + 1
@@ -346,13 +365,13 @@ export default function SessionWizard({
                     : " [R]"
                   : ""}
               </Text>
-              <Text style={styles.setUnitText}>
+              <Text className="text-blue-500 text-[10px] font-extrabold uppercase">
                 {selectedExerciseForConfig?.unit}
               </Text>
             </View>
-            <View style={styles.counter}>
+            <View className="flex-row items-center gap-4">
               <Pressable
-                style={styles.counterBtn}
+                className="w-11 h-11 rounded-2xl bg-zinc-700 items-center justify-center"
                 onPress={() => updateRep(idx, -1)}
               >
                 <FontAwesome
@@ -361,9 +380,11 @@ export default function SessionWizard({
                   color={Colors.palette.zinc400}
                 />
               </Pressable>
-              <Text style={styles.counterValue}>{set.reps}</Text>
+              <Text className="text-2xl font-bold text-white w-10 text-center">
+                {set.reps}
+              </Text>
               <Pressable
-                style={styles.counterBtn}
+                className="w-11 h-11 rounded-2xl bg-zinc-700 items-center justify-center"
                 onPress={() => updateRep(idx, 1)}
               >
                 <FontAwesome
@@ -374,7 +395,7 @@ export default function SessionWizard({
               </Pressable>
 
               <Pressable
-                style={styles.removeSetBtn}
+                className="w-11 h-11 items-center justify-center ml-2 bg-zinc-900 rounded-xl"
                 onPress={() => removeSetAtIndex(idx)}
               >
                 <FontAwesome
@@ -387,20 +408,26 @@ export default function SessionWizard({
           </View>
         ))}
 
-        <Pressable style={styles.addMoreSetsBtn} onPress={addSet}>
-          <Text style={styles.addMoreText}>+ ADD MORE SETS</Text>
+        <Pressable
+          className="p-4 items-center border border-zinc-800 rounded-xl border-dashed mt-3"
+          onPress={addSet}
+        >
+          <Text className="text-zinc-500 font-bold text-xs">
+            + ADD MORE SETS
+          </Text>
         </Pressable>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <Pressable style={styles.footerBtnSecondary} onPress={() => setStep(2)}>
-          <Text style={styles.footerBtnTextSec}>Back</Text>
+      <View className="flex-row justify-between mt-auto pt-5">
+        <Pressable
+          className="py-4 px-8 rounded-2xl bg-card-dark min-w-[100px] items-center"
+          onPress={() => setStep(2)}
+        >
+          <Text className="text-zinc-400 font-bold">Back</Text>
         </Pressable>
         <Pressable
-          style={[
-            styles.footerBtnPrimary,
-            { backgroundColor: SessionColors.BLUE },
-          ]}
+          className="py-4 px-8 rounded-2xl bg-blue-500 flex-1 ml-4 items-center flex-row justify-center"
+          style={{ backgroundColor: SessionColors.BLUE }}
           onPress={confirmExercise}
         >
           <FontAwesome
@@ -409,56 +436,61 @@ export default function SessionWizard({
             color="#000"
             style={{ marginRight: 6 }}
           />
-          <Text style={styles.footerBtnTextPrimary}>CONFIRM</Text>
+          <Text className="text-black font-bold">CONFIRM</Text>
         </Pressable>
       </View>
     </View>
   );
 
   const renderStep4 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.title}>Final Details</Text>
+    <View className="flex-1 p-6">
+      <Text className="text-xl font-bold text-zinc-500 text-center mb-8">
+        Final Details
+      </Text>
 
-      <Text style={styles.label}>WORKOUT TITLE</Text>
+      <Text className="text-zinc-500 text-xs font-bold tracking-widest mb-3 mt-6">
+        WORKOUT TITLE
+      </Text>
       <TextInput
-        style={styles.input}
+        className="bg-card-dark p-4 rounded-xl text-white text-base font-semibold"
         placeholder="E.g., Morning Push"
         placeholderTextColor={Colors.palette.zinc600}
         value={title}
         onChangeText={setTitle}
       />
 
-      <Text style={styles.label}>CARD COLOR</Text>
-      <View style={styles.colorRow}>
+      <Text className="text-zinc-500 text-xs font-bold tracking-widest mb-3 mt-6">
+        CARD COLOR
+      </Text>
+      <View className="flex-row justify-between">
         {Object.values(SessionColors).map((c) => (
           <Pressable
             key={c}
-            style={[
-              styles.colorCircle,
-              { backgroundColor: c },
-              selectedColor === c && styles.colorSelected,
-            ]}
+            className={`w-10 h-10 rounded-full ${
+              selectedColor === c ? "border-4 border-white" : ""
+            }`}
+            style={{ backgroundColor: c }}
             onPress={() => setSelectedColor(c)}
           />
         ))}
       </View>
 
-      <Text style={styles.label}>FREQUENCY</Text>
-      <View style={styles.freqGrid}>
+      <Text className="text-zinc-500 text-xs font-bold tracking-widest mb-3 mt-6">
+        FREQUENCY
+      </Text>
+      <View className="flex-row flex-wrap gap-3">
         {(["ONCE", "DAILY", "WEEKLY", "EVERY_2_DAYS"] as const).map((f) => (
           <Pressable
             key={f}
-            style={[
-              styles.freqChip,
-              frequency === f && styles.freqChipSelected,
-            ]}
+            className={`w-[48%] bg-card-dark p-4 rounded-xl items-center ${
+              frequency === f ? "bg-white" : ""
+            }`}
             onPress={() => setFrequency(f)}
           >
             <Text
-              style={[
-                styles.freqText,
-                frequency === f && styles.freqTextSelected,
-              ]}
+              className={`text-zinc-500 font-bold ${
+                frequency === f ? "text-black" : ""
+              }`}
             >
               {f.replace(/_/g, " ")}
             </Text>
@@ -466,12 +498,17 @@ export default function SessionWizard({
         ))}
       </View>
 
-      <View style={styles.footer}>
-        <Pressable style={styles.footerBtnSecondary} onPress={() => setStep(1)}>
-          <Text style={styles.footerBtnTextSec}>Back</Text>
+      <View className="flex-row justify-between mt-auto pt-5">
+        <Pressable
+          className="py-4 px-8 rounded-2xl bg-card-dark min-w-[100px] items-center"
+          onPress={() => setStep(1)}
+        >
+          <Text className="text-zinc-400 font-bold">Back</Text>
         </Pressable>
         <Pressable
-          style={[styles.footerBtnPrimary, !title && { opacity: 0.5 }]}
+          className={`py-4 px-8 rounded-2xl bg-green-500 flex-1 ml-4 items-center flex-row justify-center ${
+            !title ? "opacity-50" : ""
+          }`}
           onPress={handleSaveSession}
           disabled={!title}
         >
@@ -481,7 +518,7 @@ export default function SessionWizard({
             color="#000"
             style={{ marginRight: 6 }}
           />
-          <Text style={styles.footerBtnTextPrimary}>SAVE</Text>
+          <Text className="text-black font-bold">SAVE</Text>
         </Pressable>
       </View>
     </View>
@@ -493,7 +530,7 @@ export default function SessionWizard({
       animationType="slide"
       presentationStyle="pageSheet"
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView className="flex-1 bg-background-dark">
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
@@ -502,279 +539,3 @@ export default function SessionWizard({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.dark.background,
-  },
-  stepContainer: {
-    flex: 1,
-    padding: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: Colors.palette.zinc500, // Updated color
-    textAlign: "center",
-    marginBottom: 32,
-  },
-  emptyText: {
-    color: Colors.palette.zinc600,
-    textAlign: "center",
-    marginTop: 100,
-    fontWeight: "700",
-    letterSpacing: 1,
-  },
-  addExerciseBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.dark.card,
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: Colors.palette.zinc800,
-  },
-  addExerciseText: {
-    color: Colors.palette.white,
-    fontWeight: "700",
-    marginLeft: 8,
-  },
-  sessionItem: {
-    backgroundColor: Colors.dark.card,
-    borderWidth: 0,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  itemTitle: {
-    color: Colors.palette.white,
-    fontWeight: "700",
-    fontSize: 16,
-    backgroundColor: "transparent",
-  },
-  itemSubtitle: {
-    color: SessionColors.BLUE,
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 4,
-    textTransform: "uppercase",
-    backgroundColor: "transparent",
-  },
-  itemActions: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: "auto",
-    paddingTop: 20,
-  },
-  footerBtnSecondary: {
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.dark.card,
-    minWidth: 100,
-    alignItems: "center",
-  },
-  footerBtnPrimary: {
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.palette.green500, // Green
-    flex: 1,
-    marginLeft: 16,
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  footerBtnTextSec: {
-    color: Colors.palette.zinc400,
-    fontWeight: "700",
-  },
-  footerBtnTextPrimary: {
-    color: Colors.palette.black,
-    fontWeight: "700",
-  },
-  // Step 2
-  searchInput: {
-    backgroundColor: Colors.dark.card,
-    padding: 16,
-    borderRadius: 12,
-    color: Colors.palette.white,
-    borderWidth: 1,
-    borderColor: SessionColors.BLUE, // Highlighted
-    marginBottom: 24,
-  },
-  searchItem: {
-    backgroundColor: Colors.dark.card,
-    borderWidth: 0,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    justifyContent: "center",
-  },
-  searchItemName: {
-    color: Colors.palette.white,
-    fontWeight: "700",
-    fontSize: 16,
-    backgroundColor: "transparent",
-  },
-  searchItemSub: {
-    color: Colors.palette.zinc500,
-    fontSize: 12,
-    textTransform: "uppercase",
-    marginTop: 4,
-    fontWeight: "600",
-  },
-  backBtnAbsolute: {
-    backgroundColor: Colors.dark.card,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 16,
-    position: "absolute",
-    bottom: 24,
-    left: 24,
-  },
-  // Step 3
-  exerciseTitleBig: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: Colors.palette.white,
-    textAlign: "center",
-  },
-  categoryTag: {
-    color: SessionColors.BLUE,
-    textAlign: "center",
-    fontWeight: "700",
-    textTransform: "uppercase",
-    marginBottom: 32,
-  },
-  setConfigRow: {
-    backgroundColor: Colors.dark.card,
-    borderWidth: 0,
-    padding: 16,
-    borderRadius: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    justifyContent: "space-between",
-  },
-  setLabel: {},
-  setLabelText: {
-    color: Colors.palette.zinc400,
-    fontWeight: "700",
-    fontSize: 14,
-    backgroundColor: "transparent",
-  },
-  setUnitText: {
-    color: SessionColors.BLUE,
-    fontSize: 10,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    backgroundColor: "transparent",
-  },
-  counter: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  counterBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 16,
-    backgroundColor: Colors.palette.zinc700,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  counterValue: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: Colors.palette.white,
-    width: 40,
-    textAlign: "center",
-    backgroundColor: "transparent",
-  },
-  addMoreSetsBtn: {
-    padding: 16,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: Colors.palette.zinc800,
-    borderRadius: 12,
-    borderStyle: "dashed",
-    marginTop: 12,
-  },
-  addMoreText: {
-    color: Colors.palette.zinc500,
-    fontWeight: "700",
-    fontSize: 12,
-  },
-  // Step 4
-  label: {
-    color: Colors.palette.zinc500,
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1,
-    marginBottom: 12,
-    marginTop: 24,
-  },
-  input: {
-    backgroundColor: Colors.dark.card,
-    padding: 16,
-    borderRadius: 12,
-    color: Colors.palette.white,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  colorRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  colorCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  colorSelected: {
-    borderWidth: 4,
-    borderColor: Colors.palette.white,
-  },
-  freqGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  freqChip: {
-    width: "48%",
-    backgroundColor: Colors.dark.card,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  freqChipSelected: {
-    backgroundColor: Colors.palette.white,
-  },
-  freqText: {
-    color: Colors.palette.zinc500,
-    fontWeight: "700",
-  },
-  freqTextSelected: {
-    color: Colors.palette.black,
-  },
-  removeSetBtn: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 8,
-    backgroundColor: Colors.palette.zinc900,
-    borderRadius: 12,
-  },
-});

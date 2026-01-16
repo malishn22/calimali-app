@@ -1,4 +1,3 @@
-import { Text } from "@/components/Themed";
 import Colors from "@/constants/Colors";
 import {
   clearAllData,
@@ -9,7 +8,7 @@ import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
@@ -52,98 +51,115 @@ export default function ProfileScreen() {
   const renderOverview = () => (
     <>
       {/* Level Card */}
-      <View style={styles.levelCard}>
-        <View style={[styles.levelHeader, { backgroundColor: "transparent" }]}>
-          <View style={{ backgroundColor: "transparent" }}>
-            <Text style={styles.levelLabel}>CURRENT LEVEL</Text>
-            <Text style={styles.levelValue}>1</Text>
+      <View className="bg-card-dark rounded-2xl p-6 mb-6 border border-zinc-800 relative overflow-hidden">
+        <View className="flex-row justify-between items-start mb-5 bg-transparent">
+          <View className="bg-transparent">
+            <Text className="text-zinc-400 font-bold text-xs mb-2 tracking-widest">
+              CURRENT LEVEL
+            </Text>
+            <Text className="text-5xl font-extrabold text-white leading-[56px]">
+              1
+            </Text>
           </View>
-          <View style={[styles.badge, styles.eliteBadge]}>
-            <Text style={styles.badgeText}>ELITE</Text>
+          <View className="px-3 py-1.5 rounded-3xl bg-yellow-400/15 border border-yellow-400/30">
+            <Text className="text-yellow-400 font-extrabold text-[10px]">
+              ELITE
+            </Text>
           </View>
         </View>
 
         {/* Background Trophy Restored */}
-        <View style={styles.trophyContainer}>
-          <FontAwesome
-            name="trophy"
-            size={120}
-            color="#FACC15"
-            style={{ opacity: 0.1 }}
-          />
+        <View className="absolute right-5 top-5 opacity-10">
+          <FontAwesome name="trophy" size={120} color="#FACC15" />
         </View>
 
-        <View style={[styles.xpSection, { backgroundColor: "transparent" }]}>
-          <View style={[styles.xpHeader, { backgroundColor: "transparent" }]}>
-            <Text style={styles.xpLabel}>XP PROGRESS</Text>
-            <Text style={styles.xpValue}>130 XP</Text>
+        <View className="mt-5 bg-transparent">
+          <View className="flex-row justify-between mb-2 bg-transparent">
+            <Text className="text-[10px] font-bold text-yellow-400">
+              XP PROGRESS
+            </Text>
+            <Text className="text-[10px] font-bold text-zinc-500">130 XP</Text>
           </View>
-          <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: "30%" }]} />
+          <View className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <View className="h-full bg-yellow-400 rounded-full w-[30%]" />
           </View>
         </View>
       </View>
 
       {/* Stats Grid */}
-      <View style={styles.statsGrid}>
+      <View className="flex-row flex-wrap gap-3 mb-6">
         {/* Workouts */}
-        <View style={styles.statCard}>
+        <View className="bg-card-dark rounded-3xl p-5 w-[47%] mb-3">
           <Feather
             name="activity"
             size={18}
             color={Colors.palette.blue500}
             style={{ marginBottom: 12 }}
           />
-          <Text style={styles.statNumber}>{history.length}</Text>
-          <Text style={styles.statTitle}>TOTAL WORKOUTS</Text>
+          <Text className="text-2xl font-bold text-white mb-1">
+            {history.length}
+          </Text>
+          <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
+            TOTAL WORKOUTS
+          </Text>
         </View>
 
         {/* Reps */}
-        <View style={styles.statCard}>
+        <View className="bg-card-dark rounded-3xl p-5 w-[47%] mb-3">
           <Feather
             name="trending-up"
             size={18}
             color={Colors.palette.green500}
             style={{ marginBottom: 12 }}
           />
-          <Text style={styles.statNumber}>30</Text>
-          <Text style={styles.statTitle}>TOTAL REPS</Text>
+          <Text className="text-2xl font-bold text-white mb-1">30</Text>
+          <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
+            TOTAL REPS
+          </Text>
         </View>
 
         {/* Current Streak */}
-        <View style={styles.statCard}>
+        <View className="bg-card-dark rounded-3xl p-5 w-[47%] mb-3">
           <Feather
             name="zap"
             size={18}
             color={Colors.palette.orange500}
             style={{ marginBottom: 12 }}
           />
-          <Text style={styles.statNumber}>
-            1 <Text style={styles.statUnit}>DAYS</Text>
+          <Text className="text-2xl font-bold text-white mb-1">
+            1 <Text className="text-xs font-semibold text-zinc-400">DAYS</Text>
           </Text>
-          <Text style={styles.statTitle}>CURRENT STREAK</Text>
+          <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
+            CURRENT STREAK
+          </Text>
         </View>
 
         {/* Best Streak */}
-        <View style={styles.statCard}>
+        <View className="bg-card-dark rounded-3xl p-5 w-[47%] mb-3">
           <Feather
             name="github"
             size={18}
             color={Colors.palette.purple500}
             style={{ marginBottom: 12 }}
           />
-          <Text style={styles.statNumber}>
-            1 <Text style={styles.statUnit}>DAYS</Text>
+          <Text className="text-2xl font-bold text-white mb-1">
+            1 <Text className="text-xs font-semibold text-zinc-400">DAYS</Text>
           </Text>
-          <Text style={styles.statTitle}>BEST STREAK</Text>
+          <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
+            BEST STREAK
+          </Text>
         </View>
       </View>
 
       {/* Streak Started Panel */}
-      <View style={styles.streakDateCard}>
+      <View className="bg-card-dark rounded-3xl p-6 w-full mb-6 flex-row justify-between items-center">
         <View>
-          <Text style={styles.statNumber}>Jan 15, 2026</Text>
-          <Text style={styles.statTitle}>STREAK STARTED</Text>
+          <Text className="text-2xl font-bold text-white mb-1">
+            Jan 15, 2026
+          </Text>
+          <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
+            STREAK STARTED
+          </Text>
         </View>
         <Feather
           name="calendar"
@@ -158,9 +174,11 @@ export default function ProfileScreen() {
   const renderHistory = () => (
     <View>
       {history.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No History Yet</Text>
-          <Text style={styles.emptySubtext}>
+        <View className="p-10 items-center justify-center bg-card-dark rounded-2xl border border-dashed border-zinc-700 mt-2">
+          <Text className="text-white text-base font-bold mb-1">
+            No History Yet
+          </Text>
+          <Text className="text-zinc-500 text-xs">
             Complete a workout to see it here.
           </Text>
         </View>
@@ -185,9 +203,12 @@ export default function ProfileScreen() {
           const exerciseCount = perf.exercises ? perf.exercises.length : 0;
 
           return (
-            <View key={item.id || idx} style={styles.historyCard}>
-              <View style={styles.historyLeft}>
-                <View style={styles.historyIconBg}>
+            <View
+              key={item.id || idx}
+              className="bg-card-dark rounded-2xl p-4 mb-3 flex-row justify-between items-center"
+            >
+              <View className="flex-row items-center gap-3">
+                <View className="w-8 h-8 rounded-xl bg-green-500/10 justify-center items-center">
                   <Feather
                     name="check"
                     size={16}
@@ -195,15 +216,19 @@ export default function ProfileScreen() {
                   />
                 </View>
                 <View>
-                  <Text style={styles.historyTitle}>Workout Session</Text>
-                  <Text style={styles.historySub}>
+                  <Text className="text-white text-sm font-bold">
+                    Workout Session
+                  </Text>
+                  <Text className="text-zinc-500 text-[10px] mt-0.5 font-semibold">
                     {date} • {time}
                   </Text>
                 </View>
               </View>
-              <View style={styles.historyRight}>
-                <Text style={styles.historyStat}>{duration}</Text>
-                <Text style={styles.historyStatLabel}>
+              <View className="items-end">
+                <Text className="text-white text-sm font-bold tabular-nums">
+                  {duration}
+                </Text>
+                <Text className="text-zinc-600 text-[10px] mt-0.5 font-bold">
                   {exerciseCount} Exercises
                 </Text>
               </View>
@@ -215,52 +240,46 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 24,
-          }}
-        >
-          <Text style={styles.title}>Profile & Stats</Text>
-          <Pressable onPress={handleEraseData} style={styles.settingsBtn}>
+    <SafeAreaView className="flex-1 bg-background-dark" edges={["top"]}>
+      <ScrollView contentContainerStyle={{ padding: 24 }}>
+        <View className="flex-row justify-between items-center mb-6">
+          <Text className="text-3xl font-extrabold text-white">
+            Profile & Stats
+          </Text>
+          <Pressable
+            onPress={handleEraseData}
+            className="p-2 bg-card-dark rounded-xl"
+          >
             <Feather name="settings" size={20} color={Colors.palette.zinc400} />
           </Pressable>
         </View>
 
         {/* Toggle Sections */}
-        <View style={styles.toggleContainer}>
+        <View className="flex-row bg-card-dark rounded-xl p-1 mb-6">
           <Pressable
-            style={
-              activeTab === "OVERVIEW" ? styles.activeTab : styles.inactiveTab
-            }
+            className={`flex-1 py-2.5 rounded-lg items-center ${
+              activeTab === "OVERVIEW" ? "bg-zinc-800" : ""
+            }`}
             onPress={() => setActiveTab("OVERVIEW")}
           >
             <Text
-              style={
-                activeTab === "OVERVIEW"
-                  ? styles.activeTabText
-                  : styles.inactiveTabText
-              }
+              className={`font-bold text-xs ${
+                activeTab === "OVERVIEW" ? "text-white" : "text-zinc-500"
+              }`}
             >
               OVERVIEW
             </Text>
           </Pressable>
           <Pressable
-            style={
-              activeTab === "HISTORY" ? styles.activeTab : styles.inactiveTab
-            }
+            className={`flex-1 py-2.5 items-center ${
+              activeTab === "HISTORY" ? "bg-zinc-800 rounded-lg" : ""
+            }`}
             onPress={() => setActiveTab("HISTORY")}
           >
             <Text
-              style={
-                activeTab === "HISTORY"
-                  ? styles.activeTabText
-                  : styles.inactiveTabText
-              }
+              className={`font-bold text-xs ${
+                activeTab === "HISTORY" ? "text-white" : "text-zinc-500"
+              }`}
             >
               HISTORY
             </Text>
@@ -272,252 +291,3 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Colors.dark.background,
-  },
-  container: {
-    padding: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-  },
-  settingsBtn: {
-    padding: 8,
-    backgroundColor: "#1E1E22",
-    borderRadius: 12,
-  },
-  toggleContainer: {
-    flexDirection: "row",
-    backgroundColor: "#1E1E22",
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 24,
-  },
-  activeTab: {
-    flex: 1,
-    backgroundColor: "#27272A",
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  inactiveTab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  activeTabText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 12,
-  },
-  inactiveTabText: {
-    color: "#71717A",
-    fontWeight: "700",
-    fontSize: 12,
-  },
-  statLabel: {
-    color: Colors.palette.white,
-    fontSize: 14,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  statSubtext: {
-    color: Colors.palette.zinc500,
-    fontSize: 10,
-    textTransform: "uppercase",
-    fontWeight: "600",
-  },
-  levelCard: {
-    backgroundColor: Colors.dark.card,
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
-    borderColor: Colors.palette.zinc800,
-    borderWidth: 1,
-    position: "relative",
-    overflow: "hidden",
-  },
-  levelHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 20,
-  },
-  levelLabel: {
-    color: Colors.palette.zinc400,
-    fontWeight: "700",
-    fontSize: 12,
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  levelValue: {
-    fontSize: 48,
-    fontWeight: "800",
-    color: "#fff",
-    lineHeight: 56,
-  },
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  eliteBadge: {
-    backgroundColor: "rgba(250, 204, 21, 0.15)",
-    borderWidth: 1,
-    borderColor: "rgba(250, 204, 21, 0.3)",
-  },
-  badgeText: {
-    color: "#FACC15",
-    fontWeight: "800",
-    fontSize: 10,
-  },
-  trophyContainer: {
-    position: "absolute",
-    right: 20,
-    top: 20,
-  },
-  xpSection: {
-    marginTop: 20,
-  },
-  xpHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  xpLabel: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: Colors.palette.yellow400,
-  },
-  xpValue: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: "#71717A",
-  },
-  progressBarBg: {
-    height: 8,
-    backgroundColor: "#27272A",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  progressBarFill: {
-    height: "100%",
-    backgroundColor: "#FACC15",
-    borderRadius: 4,
-  },
-  statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 24,
-    // Removed background color and padding to separate panels
-  },
-  statCard: {
-    backgroundColor: "#1E1E22",
-    borderRadius: 20,
-    padding: 20,
-    width: "47%", // roughly half - gap
-    marginBottom: 12,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 4,
-  },
-  statUnit: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#A1A1AA",
-  },
-  statTitle: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: "#52525B", // Zinc-600
-    letterSpacing: 0.5,
-  },
-  streakDateCard: {
-    backgroundColor: "#1E1E22",
-    borderRadius: 20,
-    padding: 24,
-    width: "100%",
-    marginBottom: 24,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  // History Styles
-  emptyContainer: {
-    padding: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#1E1E22",
-    borderRadius: 20,
-    borderStyle: "dashed",
-    borderWidth: 1,
-    borderColor: "#3F3F46",
-    marginTop: 8,
-  },
-  emptyText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  emptySubtext: {
-    color: "#71717A",
-    fontSize: 12,
-  },
-  historyCard: {
-    backgroundColor: "#1E1E22",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  historyLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  historyIconBg: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: "rgba(34, 197, 94, 0.1)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  historyTitle: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  historySub: {
-    color: "#71717A",
-    fontSize: 10,
-    marginTop: 2,
-    fontWeight: "600",
-  },
-  historyRight: {
-    alignItems: "flex-end",
-  },
-  historyStat: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "700",
-    fontVariant: ["tabular-nums"],
-  },
-  historyStatLabel: {
-    color: "#52525B",
-    fontSize: 10,
-    marginTop: 2,
-    fontWeight: "700",
-  },
-});

@@ -1,6 +1,5 @@
 import LiveSession from "@/components/LiveSession";
 import SessionCard from "@/components/SessionCard";
-import { Text, View } from "@/components/Themed";
 import {
   getSessionHistory,
   getSessions,
@@ -10,7 +9,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useIsFocused } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { Platform, ScrollView, StatusBar, StyleSheet } from "react-native";
+import { Platform, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function DashboardScreen() {
@@ -81,41 +80,53 @@ export default function DashboardScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView
+      className="flex-1 bg-background-dark"
+      edges={["top"]}
+      style={{
+        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+      }}
+    >
+      <ScrollView contentContainerStyle={{ padding: 24 }}>
         {/* Header Section */}
-        <View style={styles.header}>
-          <View style={{ backgroundColor: "transparent" }}>
-            <View style={styles.nameRow}>
-              <Text style={styles.greeting}>Mali</Text>
-              <View style={styles.levelBadge}>
+        <View className="flex-row justify-between items-start mb-10">
+          <View className="bg-transparent">
+            <View className="flex-row items-center mb-1">
+              <Text className="text-3xl font-extrabold mr-2.5 text-white">
+                Mali
+              </Text>
+              <View className="flex-row bg-yellow-400 px-2 py-1 rounded-lg items-center">
                 <MaterialCommunityIcons
                   name="crown"
                   size={14}
                   color="#713F12"
                   style={{ marginRight: 4 }}
                 />
-                <Text style={styles.levelText}>LVL 1</Text>
+                <Text className="text-xs font-bold text-[#713F12]">LVL 1</Text>
               </View>
             </View>
-            <Text style={styles.date}>{currentDate}</Text>
+            <Text className="text-xs text-zinc-500 font-semibold tracking-wide">
+              {currentDate}
+            </Text>
           </View>
 
-          <View style={styles.streakCard}>
+          <View className="flex-row items-center bg-zinc-800 px-4 py-2.5 rounded-2xl border border-zinc-700">
             <FontAwesome name="fire" size={20} color="#FF4500" />
-            <Text style={styles.streakCount}>1</Text>
+            <Text className="text-xl font-bold ml-2 text-white">1</Text>
           </View>
         </View>
 
         {/* Daily Sessions */}
-        <View style={styles.sectionHeader}>
+        <View className="flex-row items-center mb-4">
           <FontAwesome
             name="trophy"
             size={14}
             color="#FACC15"
             style={{ marginRight: 8 }}
           />
-          <Text style={styles.sectionTitle}>DAILY SESSIONS</Text>
+          <Text className="text-xs font-bold tracking-widest text-zinc-400">
+            DAILY SESSIONS
+          </Text>
         </View>
 
         {dailySessions.length > 0 ? (
@@ -128,9 +139,11 @@ export default function DashboardScreen() {
             />
           ))
         ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Rest Day</Text>
-            <Text style={styles.emptySubtext}>
+          <View className="p-6 items-center justify-center bg-card-dark rounded-2xl border border-dashed border-zinc-700">
+            <Text className="text-white font-bold text-base mb-1">
+              Rest Day
+            </Text>
+            <Text className="text-zinc-500 text-xs">
               No sessions scheduled for today.
             </Text>
           </View>
@@ -150,95 +163,3 @@ export default function DashboardScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    backgroundColor: "#121214",
-  },
-  container: {
-    padding: 24,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 40,
-  },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  greeting: {
-    fontSize: 32,
-    fontWeight: "800", // Extra bold
-    marginRight: 10,
-  },
-  levelBadge: {
-    flexDirection: "row",
-    backgroundColor: "#FACC15",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  levelText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#713F12",
-  },
-  date: {
-    fontSize: 12,
-    color: "#71717A",
-    fontWeight: "600",
-    letterSpacing: 0.5,
-  },
-  streakCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#27272A",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#3F3F46",
-  },
-  streakCount: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginLeft: 8,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1,
-    color: "#A1A1AA",
-  },
-  emptyContainer: {
-    padding: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#1E1E22",
-    borderRadius: 16,
-    borderStyle: "dashed",
-    borderWidth: 1,
-    borderColor: "#3F3F46",
-  },
-  emptyText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  emptySubtext: {
-    color: "#71717A",
-    fontSize: 12,
-  },
-});

@@ -2,8 +2,7 @@ import { ScheduledSession } from "@/services/Database";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useMemo } from "react";
-import { Pressable, StyleSheet } from "react-native";
-import { Text, View } from "./Themed";
+import { Pressable, Text, View } from "react-native";
 
 import { SessionColors } from "@/constants/Colors";
 
@@ -46,11 +45,9 @@ export default function SessionCard({
     <Pressable
       onPress={isCompleted ? undefined : onPress}
       disabled={isCompleted}
-      style={({ pressed }) => ({
-        marginBottom: 20,
-        opacity: isCompleted ? 0.9 : pressed ? 0.9 : 1,
-        transform: [{ scale: pressed ? 0.98 : 1 }],
-      })}
+      className={`mb-5 ${
+        isCompleted ? "opacity-90" : "active:scale-95 active:opacity-90"
+      }`}
     >
       <LinearGradient
         colors={
@@ -60,86 +57,60 @@ export default function SessionCard({
         }
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[
-          styles.card,
-          isCompleted && {
-            borderColor: "#22C55E",
-            borderWidth: 1,
-            borderStyle: "solid",
-          },
-        ]}
+        className={`p-5 rounded-3xl w-full h-40 justify-between ${
+          isCompleted ? "border border-green-500" : ""
+        }`}
       >
-        <View style={styles.header}>
+        <View className="flex-row justify-between items-start">
           <Text
-            style={[
-              styles.title,
-              isCompleted && {
-                color: "#A1A1AA",
-                textDecorationLine: "line-through",
-              },
-            ]}
+            className={`text-2xl font-bold text-white max-w-[80%] ${
+              isCompleted ? "text-zinc-400 line-through" : ""
+            }`}
           >
             {session.title}
           </Text>
           {isCompleted && (
-            <View
-              style={{
-                backgroundColor: "rgba(34, 197, 94, 0.15)",
-                paddingVertical: 6,
-                paddingHorizontal: 12,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: "rgba(34, 197, 94, 0.3)",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 10,
-                  fontWeight: "800",
-                  color: "#22C55E",
-                  letterSpacing: 0.5,
-                }}
-              >
+            <View className="bg-green-500/15 py-1.5 px-3 rounded-xl border border-green-500/30">
+              <Text className="text-[10px] font-extrabold text-green-500 tracking-wider">
                 COMPLETED
               </Text>
             </View>
           )}
         </View>
 
-        <View style={styles.footer}>
+        <View className="flex-row justify-between items-center">
           <View
-            style={[styles.statsContainer, isCompleted && { opacity: 0.4 }]}
+            className={`flex-row items-center bg-zinc-900 py-2.5 px-4 rounded-2xl ${
+              isCompleted ? "opacity-40" : ""
+            }`}
           >
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>EXP</Text>
-              <Text style={styles.statValue}>+{totalSets * 10}</Text>
+            <View>
+              <Text className="text-[10px] text-zinc-400 font-bold mb-0.5 uppercase">
+                EXP
+              </Text>
+              <Text className="text-sm text-white font-bold">
+                +{totalSets * 10}
+              </Text>
             </View>
-            <View style={styles.divider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>VOLUME</Text>
-              <Text style={styles.statValue}>{totalSets} Sets</Text>
+            <View className="w-[1px] h-5 bg-zinc-700 mx-3" />
+            <View>
+              <Text className="text-[10px] text-zinc-400 font-bold mb-0.5 uppercase">
+                VOLUME
+              </Text>
+              <Text className="text-sm text-white font-bold">
+                {totalSets} Sets
+              </Text>
             </View>
           </View>
 
           {isCompleted ? (
-            <View
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 24,
-                backgroundColor: "#22C55E",
-                alignItems: "center",
-                justifyContent: "center",
-                shadowColor: "#22C55E",
-                shadowOpacity: 0.4,
-                shadowRadius: 10,
-              }}
-            >
+            <View className="w-12 h-12 rounded-full bg-green-500 items-center justify-center shadow-lg shadow-green-500/40">
               <FontAwesome name="check" size={20} color="#000" />
             </View>
           ) : (
             <View
-              style={[styles.playButton, { backgroundColor: session.color }]}
+              className="w-12 h-12 rounded-2xl items-center justify-center"
+              style={{ backgroundColor: session.color }}
             >
               <FontAwesome
                 name="play"
@@ -154,67 +125,3 @@ export default function SessionCard({
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    padding: 20,
-    borderRadius: 24,
-    width: "100%",
-    height: 160,
-    justifyContent: "space-between",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    backgroundColor: "transparent",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-    maxWidth: "80%",
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "transparent",
-  },
-  statsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#18181B",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 16,
-  },
-  statItem: {
-    backgroundColor: "transparent",
-  },
-  statLabel: {
-    fontSize: 10,
-    color: "#A1A1AA",
-    fontWeight: "700",
-    marginBottom: 2,
-    textTransform: "uppercase",
-  },
-  statValue: {
-    fontSize: 14,
-    color: "#fff",
-    fontWeight: "700",
-  },
-  divider: {
-    width: 1,
-    height: 20,
-    backgroundColor: "#3F3F46",
-    marginHorizontal: 12,
-  },
-  playButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

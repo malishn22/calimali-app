@@ -1,22 +1,20 @@
-import { Text, View } from "@/components/Themed";
+import Colors, { CategoryColors } from "@/constants/Colors";
+import { ExerciseCategory } from "@/constants/Enums";
+import { Exercise, getExercises } from "@/services/Database";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FlatList,
   Platform,
   Pressable,
   ScrollView,
   StatusBar,
-  StyleSheet,
+  Text,
   TextInput,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import Colors, { CategoryColors } from "@/constants/Colors";
-import { ExerciseCategory } from "@/constants/Enums";
-import { Exercise, getExercises } from "@/services/Database";
-import { useEffect } from "react";
 
 const FILTERS = ["All", ...Object.values(ExerciseCategory)];
 
@@ -52,18 +50,24 @@ export default function VaultScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.container}>
+    <SafeAreaView
+      className="flex-1 bg-background-dark"
+      edges={["top"]}
+      style={{
+        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+      }}
+    >
+      <View className="flex-1 p-6 pb-0">
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Vault</Text>
-          <Pressable style={styles.addBtn}>
+        <View className="flex-row justify-between items-center mb-6">
+          <Text className="text-3xl font-extrabold text-white">Vault</Text>
+          <Pressable className="w-8 h-8 rounded-full bg-blue-500 items-center justify-center">
             <FontAwesome name="plus" size={16} color={Colors.palette.white} />
           </Pressable>
         </View>
 
         {/* Search Bar */}
-        <View style={styles.searchContainer}>
+        <View className="flex-row items-center bg-card-dark rounded-xl px-4 py-3 mb-5">
           <FontAwesome
             name="search"
             size={16}
@@ -73,14 +77,14 @@ export default function VaultScreen() {
           <TextInput
             placeholder="Search movements..."
             placeholderTextColor={Colors.palette.zinc600}
-            style={styles.searchInput}
+            className="flex-1 text-white text-sm"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
 
         {/* Filter Tags */}
-        <View style={styles.filterRow}>
+        <View className="flex-row mb-6 h-10">
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -92,16 +96,14 @@ export default function VaultScreen() {
                 <Pressable
                   key={filter}
                   onPress={() => setSelectedFilter(filter)}
-                  style={[
-                    styles.filterTag,
-                    isSelected && styles.filterTagSelected,
-                  ]}
+                  className={`px-5 py-2 rounded-2xl justify-center ${
+                    isSelected ? "bg-white" : "bg-card-dark"
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.filterText,
-                      isSelected && styles.filterTextSelected,
-                    ]}
+                    className={`font-bold text-xs ${
+                      isSelected ? "text-black" : "text-zinc-500"
+                    }`}
                   >
                     {filter}
                   </Text>
@@ -115,18 +117,13 @@ export default function VaultScreen() {
         <FlatList
           data={filteredExercises}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }) => (
-            <View style={styles.exerciseCard}>
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "transparent",
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={styles.exerciseName}>{item.name}</Text>
+            <View className="bg-card-dark rounded-2xl p-5 mb-3 flex-row justify-between items-center">
+              <View className="flex-1 bg-transparent flex-row items-center">
+                <Text className="text-sm font-bold text-white">
+                  {item.name}
+                </Text>
                 {item.is_unilateral && (
                   <MaterialCommunityIcons
                     name="alpha-u-box"
@@ -137,18 +134,13 @@ export default function VaultScreen() {
                 )}
               </View>
 
-              <View
-                style={[
-                  styles.exerciseMeta,
-                  { backgroundColor: "transparent" },
-                ]}
-              >
-                <Text style={styles.difficultyText}>{item.difficulty}</Text>
+              <View className="flex-row items-center bg-transparent">
+                <Text className="text-[10px] font-bold text-green-500 mr-2">
+                  {item.difficulty}
+                </Text>
                 <Text
-                  style={[
-                    styles.typeText,
-                    { color: getCategoryColor(item.category) },
-                  ]}
+                  className="text-[10px] font-bold uppercase"
+                  style={{ color: getCategoryColor(item.category) }}
                 >
                   {" "}
                   {item.category}
@@ -161,109 +153,3 @@ export default function VaultScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    backgroundColor: Colors.dark.background,
-  },
-  container: {
-    flex: 1,
-    padding: 24,
-    paddingBottom: 0,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "800",
-  },
-  addBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.palette.blue500,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.dark.card,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 20,
-  },
-  searchInput: {
-    flex: 1,
-    color: Colors.palette.white,
-    fontSize: 14,
-  },
-  filterRow: {
-    flexDirection: "row",
-    marginBottom: 24,
-    height: 40,
-  },
-  filterTag: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.dark.card,
-    justifyContent: "center",
-  },
-  filterTagSelected: {
-    backgroundColor: Colors.palette.white,
-  },
-  filterText: {
-    color: Colors.palette.zinc500,
-    fontWeight: "700",
-    fontSize: 12,
-  },
-  filterTextSelected: {
-    color: Colors.palette.black,
-  },
-  listContent: {
-    paddingBottom: 20,
-  },
-  exerciseCard: {
-    backgroundColor: Colors.dark.card,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  exerciseName: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: Colors.palette.white,
-  },
-  exerciseMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  difficultyText: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: Colors.palette.green500,
-    marginRight: 8,
-  },
-  typeText: {
-    fontSize: 10,
-    fontWeight: "700",
-    textTransform: "uppercase",
-  },
-  unilteralLabel: {
-    fontSize: 8,
-    color: Colors.palette.zinc500,
-    fontWeight: "700",
-    marginTop: 2,
-  },
-});

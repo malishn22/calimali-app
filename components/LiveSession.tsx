@@ -3,15 +3,7 @@ import { ScheduledSession, addSessionHistory } from "@/services/Database";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Alert,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EditSetModal from "./LiveSession/EditSetModal";
 
@@ -202,97 +194,89 @@ export default function LiveSession({
 
   // --- Renderers ---
   const renderSuccessXP = () => (
-    <View style={styles.successContainer}>
+    <View className="flex-1 bg-background-dark items-center justify-center p-6">
       <FontAwesome
         name="trophy"
         size={80}
         color={SessionColors.YELLOW}
         style={{ marginBottom: 24 }}
       />
-      <Text style={styles.successTitle}>Session Complete!</Text>
-      <Text style={styles.successSub}>REWARDS EARNED</Text>
+      <Text className="text-white text-3xl font-extrabold mb-2 text-center">
+        Session Complete!
+      </Text>
+      <Text className="text-zinc-500 text-xs font-bold tracking-widest uppercase mb-10">
+        REWARDS EARNED
+      </Text>
 
-      <View style={styles.rewardCard}>
-        <Text style={styles.rewardValue}>+60</Text>
-        <Text style={styles.rewardLabel}>EXPERIENCE POINTS</Text>
+      <View className="bg-card-dark rounded-3xl py-10 px-16 items-center mb-10 w-full">
+        <Text className="text-6xl font-extrabold text-blue-500 mb-2">+60</Text>
+        <Text className="text-zinc-500 text-xs font-bold tracking-widest">
+          EXPERIENCE POINTS
+        </Text>
       </View>
 
       <View
-        style={{
-          position: "absolute",
-          top: 100,
-          left: 50,
-          width: 10,
-          height: 10,
-          borderRadius: 5,
-          backgroundColor: SessionColors.BLUE,
-        }}
+        className="absolute top-[100px] left-[50px] w-2.5 h-2.5 rounded-full bg-blue-500"
+        style={{ backgroundColor: SessionColors.BLUE }}
       />
       <View
-        style={{
-          position: "absolute",
-          top: 150,
-          right: 60,
-          width: 12,
-          height: 12,
-          borderRadius: 6,
-          backgroundColor: SessionColors.YELLOW,
-        }}
+        className="absolute top-[150px] right-[60px] w-3 h-3 rounded-full bg-yellow-400"
+        style={{ backgroundColor: SessionColors.YELLOW }}
       />
     </View>
   );
 
   const renderSuccessLevel = () => (
-    <View style={styles.successContainer}>
-      <View style={styles.starCircle}>
+    <View className="flex-1 bg-background-dark items-center justify-center p-6">
+      <View
+        className="w-20 h-20 rounded-full items-center justify-center mb-8"
+        style={{ backgroundColor: SessionColors.GREEN }}
+      >
         <FontAwesome name="star" size={40} color="black" />
       </View>
 
-      <Text style={styles.successTitle}>Session Cleared</Text>
-      <Text style={styles.successSub}>Great work, Mali.</Text>
+      <Text className="text-white text-3xl font-extrabold mb-2 text-center">
+        Session Cleared
+      </Text>
+      <Text className="text-zinc-500 text-xs font-bold tracking-widest uppercase mb-10">
+        Great work, Mali.
+      </Text>
 
-      <View style={styles.levelCard}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 8,
-          }}
-        >
-          <Text style={styles.levelLabel}>LEVEL 1</Text>
-          <Text style={styles.levelLabel}>13%</Text>
+      <View className="w-full bg-card-dark rounded-3xl p-5 mb-10">
+        <View className="flex-row justify-between mb-2">
+          <Text className="text-white font-bold text-xs tracking-wider">
+            LEVEL 1
+          </Text>
+          <Text className="text-white font-bold text-xs tracking-wider">
+            13%
+          </Text>
         </View>
-        <View style={styles.levelBarBg}>
-          <View style={[styles.levelBarFill, { width: "13%" }]} />
+        <View className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+          <View
+            className="h-full bg-blue-500"
+            style={{ width: "13%", backgroundColor: SessionColors.BLUE }}
+          />
         </View>
       </View>
 
-      <Pressable style={styles.continueBtn} onPress={handleFinalContinue}>
-        <Text style={styles.continueBtnText}>CONTINUE</Text>
+      <Pressable
+        className="w-full h-[60px] rounded-2xl flex-row items-center justify-center gap-2"
+        style={{ backgroundColor: SessionColors.GREEN }}
+        onPress={handleFinalContinue}
+      >
+        <Text className="text-black font-extrabold text-base tracking-widest">
+          CONTINUE
+        </Text>
         <Feather name="arrow-right" size={20} color="black" />
       </Pressable>
 
       <View
-        style={{
-          position: "absolute",
-          top: 100,
-          left: 60,
-          width: 8,
-          height: 8,
-          borderRadius: 4,
-          backgroundColor: SessionColors.BLUE,
-        }}
+        className="absolute top-[100px] left-[60px] w-2 h-2 rounded-full"
+        style={{ backgroundColor: SessionColors.BLUE }}
       />
       <View
-        style={{
-          position: "absolute",
-          top: 140,
-          right: 50,
-          width: 10,
-          height: 10,
-          borderRadius: 5,
-          backgroundColor: SessionColors.YELLOW,
-        }}
+        className="absolute top-[140px] right-[50px] w-2.5 h-2.5 rounded-full"
+        style={{ backgroundColor: SessionColors.YELLOW }}
       />
     </View>
   );
@@ -338,52 +322,56 @@ export default function LiveSession({
       animationType="slide"
       presentationStyle="fullScreen"
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView className="flex-1 bg-background-dark">
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.progressContainer}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 6,
-              }}
-            >
-              <Text style={styles.progressLabel}>SESSION PROGRESS</Text>
-              <Text style={styles.progressLabelBlue}>
+        <View className="px-6 py-4 flex-row items-center justify-between">
+          <View className="flex-1 mx-6">
+            <View className="flex-row justify-between mb-1.5">
+              <Text className="text-zinc-500 text-[10px] font-extrabold tracking-widest">
+                SESSION PROGRESS
+              </Text>
+              <Text className="text-blue-500 text-[10px] font-extrabold">
                 {Math.round(progressPercent)}%
               </Text>
             </View>
-            <View style={styles.progressBarBg}>
+            <View className="h-2 rounded-full bg-card-dark overflow-hidden">
               <View
-                style={[
-                  styles.progressBarFill,
-                  { width: `${progressPercent}%` },
-                ]}
+                className="h-full rounded-full bg-blue-500"
+                style={{ width: `${progressPercent}%` }}
               />
             </View>
           </View>
 
-          <Text style={styles.timerText}>{formatTime(timer)}</Text>
+          <Text className="text-white text-xl font-bold text-right min-w-[60px] tabular-nums">
+            {formatTime(timer)}
+          </Text>
         </View>
 
         {/* Exercise Content */}
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.tagContainer}>
-            <View style={styles.categoryChip}>
-              <Text style={styles.categoryText}>
+        <ScrollView
+          contentContainerStyle={{
+            paddingTop: 24,
+            paddingHorizontal: 24,
+            paddingBottom: 120,
+          }}
+        >
+          <View className="items-center mb-4">
+            <View className="bg-[#1E1E30] px-3 py-1.5 rounded-xl">
+              <Text className="text-blue-500 font-extrabold text-[10px] uppercase tracking-widest">
                 {currentExercise.category}
               </Text>
             </View>
           </View>
 
-          <Text style={styles.exerciseTitle}>{currentExercise.name}</Text>
-          <Text style={styles.exCounter}>
+          <Text className="text-white text-3xl font-extrabold text-center mb-2">
+            {currentExercise.name}
+          </Text>
+          <Text className="text-zinc-500 text-sm text-center mb-10">
             {currentExIndex + 1} of {exercises.length} — "
             {currentExercise.description || "No description"}"
           </Text>
 
-          <View style={styles.setsList}>
+          <View>
             {currentExercise.sets.map((set: any, idx: number) => {
               const isCompleted = completedSetIds.has(
                 `${currentExIndex}_${idx}`
@@ -393,25 +381,25 @@ export default function LiveSession({
               return (
                 <Pressable
                   key={idx}
-                  style={[
-                    styles.setCard,
-                    isCompleted && styles.setCardCompleted,
-                    !isStarted && { opacity: 0.7 },
-                  ]}
+                  className={`bg-card-dark rounded-3xl p-5 mb-4 border border-zinc-800 flex-row items-center justify-between ${
+                    isCompleted ? "border-green-500" : ""
+                  } ${!isStarted ? "opacity-70" : ""}`}
                   onPress={() => handleToggleSet(currentExIndex, idx)}
                   disabled={!isStarted}
                 >
                   <View>
-                    <Text style={styles.setLabel}>
+                    <Text className="text-zinc-500 text-[10px] font-extrabold tracking-widest mb-1">
                       SET #{isUnilateral ? Math.floor(idx / 2) + 1 : idx + 1}
                       {isUnilateral && (idx % 2 === 0 ? " [L]" : " [R]")}
                     </Text>
-                    <Text style={styles.setVal}>{set.reps}</Text>
+                    <Text className="text-white text-2xl font-extrabold">
+                      {set.reps}
+                    </Text>
                   </View>
 
-                  <View style={{ flexDirection: "row", gap: 12 }}>
+                  <View className="flex-row gap-3">
                     <Pressable
-                      style={[styles.actionBtn, styles.editBtn]}
+                      className="w-[50px] h-[50px] rounded-2xl items-center justify-center bg-zinc-800"
                       onPress={(e) => {
                         e.stopPropagation();
                         handleEditSet(currentExIndex, idx);
@@ -426,12 +414,9 @@ export default function LiveSession({
                     </Pressable>
 
                     <View
-                      style={[
-                        styles.actionBtn,
-                        isCompleted
-                          ? styles.checkBtnActive
-                          : styles.checkBtnInactive,
-                      ]}
+                      className={`w-[50px] h-[50px] rounded-2xl items-center justify-center ${
+                        isCompleted ? "bg-green-500" : "bg-zinc-800"
+                      }`}
                     >
                       <Feather
                         name="check"
@@ -452,17 +437,19 @@ export default function LiveSession({
           </View>
 
           <Pressable
-            style={styles.addSetBtn}
+            className="py-4 rounded-2xl border border-zinc-800 border-dashed items-center mt-2"
             onPress={() => handleAddSet(currentExIndex)}
           >
-            <Text style={styles.addSetText}>+ ADD ANOTHER SET</Text>
+            <Text className="text-zinc-500 font-bold text-xs tracking-widest">
+              + ADD ANOTHER SET
+            </Text>
           </Pressable>
         </ScrollView>
 
         {/* Footer */}
-        <View style={styles.footer}>
+        <View className="absolute bottom-0 left-0 right-0 p-6 pb-10 flex-row justify-between gap-4">
           <Pressable
-            style={styles.navBtn}
+            className="flex-1 h-[60px] rounded-3xl bg-card-dark items-center justify-center"
             onPress={currentExIndex > 0 ? handlePrevExercise : handleClose}
           >
             <Feather
@@ -473,8 +460,13 @@ export default function LiveSession({
           </Pressable>
 
           {!isStarted ? (
-            <Pressable style={styles.startBtn} onPress={handleStartSession}>
-              <Text style={styles.startBtnText}>START SESSION</Text>
+            <Pressable
+              className="flex-[3] h-[60px] bg-white rounded-3xl flex-row items-center justify-center shadow-sm shadow-white/10"
+              onPress={handleStartSession}
+            >
+              <Text className="text-black font-extrabold text-base tracking-wider">
+                START SESSION
+              </Text>
               <Feather
                 name="zap"
                 size={18}
@@ -483,8 +475,13 @@ export default function LiveSession({
               />
             </Pressable>
           ) : currentExIndex < exercises.length - 1 ? (
-            <Pressable style={styles.nextBtn} onPress={handleNextExercise}>
-              <Text style={styles.nextBtnText}>NEXT EXERCISE</Text>
+            <Pressable
+              className="flex-[3] h-[60px] bg-blue-500 rounded-3xl flex-row items-center justify-center"
+              onPress={handleNextExercise}
+            >
+              <Text className="text-white font-extrabold text-base">
+                NEXT EXERCISE
+              </Text>
               <Feather
                 name="chevron-right"
                 size={18}
@@ -494,20 +491,16 @@ export default function LiveSession({
             </Pressable>
           ) : (
             <Pressable
-              style={[
-                styles.completeBtn,
-                isAllComplete && styles.completeBtnActive,
-              ]}
+              className={`flex-[3] h-[60px] bg-card-dark rounded-3xl flex-row items-center justify-center ${
+                isAllComplete ? "bg-green-500" : ""
+              }`}
               disabled={!isAllComplete}
               onPress={handleFinishWorkout}
             >
               <Text
-                style={[
-                  styles.completeBtnText,
-                  isAllComplete
-                    ? { color: "black" }
-                    : { color: Colors.palette.zinc500 },
-                ]}
+                className={`font-extrabold text-base ${
+                  isAllComplete ? "text-black" : "text-zinc-500"
+                }`}
               >
                 COMPLETE WORKOUT
               </Text>
@@ -546,316 +539,3 @@ export default function LiveSession({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.dark.background,
-  },
-  header: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  closeBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: "#1E1E22",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  timerText: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "700",
-    fontVariant: ["tabular-nums"],
-    textAlign: "right",
-    minWidth: 60,
-  },
-  progressContainer: {
-    flex: 1,
-    marginHorizontal: 24,
-  },
-  progressLabel: {
-    color: Colors.palette.zinc500,
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 1,
-  },
-  progressLabelBlue: {
-    color: SessionColors.BLUE,
-    fontSize: 10,
-    fontWeight: "800",
-  },
-  progressBarBg: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#1E1E22",
-    overflow: "hidden",
-  },
-  progressBarFill: {
-    height: "100%",
-    backgroundColor: SessionColors.BLUE,
-    borderRadius: 4,
-  },
-
-  scrollContent: {
-    paddingTop: 24,
-    paddingHorizontal: 24,
-    paddingBottom: 120,
-  },
-  tagContainer: { alignItems: "center", marginBottom: 16 },
-  categoryChip: {
-    backgroundColor: "#1E1E30",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  categoryText: {
-    color: SessionColors.BLUE,
-    fontWeight: "800",
-    fontSize: 10,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  exerciseTitle: {
-    color: "white",
-    fontSize: 32,
-    fontWeight: "800",
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  exCounter: {
-    color: Colors.palette.zinc500,
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 40,
-  },
-
-  setsList: {},
-  setCard: {
-    backgroundColor: "#1E1E22",
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 16,
-    borderColor: Colors.palette.zinc800,
-    borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  setCardCompleted: {
-    borderColor: Colors.palette.green500,
-  },
-  setLabel: {
-    color: Colors.palette.zinc500,
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  setVal: {
-    color: "white",
-    fontSize: 24,
-    fontWeight: "800",
-  },
-
-  actionBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  editBtn: {
-    backgroundColor: "#27272A",
-  },
-  checkBtnInactive: {
-    backgroundColor: "#27272A",
-  },
-  checkBtnActive: {
-    backgroundColor: Colors.palette.green500,
-  },
-
-  addSetBtn: {
-    paddingVertical: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.palette.zinc800,
-    borderStyle: "dashed",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  addSetText: {
-    color: Colors.palette.zinc500,
-    fontWeight: "700",
-    fontSize: 12,
-    letterSpacing: 1,
-  },
-
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 24,
-    paddingBottom: 40,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 16,
-  },
-  navBtn: {
-    flex: 1, // 25%
-    height: 60,
-    borderRadius: 20,
-    backgroundColor: "#1E1E22",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  startBtn: {
-    flex: 3, // 75%
-    height: 60,
-    backgroundColor: "white",
-    borderRadius: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "white",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  startBtnText: {
-    color: "black",
-    fontWeight: "800",
-    fontSize: 16,
-    letterSpacing: 0.5,
-  },
-
-  nextBtn: {
-    flex: 3, // 75%
-    height: 60,
-    backgroundColor: SessionColors.BLUE,
-    borderRadius: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  nextBtnText: {
-    color: "white",
-    fontWeight: "800",
-    fontSize: 16,
-  },
-
-  completeBtn: {
-    flex: 3, // 75%
-    height: 60,
-    backgroundColor: "#1E1E22",
-    borderRadius: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  completeBtnActive: {
-    backgroundColor: Colors.palette.green500,
-  },
-  completeBtnText: {
-    fontWeight: "800",
-    fontSize: 16,
-  },
-
-  // SUCCESS SCREENS
-  successContainer: {
-    flex: 1,
-    backgroundColor: Colors.dark.background,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
-  successTitle: {
-    color: "white",
-    fontSize: 32,
-    fontWeight: "800",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  successSub: {
-    color: Colors.palette.zinc500,
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    marginBottom: 40,
-  },
-  rewardCard: {
-    backgroundColor: "#1E1E22",
-    borderRadius: 24,
-    paddingVertical: 40,
-    paddingHorizontal: 60,
-    alignItems: "center",
-    marginBottom: 40,
-    width: "100%",
-  },
-  rewardValue: {
-    fontSize: 64,
-    fontWeight: "800",
-    color: SessionColors.BLUE,
-    marginBottom: 8,
-  },
-  rewardLabel: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: Colors.palette.zinc500,
-    letterSpacing: 1,
-  },
-  starCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: SessionColors.GREEN,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 32,
-  },
-  levelCard: {
-    width: "100%",
-    backgroundColor: "#1E1E22",
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 40,
-  },
-  levelLabel: {
-    color: "white",
-    fontWeight: "700",
-    fontSize: 12,
-    letterSpacing: 0.5,
-  },
-  levelBarBg: {
-    height: 8,
-    backgroundColor: "#27272A",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  levelBarFill: {
-    height: "100%",
-    backgroundColor: SessionColors.BLUE,
-  },
-  continueBtn: {
-    backgroundColor: SessionColors.GREEN,
-    width: "100%",
-    height: 60,
-    borderRadius: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  continueBtnText: {
-    color: "black",
-    fontWeight: "800",
-    fontSize: 16,
-    letterSpacing: 1,
-  },
-});
