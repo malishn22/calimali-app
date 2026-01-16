@@ -1,5 +1,5 @@
 import React from "react";
-import { WizardActionPanel } from "./WizardActionPanel";
+import { BottomActionPanel } from "./BottomActionPanel";
 import { WizardStep } from "./types";
 
 interface Props {
@@ -21,18 +21,18 @@ export function WizardFooter({
 
   // Case: List Step with no items -> Full width Back
   if (step === "LIST" && !canGoNext) {
-    return <WizardActionPanel onBack={onBack} fullWidthBack />;
+    return <BottomActionPanel onBack={onBack} fullWidthBack />;
   }
 
   // Case: Search Step -> Full width Back
   if (step === "SEARCH") {
-    return <WizardActionPanel onBack={onBack} fullWidthBack />;
+    return <BottomActionPanel onBack={onBack} fullWidthBack />;
   }
 
   // Case: Final Step -> SAVE (Green)
   if (step === "FINAL") {
     return (
-      <WizardActionPanel
+      <BottomActionPanel
         primaryLabel="SAVE"
         onPrimaryPress={onSave}
         primaryVariant="completed" // Using 'completed' for green style (was bg-green-600)
@@ -43,7 +43,7 @@ export function WizardFooter({
 
   // Default: List Step with items (NEXT)
   return (
-    <WizardActionPanel
+    <BottomActionPanel
       primaryLabel="NEXT"
       onPrimaryPress={onNext}
       onBack={onBack}

@@ -5,6 +5,7 @@ import {
   getSessions,
   ScheduledSession,
 } from "@/services/Database";
+import { exportDatabase } from "@/services/DatabaseDebug";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useIsFocused } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
@@ -125,17 +126,30 @@ export default function PlannerScreen() {
         {/* Header */}
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-3xl font-extrabold text-white">Planner</Text>
-          <View className="bg-card-dark rounded-xl p-0.5 flex-row">
-            <Pressable
-              onPress={() =>
-                setViewMode(viewMode === "Week" ? "Month" : "Week")
-              }
-              className="py-1.5 px-3 bg-zinc-800 rounded-lg"
-            >
-              <Text className="text-zinc-400 text-xs font-semibold">
-                {viewMode}
-              </Text>
-            </Pressable>
+          <View className="flex-row items-center gap-2">
+            {/* Debug Button */}
+            {__DEV__ && (
+              <Pressable
+                onPress={exportDatabase}
+                className="bg-red-900/50 px-2 py-1 rounded border border-red-700"
+              >
+                <Text className="text-red-200 text-[10px] font-bold">
+                  EXPORT DB
+                </Text>
+              </Pressable>
+            )}
+            <View className="bg-card-dark rounded-xl p-0.5 flex-row">
+              <Pressable
+                onPress={() =>
+                  setViewMode(viewMode === "Week" ? "Month" : "Week")
+                }
+                className="py-1.5 px-3 bg-zinc-800 rounded-lg"
+              >
+                <Text className="text-zinc-400 text-xs font-semibold">
+                  {viewMode}
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </View>
 

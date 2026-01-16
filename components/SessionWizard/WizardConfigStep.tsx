@@ -2,7 +2,7 @@ import { Exercise } from "@/services/Database";
 import React, { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { Button } from "../ui/Button";
-import { WizardActionPanel } from "./WizardActionPanel";
+import { BottomActionPanel } from "./BottomActionPanel";
 import { WizardScreenWrapper } from "./WizardScreenWrapper";
 
 interface Props {
@@ -134,7 +134,7 @@ export function WizardConfigStep({
       </WizardScreenWrapper>
 
       {/* Footer using Standard Action Panel */}
-      <WizardActionPanel
+      <BottomActionPanel
         primaryLabel="CONFIRM"
         primaryIcon="check"
         onPrimaryPress={() => onConfirm(sets, reps)}

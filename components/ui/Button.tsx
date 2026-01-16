@@ -25,9 +25,10 @@ interface ButtonProps {
   iconPosition?: "left" | "right";
   iconColor?: string; // Explicit color override
   disabled?: boolean;
-  className?: string; // Allow extra overrides
+  textClassName?: string;
   style?: any;
   children?: React.ReactNode;
+  className?: string;
 }
 
 export function Button({
@@ -39,9 +40,10 @@ export function Button({
   iconPosition = "left",
   iconColor: customIconColor,
   disabled = false,
-  className = "",
+  textClassName = "",
   style,
   children,
+  className = "",
 }: ButtonProps) {
   // Animation State
   const scale = useSharedValue(1);
@@ -76,8 +78,8 @@ export function Button({
   switch (variant) {
     case "primary":
       variantContainer = "bg-blue-500";
-      variantText = "text-black font-extrabold";
-      defaultIconColor = "black";
+      variantText = "text-white font-extrabold";
+      defaultIconColor = "white";
       break;
     case "secondary":
       variantContainer = "bg-card-dark";
@@ -148,7 +150,7 @@ export function Button({
     className,
   ].join(" ");
 
-  const textClasses = [variantText, sizeText].join(" ");
+  const textClasses = [variantText, sizeText, textClassName].join(" ");
 
   return (
     <AnimatedPressable

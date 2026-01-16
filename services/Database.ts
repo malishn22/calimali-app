@@ -1,58 +1,29 @@
-import {
-  ExerciseCategory,
-  ExerciseDifficulty,
-  ExerciseEquipment,
-  ExerciseUnit,
-} from "@/constants/Enums";
+import { defaultExercises } from "@/constants/DefaultExercises";
+import { Exercise, ScheduledSession, SessionHistory } from "@/constants/Types";
 import * as SQLite from "expo-sqlite";
+
+// Re-export types for backward compatibility
+export * from "@/constants/Types";
 
 const db = SQLite.openDatabaseSync("calimali.db");
 
-export interface Exercise {
-  id: string;
-  name: string;
-  category: ExerciseCategory;
-  difficulty: ExerciseDifficulty;
-  description: string;
-  equipment: ExerciseEquipment;
-  default_reps: number;
-  unit: ExerciseUnit;
-  is_unilateral: boolean;
-}
-
-export interface SessionExercise {
-  exerciseId: string;
-  name: string;
-  sets: number;
-  reps: number | number[]; // Can be a single number (legacy) or array per set
-  weight?: number;
-}
-
-export interface ScheduledSession {
-  id: string;
-  title: string;
-  date: string; // ISO Date string
-  frequency: "ONCE" | "DAILY" | "WEEKLY" | "EVERY_2_DAYS";
-  color: string;
-  exercises: string; // JSON string of Exercise[]
-}
-
 export const initDatabase = async () => {
   try {
-    // Enable foreign keys
     await db.execAsync("PRAGMA foreign_keys = ON;");
 
-    // Create Tables
+    // Force reset of exercises table to update schema and seeds
+    await db.execAsync("DROP TABLE IF EXISTS exercises;");
+
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS exercises (
         id TEXT PRIMARY KEY NOT NULL,
         name TEXT NOT NULL,
-        category TEXT NOT NULL CHECK(category IN ('PUSH', 'PULL', 'LEGS', 'CORE', 'SKILLS', 'OTHER')),
-        difficulty TEXT NOT NULL CHECK(difficulty IN ('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'ELITE')),
+        category TEXT NOT NULL,
+        difficulty TEXT NOT NULL,
         description TEXT,
-        equipment TEXT NOT NULL CHECK(equipment IN ('NONE', 'BAR', 'RINGS', 'PARALLETTES', 'WEIGHTS', 'OTHER')),
+        equipment TEXT NOT NULL,
         default_reps INTEGER DEFAULT 0,
-        unit TEXT NOT NULL CHECK(unit IN ('REPS', 'SECS')),
+        unit TEXT NOT NULL,
         is_unilateral INTEGER
       );
     `);
@@ -67,9 +38,6 @@ export const initDatabase = async () => {
       );
     `);
 
-    // For development, dropping to ensure schema update
-    // await db.execAsync(`DROP TABLE IF EXISTS scheduled_sessions;`);
-
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS scheduled_sessions (
         id TEXT PRIMARY KEY NOT NULL,
@@ -81,9 +49,6 @@ export const initDatabase = async () => {
       );
     `);
 
-    // Removed DROP TABLE to fix locking and persistence
-    // await db.execAsync(`DROP TABLE IF EXISTS session_history;`);
-
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS session_history (
         id TEXT PRIMARY KEY NOT NULL,
@@ -93,104 +58,13 @@ export const initDatabase = async () => {
       );
     `);
 
-    console.log("Database initialized successfully");
-
-    // Seed Data Check
+    // Check if empty and seed
     const countResult = await db.getFirstAsync<{ count: number }>(
       "SELECT COUNT(*) as count FROM exercises"
     );
+
     if (countResult && countResult.count === 0) {
       console.log("Seeding default exercises...");
-      const defaultExercises = [
-        {
-          id: "1",
-          name: "Push Up",
-          category: "PUSH",
-          difficulty: "BEGINNER",
-          description: "Standard push up",
-          equipment: "NONE",
-          default_reps: 15,
-          unit: "REPS",
-          is_unilateral: 0,
-        },
-        {
-          id: "2",
-          name: "Pull Up",
-          category: "PULL",
-          difficulty: "INTERMEDIATE",
-          description: "Standard chin over bar pull up",
-          equipment: "BAR",
-          default_reps: 8,
-          unit: "REPS",
-          is_unilateral: 0,
-        },
-        {
-          id: "3",
-          name: "Dip",
-          category: "PUSH",
-          difficulty: "INTERMEDIATE",
-          description: "Parallel bar dips",
-          equipment: "PARALLETTES",
-          default_reps: 10,
-          unit: "REPS",
-          is_unilateral: 0,
-        },
-        {
-          id: "4",
-          name: "Squat",
-          category: "LEGS",
-          difficulty: "BEGINNER",
-          description: "Bodyweight squat",
-          equipment: "NONE",
-          default_reps: 20,
-          unit: "REPS",
-          is_unilateral: 0,
-        },
-        {
-          id: "5",
-          name: "L-Sit",
-          category: "CORE",
-          difficulty: "INTERMEDIATE",
-          description: "Hold L-shape on ground or bars",
-          equipment: "NONE",
-          default_reps: 15,
-          unit: "SECS",
-          is_unilateral: 0,
-        },
-        {
-          id: "6",
-          name: "Muscle Up",
-          category: "PULL",
-          difficulty: "ELITE",
-          description: "Explosive pull up to support",
-          equipment: "BAR",
-          default_reps: 3,
-          unit: "REPS",
-          is_unilateral: 0,
-        },
-        {
-          id: "7",
-          name: "Handstand Push Up",
-          category: "PUSH",
-          difficulty: "ADVANCED",
-          description: "Vertical push up against wall or free",
-          equipment: "NONE",
-          default_reps: 5,
-          unit: "REPS",
-          is_unilateral: 0,
-        },
-        {
-          id: "8",
-          name: "Dragon Flag",
-          category: "CORE",
-          difficulty: "ELITE",
-          description: "Bruce Lee's favorite ab exercise",
-          equipment: "NONE",
-          default_reps: 5,
-          unit: "REPS",
-          is_unilateral: 0,
-        },
-      ];
 
       for (const ex of defaultExercises) {
         await db.runAsync(
@@ -204,7 +78,7 @@ export const initDatabase = async () => {
             ex.equipment,
             ex.default_reps,
             ex.unit,
-            ex.is_unilateral,
+            ex.is_unilateral ? 1 : 0,
           ]
         );
       }
@@ -215,15 +89,11 @@ export const initDatabase = async () => {
   }
 };
 
-// ... (existing exports) ...
-
 export const clearAllData = async () => {
   try {
     await db.runAsync("DELETE FROM scheduled_sessions");
     await db.runAsync("DELETE FROM session_history");
-    await db.runAsync("DELETE FROM exercises"); // Optional: if user wants full reset
-    // Re-seed default exercises would be needed if we delete them.
-    // For now let's just clear user generated data: sessions and history.
+    await db.runAsync("DELETE FROM exercises");
     console.log("All user data cleared");
   } catch (e) {
     console.error("Failed to clear data", e);
@@ -337,13 +207,6 @@ export const updateSession = async (session: ScheduledSession) => {
   }
 };
 
-export interface SessionHistory {
-  id: string;
-  session_id: string;
-  date: string;
-  performance_data: string; // JSON of what happened
-}
-
 export const addSessionHistory = async (history: SessionHistory) => {
   try {
     await db.runAsync(
@@ -367,7 +230,6 @@ export const getSessionHistory = async (): Promise<SessionHistory[]> => {
   }
 };
 
-// Helper to convert DB row (where booleans are 0/1) to JS Object
 const createExerciseFromRow = (row: any): Exercise => {
   return {
     ...row,

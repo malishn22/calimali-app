@@ -27,7 +27,7 @@ type Props =
       onSecondaryPress?: () => void;
     };
 
-export function WizardActionPanel({
+export function BottomActionPanel({
   onPrimaryPress,
   primaryLabel,
   primaryIcon,

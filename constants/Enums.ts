@@ -4,7 +4,6 @@ export enum ExerciseCategory {
   LEGS = "LEGS",
   CORE = "CORE",
   SKILLS = "SKILLS",
-  OTHER = "OTHER",
 }
 
 export enum ExerciseDifficulty {
@@ -16,11 +15,14 @@ export enum ExerciseDifficulty {
 
 export enum ExerciseEquipment {
   NONE = "NONE",
-  BAR = "BAR",
+  PULL_UP_BAR = "PULL_UP_BAR",
   RINGS = "RINGS",
   PARALLETTES = "PARALLETTES",
-  WEIGHTS = "WEIGHTS",
-  OTHER = "OTHER",
+  RESISTANCE_BAND = "RESISTANCE_BAND",
+  FLOOR = "FLOOR",
+  STALL_BAR = "STALL_BAR",
+  BOX = "BOX",
+  BENCH = "BENCH",
 }
 
 export enum ExerciseUnit {

@@ -4,7 +4,8 @@ import Colors, { CategoryColors } from "@/constants/Colors";
 import { ExerciseCategory } from "@/constants/Enums";
 import { Exercise, getExercises } from "@/services/Database";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -26,12 +27,15 @@ export default function VaultScreen() {
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   const loadData = async () => {
     const data = await getExercises();
+    data.sort((a, b) => a.name.localeCompare(b.name));
     setExercises(data);
   };
 
@@ -69,7 +73,7 @@ export default function VaultScreen() {
             size="sm"
             icon="plus"
             iconColor="white"
-            className="w-8 h-8 rounded-full !p-0"
+            onPress={() => router.push("/add_exercise")}
           />
         </View>
 

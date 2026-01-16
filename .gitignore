@@ -41,3 +41,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# IDEs
+.idea/
+.vscode/
+
+# Local data
+db_exports/
