@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import Colors from "@/constants/Colors";
 import {
   clearAllData,
@@ -246,12 +247,15 @@ export default function ProfileScreen() {
           <Text className="text-3xl font-extrabold text-white">
             Profile & Stats
           </Text>
-          <Pressable
+          <Button
+            variant="secondary"
+            size="sm"
             onPress={handleEraseData}
-            className="p-2 bg-card-dark rounded-xl"
-          >
-            <Feather name="settings" size={20} color={Colors.palette.zinc400} />
-          </Pressable>
+            icon="sliders"
+            iconColor={Colors.palette.zinc400}
+            className="w-10 h-10 !p-0 bg-card-dark justify-center items-center"
+            style={{ borderRadius: 9999 }}
+          />
         </View>
 
         {/* Toggle Sections */}

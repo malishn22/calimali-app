@@ -1,7 +1,8 @@
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import Colors, { CategoryColors } from "@/constants/Colors";
 import { ExerciseCategory } from "@/constants/Enums";
 import { Exercise, getExercises } from "@/services/Database";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useEffect, useState } from "react";
 import {
@@ -11,7 +12,6 @@ import {
   ScrollView,
   StatusBar,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -61,27 +61,22 @@ export default function VaultScreen() {
         {/* Header */}
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-3xl font-extrabold text-white">Vault</Text>
-          <Pressable className="w-8 h-8 rounded-full bg-blue-500 items-center justify-center">
-            <FontAwesome name="plus" size={16} color={Colors.palette.white} />
-          </Pressable>
+          <Button
+            variant="primary"
+            size="sm"
+            icon="plus"
+            iconColor="white"
+            className="w-8 h-8 rounded-full !p-0"
+          />
         </View>
 
         {/* Search Bar */}
-        <View className="flex-row items-center bg-card-dark rounded-xl px-4 py-3 mb-5">
-          <FontAwesome
-            name="search"
-            size={16}
-            color={Colors.palette.zinc600}
-            style={{ marginRight: 10 }}
-          />
-          <TextInput
-            placeholder="Search movements..."
-            placeholderTextColor={Colors.palette.zinc600}
-            className="flex-1 text-white text-sm"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
+        <Input
+          placeholder="Search movements..."
+          icon="search"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
 
         {/* Filter Tags */}
         <View className="flex-row mb-6 h-10">
