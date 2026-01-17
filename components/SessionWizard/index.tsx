@@ -35,7 +35,7 @@ export default function SessionWizard({
 
   // Form State
   const [sessionExercises, setSessionExercises] = useState<SessionExercise[]>(
-    []
+    [],
   );
   const [title, setTitle] = useState("");
   const [color, setColor] = useState("#3B82F6"); // Default blue
@@ -45,7 +45,7 @@ export default function SessionWizard({
 
   // Selection State
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
-    null
+    null,
   );
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
@@ -131,17 +131,16 @@ export default function SessionWizard({
       Alert.alert("Empty Session", "Please add at least one exercise.");
       return;
     }
-    if (!title.trim()) {
-      Alert.alert("Missing Title", "Please enter a session name.");
-      return;
-    }
+
+    // Default to "New Session" if empty
+    const finalTitle = title.trim() || "New Session";
 
     try {
       const exerciseJson = JSON.stringify(sessionExercises);
       if (initialSession) {
         await updateSession({
           id: initialSession.id,
-          title,
+          title: finalTitle,
           date: initialSession.date,
           exercises: exerciseJson,
           frequency,
@@ -150,7 +149,7 @@ export default function SessionWizard({
       } else {
         await addSession({
           id: Date.now().toString(),
-          title,
+          title: finalTitle,
           date: selectedDate.toISOString(),
           frequency,
           color,
