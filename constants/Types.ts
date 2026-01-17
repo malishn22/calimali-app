@@ -23,6 +23,7 @@ export interface SessionExercise {
   sets: number;
   reps: number | number[];
   weight?: number;
+  is_unilateral?: boolean;
 }
 
 export interface ScheduledSession {

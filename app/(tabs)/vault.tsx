@@ -1,13 +1,20 @@
+import AddExerciseSheet from "@/components/AddExerciseSheet";
 import ExerciseDetailSheet from "@/components/ExerciseDetailSheet";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Colors, { CategoryColors } from "@/constants/Colors";
 import { ExerciseCategory } from "@/constants/Enums";
-import { Exercise, getExercises } from "@/services/Database";
+import {
+  clearAllData,
+  Exercise,
+  getExercises,
+  resetUserStats,
+} from "@/services/Database";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
+  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -30,6 +37,7 @@ export default function VaultScreen() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null,
   );
+  const [isAddSheetVisible, setIsAddSheetVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -41,6 +49,28 @@ export default function VaultScreen() {
     const data = await getExercises();
     data.sort((a, b) => a.name.localeCompare(b.name));
     setExercises(data);
+    setExercises(data);
+  };
+
+  const handleResetData = () => {
+    Alert.alert(
+      "Reset All Data",
+      "Are you sure? This will delete all history, sessions, and reset your level/stats. Exercises will normally remain.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Reset Everything",
+          style: "destructive",
+          onPress: async () => {
+            await clearAllData();
+            await resetUserStats();
+            Alert.alert("Success", "All user data has been reset.");
+            // Refresh?
+            loadData();
+          },
+        },
+      ],
+    );
   };
 
   const filteredExercises = exercises.filter((ex) => {
@@ -77,8 +107,17 @@ export default function VaultScreen() {
             size="sm"
             icon="plus"
             iconColor="white"
-            onPress={() => router.push("/add-exercise")}
+            onPress={() => setIsAddSheetVisible(true)}
           />
+        </View>
+
+        {/* Reset Button (Temporary Placement as requested) */}
+        <View className="flex-row justify-end mb-4">
+          <Button variant="ghost" size="sm" onPress={handleResetData}>
+            <Text className="text-zinc-500 text-xs font-bold ml-2">
+              RESET DATA
+            </Text>
+          </Button>
         </View>
 
         {/* Search Bar */}
@@ -171,6 +210,12 @@ export default function VaultScreen() {
         visible={!!selectedExercise}
         exercise={selectedExercise}
         onClose={() => setSelectedExercise(null)}
+      />
+
+      <AddExerciseSheet
+        visible={isAddSheetVisible}
+        onClose={() => setIsAddSheetVisible(false)}
+        onExerciseAdded={loadData}
       />
     </SafeAreaView>
   );

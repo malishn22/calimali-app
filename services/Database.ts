@@ -441,6 +441,17 @@ export const updateUserStats = async (
     throw e;
   }
 };
+
+export const resetUserStats = async () => {
+  try {
+    await db.runAsync(
+      "UPDATE user_profile SET level = 1, xp = 0, streak_current = 0, streak_best = 0, streak_start_date = NULL, total_reps = 0 WHERE id = 'user'",
+    );
+    console.log("User stats reset");
+  } catch (e) {
+    console.error("Failed to reset user stats", e);
+  }
+};
 // Helper to check frequencies
 export const isSessionActiveOnDate = (
   session: ScheduledSession,

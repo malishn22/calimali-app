@@ -52,21 +52,49 @@ export default function LiveSession({
     if (!exercises) return [];
 
     // Flatten: Each set is a step
-    const _steps: {
+    interface SessionStep {
       exerciseIndex: number;
       setIndex: number;
-      exercise: any; // Type this properly if needed
+      exercise: any;
       totalSets: number;
-    }[] = [];
+      side?: "LEFT" | "RIGHT";
+      repIndex?: number;
+    }
+
+    const _steps: SessionStep[] = [];
 
     exercises.forEach((ex: any, exIndex: number) => {
       for (let i = 0; i < ex.sets; i++) {
-        _steps.push({
-          exerciseIndex: exIndex,
-          setIndex: i,
-          exercise: ex,
-          totalSets: ex.sets,
-        });
+        if (ex.is_unilateral) {
+          // UNILATERAL: Two steps per set (Left, Right)
+          // Rep Index mapping: Left = setIndex * 2, Right = setIndex * 2 + 1
+          _steps.push({
+            exerciseIndex: exIndex,
+            setIndex: i, // Logical set index
+            exercise: ex,
+            totalSets: ex.sets,
+            side: "LEFT",
+            repIndex: i * 2,
+          });
+          _steps.push({
+            exerciseIndex: exIndex,
+            setIndex: i,
+            exercise: ex,
+            totalSets: ex.sets,
+            side: "RIGHT",
+            repIndex: i * 2 + 1,
+          });
+        } else {
+          // BILATERAL: One step per set
+          _steps.push({
+            exerciseIndex: exIndex,
+            setIndex: i,
+            exercise: ex,
+            totalSets: ex.sets,
+            // No side
+            repIndex: i,
+          });
+        }
       }
     });
     return _steps;
@@ -103,12 +131,11 @@ export default function LiveSession({
   };
 
   const markSetComplete = (stepIndex: number) => {
-    // Key logic: stepIndex is unique enough for this linear flow
-    const step = steps[stepIndex];
+    const step = steps[stepIndex] as any; // Cast to access new props safely if TS complains
     if (!step) return;
 
-    // We can stick to the old key format for database compatibility or simplify
-    const setKey = `${step.exerciseIndex}-${step.setIndex}`;
+    // Unique Key: exerciseIndex-setIndex-side
+    const setKey = `${step.exerciseIndex}-${step.setIndex}-${step.side || "BILATERAL"}`;
 
     setCompletedSets((prev) => ({
       ...prev,
@@ -220,34 +247,58 @@ export default function LiveSession({
 
   const handleSaveSet = (newReps: number) => {
     if (editingStepIndex === null) return;
-    const step = steps[editingStepIndex];
+    const step = steps[editingStepIndex] as any;
     if (!step) return;
 
     const newExercises = [...exercises];
-    // Check if reps is array or number
-    const currentReps = newExercises[step.exerciseIndex].reps;
+    const exercise = newExercises[step.exerciseIndex];
+    const currentReps = exercise.reps;
 
-    if (Array.isArray(currentReps)) {
-      // Create a copy of the array found at this exercise index
-      const updatedRepsArray = [...currentReps];
-      updatedRepsArray[step.setIndex] = newReps;
-      newExercises[step.exerciseIndex].reps = updatedRepsArray;
-    } else {
-      newExercises[step.exerciseIndex].reps = newReps;
+    // Ensure array structure
+    let updatedRepsArray = Array.isArray(currentReps)
+      ? [...currentReps]
+      : [currentReps];
+
+    // Update specific rep index
+    const targetRepIndex =
+      step.repIndex !== undefined ? step.repIndex : step.setIndex;
+    updatedRepsArray[targetRepIndex] = newReps;
+
+    // LINKED EDITING Logic for Unilateral
+    if (exercise.is_unilateral) {
+      // If "side" is present, we know which one we edited.
+      // Left is even (0, 2..), Right is odd (1, 3..)
+      // We want to update the PAIR.
+      // If index is EVEN (Left) -> Update index + 1 (Right)
+      if (targetRepIndex % 2 === 0) {
+        if (targetRepIndex + 1 < updatedRepsArray.length) {
+          updatedRepsArray[targetRepIndex + 1] = newReps;
+        }
+      }
+      // If index is ODD (Right) -> Update index - 1 (Left)
+      else {
+        if (targetRepIndex - 1 >= 0) {
+          updatedRepsArray[targetRepIndex - 1] = newReps;
+        }
+      }
     }
 
+    newExercises[step.exerciseIndex].reps = updatedRepsArray;
     setExercises(newExercises);
     setEditModalVisible(false);
   };
 
   const getRepCountForStep = (stepIndex: number) => {
-    const step = steps[stepIndex];
+    const step = steps[stepIndex] as any;
     if (!step) return 0;
     const ex = exercises[step.exerciseIndex]; // Get latest state
     if (!ex) return 0;
 
+    const targetIndex =
+      step.repIndex !== undefined ? step.repIndex : step.setIndex;
+
     if (Array.isArray(ex.reps)) {
-      return ex.reps[step.setIndex];
+      return ex.reps[targetIndex];
     }
     return ex.reps;
   };
@@ -303,7 +354,9 @@ export default function LiveSession({
   }
 
   const isCurrentSetCompleted =
-    completedSets[`${currentStep.exerciseIndex}-${currentStep.setIndex}`];
+    completedSets[
+      `${currentStep.exerciseIndex}-${currentStep.setIndex}-${(currentStep as any).side || "BILATERAL"}`
+    ];
 
   return (
     <SafeAreaView className="flex-1 bg-background-dark">
@@ -326,6 +379,8 @@ export default function LiveSession({
         currentSetIndex={currentStep.setIndex}
         isSetCompleted={!!isCurrentSetCompleted}
         onEditSet={handleEditSet}
+        side={(currentStep as any).side}
+        currentReps={getRepCountForStep(activeStepIndex)}
       />
 
       <SessionControls

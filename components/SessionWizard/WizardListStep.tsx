@@ -1,5 +1,6 @@
 import Colors from "@/constants/Colors";
 import { SessionExercise } from "@/services/Database";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { FlatList, Text, View } from "react-native";
 import { Button } from "../ui/Button";
@@ -50,9 +51,20 @@ export function WizardListStep({ exercises, onAdd, onRemove, onEdit }: Props) {
                 <Text className="text-white font-extrabold text-lg mb-1">
                   {item.name}
                 </Text>
-                <Text className="text-blue-500 text-xs font-bold tracking-widest">
-                  {setText} • {catText}
-                </Text>
+                <View className="flex-row items-center">
+                  {/* Unilateral Icon - Blue Box U */}
+                  {item.is_unilateral && (
+                    <MaterialCommunityIcons
+                      name="alpha-u-box"
+                      size={14}
+                      color={Colors.palette.blue500}
+                      style={{ marginRight: 6 }}
+                    />
+                  )}
+                  <Text className="text-blue-500 text-xs font-bold tracking-widest">
+                    {setText}
+                  </Text>
+                </View>
               </View>
               <View className="flex-row gap-3">
                 {/* Edit Button */}

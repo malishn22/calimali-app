@@ -1,6 +1,6 @@
 import Colors from "@/constants/Colors";
 import { Exercise, getExercises } from "@/services/Database";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
 import { Input } from "../ui/Input";
@@ -20,11 +20,12 @@ export function WizardSearchStep({ onSelect }: Props) {
 
   const load = async () => {
     const data = await getExercises();
+    data.sort((a, b) => a.name.localeCompare(b.name));
     setExercises(data);
   };
 
   const filtered = exercises.filter((ex) =>
-    ex.name.toLowerCase().includes(search.toLowerCase())
+    ex.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -57,9 +58,20 @@ export function WizardSearchStep({ onSelect }: Props) {
               <Text className="text-white font-bold text-base mb-1">
                 {item.name}
               </Text>
-              <Text className="text-xs text-zinc-500 font-bold uppercase tracking-wide">
-                {item.category} • {item.difficulty}
-              </Text>
+              <View className="flex-row items-center">
+                {/* Unilateral Icon - Blue Box U */}
+                {item.is_unilateral && (
+                  <MaterialCommunityIcons
+                    name="alpha-u-box"
+                    size={14}
+                    color={Colors.palette.blue500}
+                    style={{ marginRight: 6 }}
+                  />
+                )}
+                <Text className="text-xs text-zinc-500 font-bold uppercase tracking-wide">
+                  {item.category} • {item.difficulty}
+                </Text>
+              </View>
             </View>
             <FontAwesome
               name="chevron-right"

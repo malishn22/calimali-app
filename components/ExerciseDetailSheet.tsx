@@ -94,7 +94,7 @@ export default function ExerciseDetailSheet({
                       : exercise.category === "CORE"
                         ? "🔥"
                         : exercise.category === "SKILLS"
-                          ? "�"
+                          ? "🤸"
                           : "⚡"}
               </Text>
             </View>

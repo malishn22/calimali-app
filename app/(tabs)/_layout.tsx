@@ -65,10 +65,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
         }}
       />
-
-      {/* Exclude files that might be caught by the router but aren't tabs if any, 
-          but primarily expo-router maps file structure directly. 
-          We should delete 'two.tsx' if not needed. */}
     </Tabs>
   );
 }
