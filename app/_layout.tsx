@@ -84,10 +84,7 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (Platform.OS === "android") {
-      NavigationBar.setPositionAsync("absolute");
-      NavigationBar.setBackgroundColorAsync("#ffffff00");
       NavigationBar.setVisibilityAsync("hidden");
-      NavigationBar.setBehaviorAsync("overlay-swipe");
     }
   }, []);
 
