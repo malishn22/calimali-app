@@ -5,7 +5,13 @@ import { useCalendarContext } from "@/context/CalendarContext";
 import { deleteSession, ScheduledSession } from "@/services/Database";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import {
+  LayoutAnimation,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PlannerScreen() {
@@ -52,9 +58,12 @@ export default function PlannerScreen() {
             </Text>
             {/* View Mode Toggle */}
             <Pressable
-              onPress={() =>
-                setViewMode(viewMode === "Week" ? "Month" : "Week")
-              }
+              onPress={() => {
+                LayoutAnimation.configureNext(
+                  LayoutAnimation.Presets.easeInEaseOut,
+                );
+                setViewMode(viewMode === "Week" ? "Month" : "Week");
+              }}
               className="bg-zinc-800 px-4 py-2 rounded-xl border border-zinc-700"
             >
               <Text className="text-zinc-200 text-xs font-bold">

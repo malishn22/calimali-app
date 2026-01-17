@@ -5,7 +5,6 @@ import React from "react";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
@@ -19,6 +18,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        lazy: false,
         tabBarActiveTintColor: "#FFFFFF", // Neon bright white
         tabBarShowLabel: false, // Start of tabs shouldn't have names
         // Disable the static render of the header on web

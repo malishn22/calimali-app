@@ -274,59 +274,69 @@ const WeekView = React.memo(
     selectedDateId,
     onDayPress,
     markedDates,
+    scrollTrigger,
   }: {
     selectedDate: Date;
     selectedDateId: string;
     onDayPress: (id: string) => void;
     markedDates?: Record<string, any>;
+    scrollTrigger: number;
   }) => {
     const SCREEN_WIDTH = Dimensions.get("window").width;
+    const INITIAL_RANGE = 12; // +/- 12 weeks (~3 months)
 
-    // Generate weeks
-    // We create a large range of weeks centered around a "base" date.
-    // Ideally we want to center on the selected date initially.
-
-    const weeksList = useMemo(() => {
+    // Helper to generate weeks
+    const generateWeeks = useCallback((centerDate: Date, range: number) => {
       const weeks = [];
-      // Helper to get Monday of the week for a given date
       const getMonday = (d: Date) => {
         const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
         return new Date(d.setDate(diff));
       };
+      const centerMonday = getMonday(new Date(centerDate));
 
-      const centerMonday = getMonday(new Date(selectedDateId));
-
-      // Generate +/- 50 weeks
-      const RANGE = 50;
-      for (let i = -RANGE; i <= RANGE; i++) {
+      for (let i = -range; i <= range; i++) {
         const w = new Date(centerMonday);
         w.setDate(w.getDate() + i * 7);
         weeks.push(w);
       }
       return weeks;
-    }, []); // We only generate this once or when we really need to reset?
-    // If selectedDateId changes far outside range, we might have issue.
-    // But for now, static list is performant.
-    // Wait, if selectedDateId changes, we want to scroll to it.
+    }, []);
 
-    // We need to find the index of the week containing selectedDateId
-    const initialIndex = 50; // Center index
+    // State for Dynamic List
+    const [weeksList, setWeeksList] = useState<Date[]>([]);
+
+    // Initialize list once
+    useEffect(() => {
+      setWeeksList(generateWeeks(new Date(selectedDateId), INITIAL_RANGE));
+    }, []);
+
+    const appendWeeks = useCallback(() => {
+      setWeeksList((prev) => {
+        const lastWeek = prev[prev.length - 1];
+        const newWeeks = [];
+        for (let i = 1; i <= 12; i++) {
+          const w = new Date(lastWeek);
+          w.setDate(w.setDate(w.getDate() + i * 7));
+          newWeeks.push(w);
+        }
+        return [...prev, ...newWeeks];
+      });
+    }, []);
+
+    const [listKey, setListKey] = useState(0);
 
     // Ref for FlashList
     const listRef = useRef<FlashListRef<Date>>(null);
 
-    // Scroll to week when selectedDateId changes
+    // Scroll Logic
     useEffect(() => {
-      // Calculate index
+      if (weeksList.length === 0) return;
+
       const selDate = new Date(selectedDateId);
-      // Find week... simple math
-      // But finding in the array is safest given DST etc
       const index = weeksList.findIndex((startOfWeek) => {
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(endOfWeek.getDate() + 6);
-        // Compare timestamps?
-        // Reset times
         const s = new Date(startOfWeek).setHours(0, 0, 0, 0);
         const e = new Date(endOfWeek).setHours(23, 59, 59, 999);
         const target = selDate.setHours(12, 0, 0, 0);
@@ -334,9 +344,14 @@ const WeekView = React.memo(
       });
 
       if (index !== -1 && listRef.current) {
+        // Normal navigation: Smooth scroll
         listRef.current.scrollToIndex({ index, animated: true });
+      } else if (index === -1) {
+        // Jump navigation: Remount list centered on target
+        setWeeksList(generateWeeks(new Date(selectedDateId), INITIAL_RANGE));
+        setListKey((prev) => prev + 1);
       }
-    }, [selectedDate, selectedDateId, weeksList]);
+    }, [selectedDateId, weeksList, scrollTrigger]);
 
     const renderItem = useCallback(
       ({ item }: { item: Date }) => {
@@ -355,16 +370,19 @@ const WeekView = React.memo(
     return (
       <View className="w-full h-28">
         <FlashList
+          key={listKey}
           ref={listRef}
           data={weeksList}
           renderItem={renderItem}
+          keyExtractor={(item) => toDateId(item)}
           horizontal
           snapToInterval={SCREEN_WIDTH}
           snapToAlignment="start"
           decelerationRate="fast"
           disableIntervalMomentum
-          initialScrollIndex={initialIndex}
-          showsHorizontalScrollIndicator={false}
+          initialScrollIndex={12}
+          onEndReached={appendWeeks}
+          onEndReachedThreshold={0.5}
         />
       </View>
     );
@@ -374,6 +392,7 @@ const WeekView = React.memo(
 export function Calendar({ viewMode }: { viewMode: "Week" | "Month" }) {
   // Access Data & State from Context
   const { selectedDate, setSelectedDate, markedDates } = useCalendarContext();
+  const [scrollTrigger, setScrollTrigger] = useState(0);
 
   const selectedDateId = useMemo(() => toDateId(selectedDate), [selectedDate]);
 
@@ -411,7 +430,7 @@ export function Calendar({ viewMode }: { viewMode: "Week" | "Month" }) {
         monthListRef.current.scrollToIndex({ index, animated: true });
       }
     }
-  }, [selectedDate, viewMode, monthList]);
+  }, [selectedDate, viewMode, scrollTrigger]);
 
   const renderMonthItem = useCallback(
     ({ item }: { item: CalendarMonth }) => {
@@ -430,6 +449,7 @@ export function Calendar({ viewMode }: { viewMode: "Week" | "Month" }) {
   // Handle Today Press
   const handleTodayPress = () => {
     setSelectedDate(new Date());
+    setScrollTrigger((prev) => prev + 1);
   };
 
   return (
@@ -470,6 +490,7 @@ export function Calendar({ viewMode }: { viewMode: "Week" | "Month" }) {
             selectedDateId={selectedDateId}
             onDayPress={handleDayPress}
             markedDates={markedDates}
+            scrollTrigger={scrollTrigger}
           />
         </View>
       )}
