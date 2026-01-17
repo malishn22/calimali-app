@@ -19,7 +19,8 @@ interface ButtonProps {
     | "destructive"
     | "ghost"
     | "outline"
-    | "completed";
+    | "completed"
+    | "start";
   size?: "sm" | "md" | "lg";
   icon?: keyof typeof FontAwesome.glyphMap;
   iconPosition?: "left" | "right";
@@ -78,32 +79,37 @@ export function Button({
   switch (variant) {
     case "primary":
       variantContainer = "bg-blue-500";
-      variantText = "text-white font-extrabold";
+      variantText = "text-white font-bold uppercase tracking-wider";
       defaultIconColor = "white";
       break;
     case "secondary":
       variantContainer = "bg-card-dark";
-      variantText = "text-zinc-400 font-bold";
+      variantText = "text-zinc-400 font-bold uppercase tracking-wider";
       defaultIconColor = Colors.palette.zinc400;
       break;
     case "destructive":
       variantContainer = "bg-card-dark border border-red-500/30";
-      variantText = "text-red-500 font-bold";
+      variantText = "text-red-500 font-bold uppercase tracking-wider";
       defaultIconColor = Colors.palette.red500;
       break;
     case "ghost":
       variantContainer = "bg-transparent";
-      variantText = "text-zinc-400 font-bold";
+      variantText = "text-zinc-400 font-bold uppercase tracking-wider";
       defaultIconColor = Colors.palette.zinc400;
       break;
     case "outline":
       variantContainer = "bg-transparent border border-zinc-700";
-      variantText = "text-zinc-400 font-bold";
+      variantText = "text-zinc-400 font-bold uppercase tracking-wider";
       defaultIconColor = Colors.palette.zinc400;
       break;
     case "completed":
       variantContainer = "bg-green-500";
-      variantText = "text-black font-extrabold";
+      variantText = "text-black font-bold uppercase tracking-wider";
+      defaultIconColor = "black";
+      break;
+    case "start":
+      variantContainer = "bg-white";
+      variantText = "text-black font-bold uppercase tracking-wider";
       defaultIconColor = "black";
       break;
   }

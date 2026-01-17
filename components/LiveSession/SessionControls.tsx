@@ -1,30 +1,31 @@
-import React from "react";
-import { View } from "react-native";
-import { Button } from "../ui/Button";
+import { FontAwesome } from "@expo/vector-icons";
+import { BottomActionPanel } from "../SessionWizard/BottomActionPanel";
 
 interface Props {
-  onPrev: () => void;
-  onNext: () => void;
-  isFirst: boolean;
-  isLast: boolean;
+  onBack: () => void;
+  onMainAction: () => void;
+  mainActionLabel: string;
+  mainActionIcon?: keyof typeof FontAwesome.glyphMap;
+  mainActionVariant?: "primary" | "completed" | "start";
+  backLabel?: string;
 }
 
-export function SessionControls({ onPrev, onNext, isFirst, isLast }: Props) {
+export function SessionControls({
+  onBack,
+  onMainAction,
+  mainActionLabel,
+  mainActionIcon,
+  mainActionVariant = "primary",
+  backLabel = "Cancel",
+}: Props) {
   return (
-    <View className="px-6 pb-6 pt-4 flex-row gap-4">
-      <Button
-        variant="secondary"
-        title="Prev"
-        onPress={onPrev}
-        disabled={isFirst}
-        className="flex-1"
-      />
-      <Button
-        variant={isLast ? "completed" : "primary"}
-        title={isLast ? "Finish Workout" : "Next Exercise"}
-        onPress={onNext}
-        className="flex-[2]"
-      />
-    </View>
+    <BottomActionPanel
+      onBack={onBack}
+      onPrimaryPress={onMainAction}
+      primaryLabel={mainActionLabel}
+      primaryIcon={mainActionIcon}
+      primaryVariant={mainActionVariant}
+      backLabel={backLabel}
+    />
   );
 }

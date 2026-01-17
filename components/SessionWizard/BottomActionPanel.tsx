@@ -22,7 +22,7 @@ type Props =
       onPrimaryPress: () => void;
       primaryLabel: string;
       primaryIcon?: any;
-      primaryVariant?: "primary" | "completed" | "destructive";
+      primaryVariant?: "primary" | "completed" | "destructive" | "start";
       backLabel?: string;
       onSecondaryPress?: () => void;
     };

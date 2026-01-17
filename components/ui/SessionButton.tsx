@@ -4,7 +4,7 @@ import { Button } from "./Button";
 interface SessionButtonProps {
   onPress: () => void;
   title: string;
-  variant?: "primary" | "secondary" | "destructive" | "completed"; // Enforcing standard variants
+  variant?: "primary" | "secondary" | "destructive" | "completed" | "start"; // Enforcing standard variants
   icon?: any; // Component or icon name
   disabled?: boolean;
   className?: string;

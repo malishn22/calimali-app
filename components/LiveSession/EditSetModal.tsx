@@ -1,4 +1,4 @@
-import Colors, { SessionColors } from "@/constants/Colors";
+import Colors from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useEffect, useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
@@ -18,16 +18,16 @@ export default function EditSetModal({
   onSave,
   onDelete,
 }: EditSetModalProps) {
-  const [reps, setReps] = useState(initialReps);
+  const [reps, setReps] = useState(initialReps || 0);
 
   useEffect(() => {
     if (visible) {
-      setReps(initialReps);
+      setReps(Number(initialReps) || 0);
     }
   }, [visible, initialReps]);
 
   const updateReps = (delta: number) => {
-    setReps((prev) => Math.max(1, prev + delta));
+    setReps((prev) => Math.max(1, Number(prev) + delta));
   };
 
   return (
@@ -71,24 +71,25 @@ export default function EditSetModal({
 
           {/* Actions */}
           <Pressable
-            className="w-full py-4 rounded-2xl items-center mb-4"
-            style={{ backgroundColor: SessionColors.BLUE }}
+            className="w-full py-4 rounded-2xl items-center mb-4 bg-green-500"
             onPress={() => onSave(reps)}
           >
-            <Text className="text-white font-bold text-base">Save Changes</Text>
+            <Text className="text-black font-extrabold text-base">
+              Save Changes
+            </Text>
           </Pressable>
 
           <Pressable
-            className="flex-row items-center justify-center p-3"
+            className="w-full py-4 rounded-2xl flex-row items-center justify-center border border-red-500"
             onPress={onDelete}
           >
             <FontAwesome
               name="trash"
-              size={14}
+              size={16}
               color={Colors.palette.red500}
               style={{ marginRight: 8 }}
             />
-            <Text className="text-red-500 font-bold text-sm">Delete Set</Text>
+            <Text className="text-red-500 font-bold text-base">Delete Set</Text>
           </Pressable>
         </View>
       </View>
