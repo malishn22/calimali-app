@@ -1,4 +1,3 @@
-import LiveSession from "@/components/LiveSession";
 import SessionCard from "@/components/SessionCard";
 import {
   getSessionHistory,
@@ -7,17 +6,16 @@ import {
 } from "@/services/Database";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useIsFocused } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useState } from "react";
 import { Platform, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function DashboardScreen() {
-  const isFocused = useIsFocused();
+  const router = useRouter();
   const [dailySessions, setDailySessions] = useState<ScheduledSession[]>([]);
-  const [liveSession, setLiveSession] = useState<ScheduledSession | null>(null);
   const [completedSessionIds, setCompletedSessionIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   const currentDate = new Date()
@@ -28,11 +26,11 @@ export default function DashboardScreen() {
     })
     .toUpperCase();
 
-  useEffect(() => {
-    if (isFocused) {
+  useFocusEffect(
+    React.useCallback(() => {
       loadDailySessions();
-    }
-  }, [isFocused]);
+    }, []),
+  );
 
   const loadDailySessions = async () => {
     const allSessions = await getSessions();
@@ -77,6 +75,13 @@ export default function DashboardScreen() {
 
     setDailySessions(todays);
     setCompletedSessionIds(completedIds);
+  };
+
+  const handleStartSession = (session: ScheduledSession) => {
+    router.push({
+      pathname: "/live-session",
+      params: { session: JSON.stringify(session) },
+    });
   };
 
   return (
@@ -134,7 +139,7 @@ export default function DashboardScreen() {
             <SessionCard
               key={session.id}
               session={session}
-              onPress={() => setLiveSession(session)}
+              onPress={() => handleStartSession(session)}
               isCompleted={completedSessionIds.has(session.id)}
             />
           ))
@@ -149,17 +154,6 @@ export default function DashboardScreen() {
           </View>
         )}
       </ScrollView>
-
-      {/* Live Session Modal */}
-      <LiveSession
-        visible={!!liveSession}
-        session={liveSession}
-        onClose={() => setLiveSession(null)}
-        onComplete={(data) => {
-          setLiveSession(null);
-          loadDailySessions(); // Refresh UI
-        }}
-      />
     </SafeAreaView>
   );
 }

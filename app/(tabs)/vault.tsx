@@ -30,7 +30,7 @@ export default function VaultScreen() {
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [])
+    }, []),
   );
 
   const loadData = async () => {
@@ -73,7 +73,7 @@ export default function VaultScreen() {
             size="sm"
             icon="plus"
             iconColor="white"
-            onPress={() => router.push("/add_exercise")}
+            onPress={() => router.push("/add-exercise")}
           />
         </View>
 

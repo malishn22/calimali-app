@@ -7,8 +7,8 @@ import {
 } from "@/services/Database";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useIsFocused } from "@react-navigation/native";
-import { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useState } from "react";
 import {
   Alert,
   Platform,
@@ -22,16 +22,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<"OVERVIEW" | "HISTORY">(
-    "OVERVIEW"
+    "OVERVIEW",
   );
   const [history, setHistory] = useState<SessionHistory[]>([]);
-  const isFocused = useIsFocused();
 
-  useEffect(() => {
-    if (isFocused) {
-      loadHistory();
-    }
-  }, [isFocused]);
+  useFocusEffect(() => {
+    loadHistory();
+  });
 
   const loadHistory = async () => {
     const data = await getSessionHistory();
@@ -53,7 +50,7 @@ export default function ProfileScreen() {
             loadHistory();
           },
         },
-      ]
+      ],
     );
   };
 

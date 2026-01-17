@@ -2,23 +2,24 @@ import { ScheduledSession, SessionHistory } from "@/constants/Types";
 import { addSessionHistory } from "@/services/Database";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Modal } from "react-native";
+import { Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActiveSessionView } from "./ActiveSessionView";
 import EditSetModal from "./EditSetModal";
-import { SessionCompletion } from "./SessionCompletion";
+import {
+  SessionCompletion,
+  SessionCompletionHandle,
+} from "./SessionCompletion";
 import { SessionControls } from "./SessionControls";
 import { SessionHeader } from "./SessionHeader";
 
 interface LiveSessionProps {
-  visible: boolean;
-  session: ScheduledSession | null;
+  session: ScheduledSession;
   onClose: () => void;
   onComplete: (data: SessionHistory) => void;
 }
 
 export default function LiveSession({
-  visible,
   session,
   onClose,
   onComplete,
@@ -31,16 +32,14 @@ export default function LiveSession({
     {},
   );
   const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Completion State
-  const [showCompletion, setShowCompletion] = useState(false);
+  const timerRef = useRef<number | null>(null);
+  const completedDataRef = useRef<SessionHistory | null>(null);
+  const completionModalRef = useRef<SessionCompletionHandle>(null);
 
   // Edit Modal State
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingStepIndex, setEditingStepIndex] = useState<number | null>(null);
 
-  // Exercises State (Local to allow editing)
   const [exercises, setExercises] = useState<any[]>([]);
 
   useEffect(() => {
@@ -78,19 +77,18 @@ export default function LiveSession({
   const progress = totalSteps > 0 ? (activeStepIndex / totalSteps) * 100 : 0;
 
   useEffect(() => {
-    if (visible && isSessionStarted) {
+    if (isSessionStarted) {
       startTimer();
     } else {
       stopTimer();
-      if (!visible) {
-        setElapsedTime(0);
-        setActiveStepIndex(0);
-        setIsSessionStarted(false);
-        setCompletedSets({});
-        setShowCompletion(false);
-      }
     }
-  }, [visible, isSessionStarted]);
+
+    // Cleanup on unmount
+    return () => {
+      stopTimer();
+      completedDataRef.current = null;
+    };
+  }, [isSessionStarted]);
 
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -138,12 +136,14 @@ export default function LiveSession({
 
   const handleFinish = async () => {
     stopTimer();
-    setShowCompletion(true);
+    // Save immediately upon finishing the session
+    await handleSaveData();
+    // Then show the completion modal
+    completionModalRef.current?.present();
   };
 
-  const handleFinalClose = async () => {
+  const handleSaveData = async () => {
     if (!session) return;
-
     const historyData: SessionHistory = {
       id: Date.now().toString(),
       session_id: session.id,
@@ -156,8 +156,18 @@ export default function LiveSession({
     };
 
     await addSessionHistory(historyData);
+    completedDataRef.current = historyData;
+  };
 
-    onComplete(historyData);
+  /* New Handlers for Bottom Sheet Sequencing */
+
+  // Triggered by "Continue" button -> Just navigate, don't wait for close
+  const handleCompletionContinue = () => {
+    if (completedDataRef.current) {
+      onComplete(completedDataRef.current);
+    } else {
+      onComplete({} as SessionHistory);
+    }
   };
 
   const handleBack = () => {
@@ -176,6 +186,8 @@ export default function LiveSession({
     setEditingStepIndex(activeStepIndex);
     setEditModalVisible(true);
   };
+
+  // ... (handleSaveSet, getRepCountForStep, etc. unchanged)
 
   const handleSaveSet = (newReps: number) => {
     if (editingStepIndex === null) return;
@@ -265,61 +277,54 @@ export default function LiveSession({
     completedSets[`${currentStep.exerciseIndex}-${currentStep.setIndex}`];
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="fullScreen"
-    >
-      {showCompletion ? (
-        <SessionCompletion
-          visible={showCompletion}
-          elapsedTime={elapsedTime}
-          onClose={handleFinalClose}
+    <SafeAreaView className="flex-1 bg-background-dark">
+      <SessionHeader
+        title={session.title}
+        elapsedTime={elapsedTime}
+        progress={progress}
+        onClose={() => {
+          Alert.alert("End Session?", "Progress won't be saved.", [
+            { text: "Cancel", style: "cancel" },
+            { text: "End", style: "destructive", onPress: onClose },
+          ]);
+        }}
+      />
+
+      <ActiveSessionView
+        exercise={currentStep.exercise}
+        exerciseIndex={currentStep.exerciseIndex}
+        totalExercises={exercises.length}
+        currentSetIndex={currentStep.setIndex}
+        isSetCompleted={!!isCurrentSetCompleted}
+        onEditSet={handleEditSet}
+      />
+
+      <SessionControls
+        onBack={handleBack}
+        onMainAction={handleMainAction}
+        mainActionLabel={mainActionLabel}
+        mainActionIcon={mainActionIcon}
+        mainActionVariant={mainActionVariant}
+        backLabel={""}
+      />
+
+      {/* Edit Set Modal */}
+      {editingStepIndex !== null && steps[editingStepIndex] && (
+        <EditSetModal
+          visible={editModalVisible}
+          initialReps={getRepCountForStep(editingStepIndex)}
+          onClose={() => setEditModalVisible(false)}
+          onSave={handleSaveSet}
+          onDelete={handleDeleteSet}
         />
-      ) : (
-        <SafeAreaView className="flex-1 bg-background-dark">
-          <SessionHeader
-            title={session.title}
-            elapsedTime={elapsedTime}
-            progress={progress}
-            onClose={() => {
-              Alert.alert("End Session?", "Progress won't be saved.", [
-                { text: "Cancel", style: "cancel" },
-                { text: "End", style: "destructive", onPress: onClose },
-              ]);
-            }}
-          />
-
-          <ActiveSessionView
-            exercise={currentStep.exercise}
-            exerciseIndex={currentStep.exerciseIndex}
-            totalExercises={exercises.length}
-            currentSetIndex={currentStep.setIndex}
-            isSetCompleted={!!isCurrentSetCompleted}
-            onEditSet={handleEditSet}
-          />
-
-          <SessionControls
-            onBack={handleBack}
-            onMainAction={handleMainAction}
-            mainActionLabel={mainActionLabel}
-            mainActionIcon={mainActionIcon}
-            mainActionVariant={mainActionVariant}
-            backLabel={""}
-          />
-
-          {/* Edit Set Modal */}
-          {editingStepIndex !== null && steps[editingStepIndex] && (
-            <EditSetModal
-              visible={editModalVisible}
-              initialReps={getRepCountForStep(editingStepIndex)}
-              onClose={() => setEditModalVisible(false)}
-              onSave={handleSaveSet}
-              onDelete={handleDeleteSet}
-            />
-          )}
-        </SafeAreaView>
       )}
-    </Modal>
+
+      {/* Session Completion Modal */}
+      <SessionCompletion
+        ref={completionModalRef}
+        elapsedTime={elapsedTime}
+        onContinue={handleCompletionContinue}
+      />
+    </SafeAreaView>
   );
 }

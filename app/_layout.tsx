@@ -9,6 +9,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
   DarkTheme,
   DefaultTheme,
@@ -22,6 +23,7 @@ import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
 import { useEffect } from "react";
 import { Platform, useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import {
   configureReanimatedLogger,
@@ -95,18 +97,39 @@ function RootLayoutNav() {
   }, []);
 
   return (
-    <CacheProvider>
-      <CalendarContextWrapper>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <StatusBar style="light" />
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-          </Stack>
-        </ThemeProvider>
-      </CalendarContextWrapper>
-    </CacheProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <CacheProvider>
+          <CalendarContextWrapper>
+            <ThemeProvider
+              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
+              <StatusBar style="light" />
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="modal"
+                  options={{ presentation: "modal" }}
+                />
+                <Stack.Screen
+                  name="live-session"
+                  options={{
+                    headerShown: false,
+                    animation: "slide_from_right",
+                  }}
+                />
+                <Stack.Screen
+                  name="add-exercise"
+                  options={{
+                    headerShown: false,
+                    animation: "slide_from_right",
+                  }}
+                />
+              </Stack>
+            </ThemeProvider>
+          </CalendarContextWrapper>
+        </CacheProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 }

@@ -33,8 +33,9 @@ export default function SessionCard({
     try {
       const exercises = JSON.parse(session.exercises);
       return exercises.reduce(
-        (acc: number, ex: any) => acc + (ex.sets?.length || 0),
-        0
+        (acc: number, ex: any) =>
+          acc + (typeof ex.sets === "number" ? ex.sets : ex.sets?.length || 0),
+        0,
       );
     } catch {
       return 0;
