@@ -11,9 +11,6 @@ export const initDatabase = async () => {
   try {
     await db.execAsync("PRAGMA foreign_keys = ON;");
 
-    // Force reset of exercises table to update schema and seeds
-    await db.execAsync("DROP TABLE IF EXISTS exercises;");
-
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS exercises (
         id TEXT PRIMARY KEY NOT NULL,
@@ -60,7 +57,7 @@ export const initDatabase = async () => {
 
     // Check if empty and seed
     const countResult = await db.getFirstAsync<{ count: number }>(
-      "SELECT COUNT(*) as count FROM exercises"
+      "SELECT COUNT(*) as count FROM exercises",
     );
 
     if (countResult && countResult.count === 0) {
@@ -79,7 +76,7 @@ export const initDatabase = async () => {
             ex.default_reps,
             ex.unit,
             ex.is_unilateral ? 1 : 0,
-          ]
+          ],
         );
       }
       console.log("Seeding complete.");
@@ -93,7 +90,8 @@ export const clearAllData = async () => {
   try {
     await db.runAsync("DELETE FROM scheduled_sessions");
     await db.runAsync("DELETE FROM session_history");
-    await db.runAsync("DELETE FROM exercises");
+    // await db.runAsync("DELETE FROM exercises"); // Preserving exercises
+
     console.log("All user data cleared");
   } catch (e) {
     console.error("Failed to clear data", e);
@@ -114,7 +112,7 @@ export const getExercise = async (id: string): Promise<Exercise | null> => {
   try {
     const result = await db.getFirstAsync<any>(
       "SELECT * FROM exercises WHERE id = ?",
-      [id]
+      [id],
     );
     return result ? createExerciseFromRow(result) : null;
   } catch (e) {
@@ -137,7 +135,7 @@ export const addExercise = async (exercise: Exercise) => {
         exercise.default_reps,
         exercise.unit,
         exercise.is_unilateral ? 1 : 0,
-      ]
+      ],
     );
   } catch (e) {
     console.error("Failed to add exercise", e);
@@ -163,7 +161,7 @@ export const addSession = async (session: ScheduledSession) => {
         session.frequency,
         session.color,
         session.exercises,
-      ]
+      ],
     );
   } catch (e) {
     console.error("Failed to add session", e);
@@ -173,7 +171,7 @@ export const addSession = async (session: ScheduledSession) => {
 export const getSessions = async (): Promise<ScheduledSession[]> => {
   try {
     return await db.getAllAsync<ScheduledSession>(
-      "SELECT * FROM scheduled_sessions"
+      "SELECT * FROM scheduled_sessions",
     );
   } catch (e) {
     console.error("Failed to get sessions", e);
@@ -200,7 +198,7 @@ export const updateSession = async (session: ScheduledSession) => {
         session.color,
         session.exercises,
         session.id,
-      ]
+      ],
     );
   } catch (e) {
     console.error("Failed to update session", e);
@@ -211,7 +209,7 @@ export const addSessionHistory = async (history: SessionHistory) => {
   try {
     await db.runAsync(
       `INSERT INTO session_history (id, session_id, date, performance_data) VALUES (?, ?, ?, ?);`,
-      [history.id, history.session_id, history.date, history.performance_data]
+      [history.id, history.session_id, history.date, history.performance_data],
     );
   } catch (e) {
     console.error("Failed to add session history", e);
@@ -221,7 +219,7 @@ export const addSessionHistory = async (history: SessionHistory) => {
 export const getSessionHistory = async (): Promise<SessionHistory[]> => {
   try {
     const res = await db.getAllAsync<SessionHistory>(
-      "SELECT * FROM session_history ORDER BY date DESC"
+      "SELECT * FROM session_history ORDER BY date DESC",
     );
     return res;
   } catch (e) {

@@ -383,6 +383,7 @@ const WeekView = React.memo(
           initialScrollIndex={12}
           onEndReached={appendWeeks}
           onEndReachedThreshold={0.5}
+          showsHorizontalScrollIndicator={false}
         />
       </View>
     );

@@ -1,5 +1,6 @@
 import { CacheProvider } from "@/context/CacheContext";
 import { CalendarContextWrapper } from "@/context/CalendarContext";
+import { initDatabase } from "@/services/Database";
 import {
   Inter_400Regular,
   Inter_600SemiBold,
@@ -17,6 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
 import { useEffect } from "react";
 import { Platform, useColorScheme } from "react-native";
@@ -67,6 +69,10 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
+    initDatabase();
+  }, []);
+
+  useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
@@ -94,6 +100,7 @@ function RootLayoutNav() {
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
+          <StatusBar style="light" />
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="modal" options={{ presentation: "modal" }} />
