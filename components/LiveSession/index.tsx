@@ -1,5 +1,5 @@
 import { ScheduledSession, SessionHistory } from "@/constants/Types";
-import { addSessionHistory } from "@/services/Database";
+import { addSessionHistory, updateUserStats } from "@/services/Database";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
@@ -138,8 +138,37 @@ export default function LiveSession({
     stopTimer();
     // Save immediately upon finishing the session
     await handleSaveData();
-    // Then show the completion modal
-    completionModalRef.current?.present();
+
+    // Update Stats
+    try {
+      // Calculate Total Reps
+      let totalRepsInSession = 0;
+      exercises.forEach((ex) => {
+        if (Array.isArray(ex.reps)) {
+          ex.reps.forEach((r: number) => (totalRepsInSession += r));
+        } else {
+          totalRepsInSession += ex.reps * (ex.sets || 1);
+        }
+      });
+
+      const xpEarned = 60 + Math.floor(totalRepsInSession / 10); // Dynamic XP: 60 base + 1 XP per 10 reps
+
+      const newStats = await updateUserStats(xpEarned, totalRepsInSession);
+      // Then show the completion modal with actual stats
+      completionModalRef.current?.present(xpEarned, newStats);
+    } catch (e) {
+      console.error("Failed to update stats", e);
+      // Fallback
+      completionModalRef.current?.present(60, {
+        id: "user",
+        xp: 0,
+        level: 1,
+        streak_current: 0,
+        streak_best: 0,
+        streak_start_date: new Date().toISOString(),
+        total_reps: 0,
+      });
+    }
   };
 
   const handleSaveData = async () => {

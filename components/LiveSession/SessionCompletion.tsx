@@ -1,4 +1,5 @@
 import Colors from "@/constants/Colors";
+import { UserProfile } from "@/constants/Types";
 import { FontAwesome } from "@expo/vector-icons";
 import React, {
   forwardRef,
@@ -18,7 +19,7 @@ interface Props {
 type Step = "rewards" | "level";
 
 export interface SessionCompletionHandle {
-  present: () => void;
+  present: (earnedXP: number, stats: UserProfile) => void;
   dismiss: () => void;
 }
 
@@ -26,9 +27,13 @@ export const SessionCompletion = forwardRef<SessionCompletionHandle, Props>(
   ({ elapsedTime, onContinue }, ref) => {
     const [visible, setVisible] = useState(false);
     const [step, setStep] = useState<Step>("rewards");
+    const [earnedXP, setEarnedXP] = useState(0);
+    const [stats, setStats] = useState<UserProfile | null>(null);
 
     useImperativeHandle(ref, () => ({
-      present: () => {
+      present: (xp, newStats) => {
+        setEarnedXP(xp);
+        setStats(newStats);
         setStep("rewards");
         setVisible(true);
       },
@@ -90,7 +95,7 @@ export const SessionCompletion = forwardRef<SessionCompletionHandle, Props>(
 
                 <View className="bg-card-dark w-full p-8 rounded-3xl items-center border border-zinc-800 shadow-lg">
                   <Text className="text-6xl font-black text-blue-500 mb-2">
-                    +60
+                    +{earnedXP}
                   </Text>
                   <Text className="text-zinc-500 font-bold text-xs tracking-widest uppercase">
                     Experience Points
@@ -122,12 +127,19 @@ export const SessionCompletion = forwardRef<SessionCompletionHandle, Props>(
                 <View className="bg-card-dark w-full p-6 rounded-3xl border border-zinc-800 mb-8">
                   <View className="flex-row justify-between mb-2">
                     <Text className="text-zinc-400 font-bold text-xs uppercase">
-                      Level 1
+                      Level {stats?.level ?? 1}
                     </Text>
-                    <Text className="text-white font-bold text-xs">13%</Text>
+                    <Text className="text-white font-bold text-xs">
+                      {stats ? Math.floor(((stats.xp % 500) / 500) * 100) : 0}%
+                    </Text>
                   </View>
                   <View className="h-4 bg-zinc-800 rounded-full overflow-hidden">
-                    <View className="h-full bg-blue-500 w-[13%]" />
+                    <View
+                      className="h-full bg-blue-500"
+                      style={{
+                        width: `${stats ? ((stats.xp % 500) / 500) * 100 : 0}%`,
+                      }}
+                    />
                   </View>
                 </View>
 

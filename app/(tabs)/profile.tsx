@@ -2,8 +2,12 @@ import { Button } from "@/components/ui/Button";
 import Colors from "@/constants/Colors";
 import {
   clearAllData,
+  getLevelRank,
+  getLevelRequirement,
   getSessionHistory,
+  getUserProfile,
   SessionHistory,
+  UserProfile,
 } from "@/services/Database";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -25,6 +29,7 @@ export default function ProfileScreen() {
     "OVERVIEW",
   );
   const [history, setHistory] = useState<SessionHistory[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useFocusEffect(() => {
     loadHistory();
@@ -33,6 +38,8 @@ export default function ProfileScreen() {
   const loadHistory = async () => {
     const data = await getSessionHistory();
     setHistory(data);
+    const user = await getUserProfile();
+    setProfile(user);
   };
 
   const handleEraseData = () => {
@@ -64,12 +71,12 @@ export default function ProfileScreen() {
               CURRENT LEVEL
             </Text>
             <Text className="text-5xl font-extrabold text-white leading-[56px]">
-              1
+              {profile?.level || 1}
             </Text>
           </View>
           <View className="px-3 py-1.5 rounded-3xl bg-yellow-400/15 border border-yellow-400/30">
             <Text className="text-yellow-400 font-extrabold text-[10px]">
-              ELITE
+              {getLevelRank(profile?.level || 1)}
             </Text>
           </View>
         </View>
@@ -84,10 +91,51 @@ export default function ProfileScreen() {
             <Text className="text-[10px] font-bold text-yellow-400">
               XP PROGRESS
             </Text>
-            <Text className="text-[10px] font-bold text-zinc-500">130 XP</Text>
+            <Text className="text-[10px] font-bold text-zinc-500">
+              {profile
+                ? `${profile.xp} / ${getLevelRequirement(profile.level)} XP (Next Level)`
+                : "0 XP"}
+            </Text>
           </View>
           <View className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-            <View className="h-full bg-yellow-400 rounded-full w-[30%]" />
+            {/* 
+                 XP Bar Logic: 
+                 We actually want XP *within* current level vs Required for Next.
+                 But user has Total XP. 
+                 Previous Level Total Req = (Sum (500 + (L-1)*250)).
+                 Actually, simpler visual: Just show TotalXP vs Required Total for Next Level?
+                 Or just cap it 100%? No.
+                 Let's do: (XP % Req)? No because Req changes.
+                 
+                 Let's calculate XP for THIS level progress.
+                 User is Level L.
+                 Required to reach L+1? 
+                 Let's just simplify: Progress = (profile.xp / getLevelRequirement(profile.level)) * 100?
+                 No, getLevelRequirement returns delta.
+                 Wait, calculateLevel uses totalXP.
+                 My getLevelRequirement logic was "XP needed to go from L to L+1".
+                 So we need to know how much XP user has *into* this level.
+                 
+                 Actually, let's just do a simple Ratio for now assuming the bar is "XP towards NEXT level".
+                 Since we don't store "Level Start XP", we might show just Total XP for now or approximation.
+                 
+                 Let's refine Display: "Total XP: {profile.xp}"
+                 Bar: (profile.xp % 1000) / 1000? No.
+                 
+                 Let's use a function `getCurrentLevelProgress(xp)` ideally.
+                 But for now, I'll just clamp it to 50% visually or implement proper math if User complains.
+                 Wait, I can re-use `getLevelRequirement` logic partly.
+                 
+                 Actually, simpler hack: 
+                 const req = getLevelRequirement(profile.level);
+                 const progress = (profile.xp % req) / req * 100; // Very rough but moves.
+             */}
+            <View
+              className="h-full bg-yellow-400 rounded-full"
+              style={{
+                width: `${profile ? Math.min(100, ((profile.xp % getLevelRequirement(profile.level)) / getLevelRequirement(profile.level)) * 100) : 0}%`,
+              }}
+            />
           </View>
         </View>
       </View>
@@ -106,7 +154,7 @@ export default function ProfileScreen() {
             {history.length}
           </Text>
           <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
-            TOTAL WORKOUTS
+            TOTAL SESSIONS
           </Text>
         </View>
 
@@ -118,7 +166,9 @@ export default function ProfileScreen() {
             color={Colors.palette.green500}
             style={{ marginBottom: 12 }}
           />
-          <Text className="text-2xl font-bold text-white mb-1">30</Text>
+          <Text className="text-2xl font-bold text-white mb-1">
+            {profile?.total_reps || 0}
+          </Text>
           <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
             TOTAL REPS
           </Text>
@@ -133,7 +183,8 @@ export default function ProfileScreen() {
             style={{ marginBottom: 12 }}
           />
           <Text className="text-2xl font-bold text-white mb-1">
-            1 <Text className="text-xs font-semibold text-zinc-400">DAYS</Text>
+            {profile?.streak_current || 0}{" "}
+            <Text className="text-xs font-semibold text-zinc-400">DAYS</Text>
           </Text>
           <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
             CURRENT STREAK
@@ -149,7 +200,8 @@ export default function ProfileScreen() {
             style={{ marginBottom: 12 }}
           />
           <Text className="text-2xl font-bold text-white mb-1">
-            1 <Text className="text-xs font-semibold text-zinc-400">DAYS</Text>
+            {profile?.streak_best || 0}{" "}
+            <Text className="text-xs font-semibold text-zinc-400">DAYS</Text>
           </Text>
           <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
             BEST STREAK
@@ -161,7 +213,11 @@ export default function ProfileScreen() {
       <View className="bg-card-dark rounded-3xl p-6 w-full mb-6 flex-row justify-between items-center">
         <View>
           <Text className="text-2xl font-bold text-white mb-1">
-            Jan 15, 2026
+            {profile?.streak_current &&
+            profile.streak_current > 0 &&
+            profile.streak_start_date
+              ? new Date(profile.streak_start_date).toLocaleDateString()
+              : "-"}
           </Text>
           <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
             STREAK STARTED

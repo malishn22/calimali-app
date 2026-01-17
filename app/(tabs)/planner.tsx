@@ -2,7 +2,11 @@ import SessionWizard from "@/components/SessionWizard";
 import { Calendar } from "@/components/ui/Calendar";
 import { SessionCard } from "@/components/ui/SessionCard";
 import { useCalendarContext } from "@/context/CalendarContext";
-import { deleteSession, ScheduledSession } from "@/services/Database";
+import {
+  deleteSession,
+  isSessionActiveOnDate,
+  ScheduledSession,
+} from "@/services/Database";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useState } from "react";
 import {
@@ -40,12 +44,8 @@ export default function PlannerScreen() {
   // Filter sessions for selected date
   // Fast because `sessions` is cached
   const selectedDateSessions = sessions.filter((session) => {
-    const sessionDate = new Date(session.date);
-    return (
-      sessionDate.getDate() === selectedDate.getDate() &&
-      sessionDate.getMonth() === selectedDate.getMonth() &&
-      sessionDate.getFullYear() === selectedDate.getFullYear()
-    );
+    // Use shared helper for accurate frequency check
+    return isSessionActiveOnDate(session, selectedDate);
   });
 
   return (

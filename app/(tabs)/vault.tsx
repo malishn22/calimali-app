@@ -1,3 +1,4 @@
+import ExerciseDetailSheet from "@/components/ExerciseDetailSheet";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Colors, { CategoryColors } from "@/constants/Colors";
@@ -26,6 +27,9 @@ export default function VaultScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
+    null,
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -125,38 +129,49 @@ export default function VaultScreen() {
             <Animated.View
               entering={FadeInDown.delay(index * 50).springify()}
               layout={LinearTransition}
-              className="bg-card-dark rounded-2xl p-5 mb-3 flex-row justify-between items-center"
+              className="mb-3"
             >
-              <View className="flex-1 bg-transparent flex-row items-center">
-                <Text className="text-sm font-bold text-white">
-                  {item.name}
-                </Text>
-                {item.is_unilateral && (
-                  <MaterialCommunityIcons
-                    name="alpha-u-box"
-                    size={16}
-                    color={Colors.palette.blue500}
-                    style={{ marginLeft: 6 }}
-                  />
-                )}
-              </View>
+              <Pressable
+                onPress={() => setSelectedExercise(item)}
+                className="bg-card-dark rounded-2xl p-5 flex-row justify-between items-center"
+              >
+                <View className="flex-1 bg-transparent flex-row items-center">
+                  <Text className="text-sm font-bold text-white">
+                    {item.name}
+                  </Text>
+                  {item.is_unilateral && (
+                    <MaterialCommunityIcons
+                      name="alpha-u-box"
+                      size={16}
+                      color={Colors.palette.blue500}
+                      style={{ marginLeft: 6 }}
+                    />
+                  )}
+                </View>
 
-              <View className="flex-row items-center bg-transparent">
-                <Text className="text-[10px] font-bold text-green-500 mr-2">
-                  {item.difficulty}
-                </Text>
-                <Text
-                  className="text-[10px] font-bold uppercase"
-                  style={{ color: getCategoryColor(item.category) }}
-                >
-                  {" "}
-                  {item.category}
-                </Text>
-              </View>
+                <View className="flex-row items-center bg-transparent">
+                  <Text className="text-[10px] font-bold text-green-500 mr-2">
+                    {item.difficulty}
+                  </Text>
+                  <Text
+                    className="text-[10px] font-bold uppercase"
+                    style={{ color: getCategoryColor(item.category) }}
+                  >
+                    {" "}
+                    {item.category}
+                  </Text>
+                </View>
+              </Pressable>
             </Animated.View>
           )}
         />
       </View>
+
+      <ExerciseDetailSheet
+        visible={!!selectedExercise}
+        exercise={selectedExercise}
+        onClose={() => setSelectedExercise(null)}
+      />
     </SafeAreaView>
   );
 }

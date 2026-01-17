@@ -2,7 +2,10 @@ import SessionCard from "@/components/SessionCard";
 import {
   getSessionHistory,
   getSessions,
+  getUserProfile,
+  isSessionActiveOnDate,
   ScheduledSession,
+  UserProfile,
 } from "@/services/Database";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -17,6 +20,7 @@ export default function DashboardScreen() {
   const [completedSessionIds, setCompletedSessionIds] = useState<Set<string>>(
     new Set(),
   );
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const currentDate = new Date()
     .toLocaleDateString("en-US", {
@@ -35,6 +39,9 @@ export default function DashboardScreen() {
   const loadDailySessions = async () => {
     const allSessions = await getSessions();
     const history = await getSessionHistory();
+    const profile = await getUserProfile();
+    setUserProfile(profile);
+
     const today = new Date();
 
     // Find completed sessions for TODAY
@@ -52,25 +59,7 @@ export default function DashboardScreen() {
 
     // Filter for today
     const todays = allSessions.filter((session) => {
-      const sessionDate = new Date(session.date);
-      const isSameDay =
-        sessionDate.getDate() === today.getDate() &&
-        sessionDate.getMonth() === today.getMonth() &&
-        sessionDate.getFullYear() === today.getFullYear();
-
-      if (session.frequency === "ONCE") {
-        return isSameDay;
-      } else if (session.frequency === "DAILY") {
-        return today >= sessionDate; // Simple check: if started in past/today
-      } else if (session.frequency === "WEEKLY") {
-        return today >= sessionDate && sessionDate.getDay() === today.getDay();
-      } else if (session.frequency === "EVERY_2_DAYS") {
-        if (today < sessionDate) return false;
-        const diffTime = Math.abs(today.getTime() - sessionDate.getTime());
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays % 2 === 0;
-      }
-      return false;
+      return isSessionActiveOnDate(session, today);
     });
 
     setDailySessions(todays);
@@ -107,7 +96,9 @@ export default function DashboardScreen() {
                   color="#713F12"
                   style={{ marginRight: 4 }}
                 />
-                <Text className="text-xs font-bold text-[#713F12]">LVL 1</Text>
+                <Text className="text-xs font-bold text-[#713F12]">
+                  LVL {userProfile?.level || 1}
+                </Text>
               </View>
             </View>
             <Text className="text-xs text-zinc-500 font-semibold tracking-wide">
@@ -116,8 +107,14 @@ export default function DashboardScreen() {
           </View>
 
           <View className="flex-row items-center bg-zinc-800 px-4 py-2.5 rounded-2xl border border-zinc-700">
-            <FontAwesome name="fire" size={20} color="#FF4500" />
-            <Text className="text-xl font-bold ml-2 text-white">1</Text>
+            <FontAwesome
+              name="fire"
+              size={20}
+              color={userProfile?.streak_current ? "#FF4500" : "#71717a"}
+            />
+            <Text className="text-xl font-bold ml-2 text-white">
+              {userProfile?.streak_current || 0}
+            </Text>
           </View>
         </View>
 
