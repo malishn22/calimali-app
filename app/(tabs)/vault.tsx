@@ -1,6 +1,4 @@
-import AddExerciseSheet from "@/components/exercises/AddExerciseSheet";
 import ExerciseDetailSheet from "@/components/exercises/ExerciseDetailSheet";
-import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Colors, { CategoryColors } from "@/constants/Colors";
 import { ExerciseCategory } from "@/constants/Enums";
@@ -32,7 +30,6 @@ export default function VaultScreen() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null,
   );
-  const [isAddSheetVisible, setIsAddSheetVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -75,13 +72,6 @@ export default function VaultScreen() {
         {/* Header */}
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-3xl font-extrabold text-white">Vault</Text>
-          <Button
-            variant="primary"
-            size="sm"
-            icon="plus"
-            iconColor="white"
-            onPress={() => setIsAddSheetVisible(true)}
-          />
         </View>
 
         {/* Search Bar */}
@@ -174,12 +164,6 @@ export default function VaultScreen() {
         visible={!!selectedExercise}
         exercise={selectedExercise}
         onClose={() => setSelectedExercise(null)}
-      />
-
-      <AddExerciseSheet
-        visible={isAddSheetVisible}
-        onClose={() => setIsAddSheetVisible(false)}
-        onExerciseAdded={loadData}
       />
     </SafeAreaView>
   );
