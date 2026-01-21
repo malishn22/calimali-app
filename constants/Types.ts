@@ -30,7 +30,7 @@ export interface ScheduledSession {
   id: string;
   title: string;
   date: string;
-  frequency: "ONCE" | "DAILY" | "WEEKLY" | "EVERY_2_DAYS";
+  frequency: "ONCE" | "DAILY" | "WEEKLY" | "EVERY 2 DAYS";
   color: string;
   exercises: string;
 }

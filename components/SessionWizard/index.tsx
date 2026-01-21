@@ -40,7 +40,7 @@ export default function SessionWizard({
   const [title, setTitle] = useState("");
   const [color, setColor] = useState("#3B82F6"); // Default blue
   const [frequency, setFrequency] = useState<
-    "ONCE" | "DAILY" | "WEEKLY" | "EVERY_2_DAYS"
+    "ONCE" | "DAILY" | "WEEKLY" | "EVERY 2 DAYS"
   >("ONCE");
 
   // Selection State

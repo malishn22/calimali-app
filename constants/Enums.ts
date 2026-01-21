@@ -15,12 +15,12 @@ export enum ExerciseDifficulty {
 
 export enum ExerciseEquipment {
   NONE = "NONE",
-  PULL_UP_BAR = "PULL_UP_BAR",
+  PULL_UP_BAR = "PULL UP BAR",
   RINGS = "RINGS",
   PARALLETTES = "PARALLETTES",
-  RESISTANCE_BAND = "RESISTANCE_BAND",
+  RESISTANCE_BAND = "RESISTANCE BANDS",
   FLOOR = "FLOOR",
-  STALL_BAR = "STALL_BAR",
+  STALL_BAR = "STALL BAR",
   BOX = "BOX",
   BENCH = "BENCH",
 }

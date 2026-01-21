@@ -472,7 +472,7 @@ export const isSessionActiveOnDate = (
     return true; // Already verified date >= start
   } else if (session.frequency === "WEEKLY") {
     return target.getDay() === start.getDay();
-  } else if (session.frequency === "EVERY_2_DAYS") {
+  } else if (session.frequency === "EVERY 2 DAYS") {
     const diffTime = Math.abs(target.getTime() - start.getTime());
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
     return diffDays % 2 === 0;

@@ -8,7 +8,7 @@ interface Props {
   setTitle: (t: string) => void;
   color: string;
   setColor: (c: string) => void;
-  frequency: "ONCE" | "DAILY" | "WEEKLY" | "EVERY_2_DAYS";
+  frequency: "ONCE" | "DAILY" | "WEEKLY" | "EVERY 2 DAYS";
   setFrequency: (f: any) => void;
 }
 
@@ -24,7 +24,7 @@ const FREQUENCIES = [
   { label: "Once", value: "ONCE" },
   { label: "Daily", value: "DAILY" },
   { label: "Weekly", value: "WEEKLY" },
-  { label: "Every 2 Days", value: "EVERY_2_DAYS" },
+  { label: "Every 2 Days", value: "EVERY 2 DAYS" },
 ];
 
 export function WizardFinalStep({
