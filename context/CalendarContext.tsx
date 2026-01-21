@@ -1,4 +1,4 @@
-import { ScheduledSession } from "@/services/Database";
+import { ScheduledSession } from "@/constants/Types";
 import React, { createContext, useContext, useState } from "react";
 import { useCache } from "./CacheContext";
 

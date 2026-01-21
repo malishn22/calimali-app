@@ -1,8 +1,8 @@
 import React from "react";
 import { Text, View } from "react-native";
 
-import { ExternalLink } from "./ExternalLink";
-import { MonoText } from "./StyledText";
+import { ExternalLink } from "./common/ExternalLink";
+import { MonoText } from "./common/StyledText";
 
 export default function EditScreenInfo({ path }: { path: string }) {
   return (

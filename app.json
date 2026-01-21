@@ -30,7 +30,7 @@
       "output": "static",
       "favicon": "./assets/images/calimali-icon.png"
     },
-    "plugins": ["expo-router", "expo-sqlite"],
+    "plugins": ["expo-router"],
     "experiments": {
       "typedRoutes": true
     }

@@ -1,6 +1,6 @@
 import { CacheProvider } from "@/context/CacheContext";
 import { CalendarContextWrapper } from "@/context/CalendarContext";
-import { initDatabase } from "@/services/Database";
+
 import {
   Inter_400Regular,
   Inter_600SemiBold,
@@ -69,10 +69,6 @@ export default function RootLayout() {
   useEffect(() => {
     if (error) throw error;
   }, [error]);
-
-  useEffect(() => {
-    initDatabase();
-  }, []);
 
   useEffect(() => {
     if (loaded) {

@@ -1,4 +1,4 @@
-import LiveSession from "@/components/LiveSession";
+import LiveSession from "@/components/sessions/LiveSession";
 import { ScheduledSession, SessionHistory } from "@/constants/Types";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";

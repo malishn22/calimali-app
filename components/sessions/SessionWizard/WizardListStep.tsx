@@ -1,9 +1,9 @@
+import { Button } from "@/components/ui/Button";
 import Colors from "@/constants/Colors";
-import { SessionExercise } from "@/services/Database";
+import { SessionExercise } from "@/constants/Types";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { FlatList, Text, View } from "react-native";
-import { Button } from "../ui/Button";
 import { WizardScreenWrapper } from "./WizardScreenWrapper";
 
 interface Props {

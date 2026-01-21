@@ -1,20 +1,12 @@
-import { Button } from "@/components/ui/Button";
 import Colors from "@/constants/Colors";
-import {
-  clearAllData,
-  getLevelRank,
-  getLevelRequirement,
-  getSessionHistory,
-  getUserProfile,
-  SessionHistory,
-  UserProfile,
-} from "@/services/Database";
+import { SessionHistory, UserProfile } from "@/constants/Types";
+import { Api } from "@/services/api";
+import { getLevelRank, getLevelRequirement } from "@/utilities/Gamification";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -36,29 +28,10 @@ export default function ProfileScreen() {
   });
 
   const loadHistory = async () => {
-    const data = await getSessionHistory();
+    const data = await Api.getSessionHistory();
     setHistory(data);
-    const user = await getUserProfile();
+    const user = await Api.getUserProfile();
     setProfile(user);
-  };
-
-  const handleEraseData = () => {
-    Alert.alert(
-      "Erase All Data",
-      "Are you sure you want to delete all your sessions, history and stats? This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Erase",
-          style: "destructive",
-          onPress: async () => {
-            await clearAllData();
-            Alert.alert("Data Cleared", "Please restart the app.");
-            loadHistory();
-          },
-        },
-      ],
-    );
   };
 
   const renderOverview = () => (
@@ -314,15 +287,6 @@ export default function ProfileScreen() {
           <Text className="text-3xl font-extrabold text-white">
             Profile & Stats
           </Text>
-          <Button
-            variant="secondary"
-            size="sm"
-            onPress={handleEraseData}
-            icon="sliders"
-            iconColor={Colors.palette.zinc400}
-            className="w-10 h-10 !p-0 bg-card-dark justify-center items-center"
-            style={{ borderRadius: 9999 }}
-          />
         </View>
 
         {/* Toggle Sections */}

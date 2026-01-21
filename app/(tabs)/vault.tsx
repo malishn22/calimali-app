@@ -1,20 +1,15 @@
-import AddExerciseSheet from "@/components/AddExerciseSheet";
-import ExerciseDetailSheet from "@/components/ExerciseDetailSheet";
+import AddExerciseSheet from "@/components/exercises/AddExerciseSheet";
+import ExerciseDetailSheet from "@/components/exercises/ExerciseDetailSheet";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Colors, { CategoryColors } from "@/constants/Colors";
 import { ExerciseCategory } from "@/constants/Enums";
-import {
-  clearAllData,
-  Exercise,
-  getExercises,
-  resetUserStats,
-} from "@/services/Database";
+import { Exercise } from "@/constants/Types";
+import { Api } from "@/services/api";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
-  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -46,31 +41,9 @@ export default function VaultScreen() {
   );
 
   const loadData = async () => {
-    const data = await getExercises();
+    const data = await Api.getExercises();
     data.sort((a, b) => a.name.localeCompare(b.name));
     setExercises(data);
-    setExercises(data);
-  };
-
-  const handleResetData = () => {
-    Alert.alert(
-      "Reset All Data",
-      "Are you sure? This will delete all history, sessions, and reset your level/stats. Exercises will normally remain.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Reset Everything",
-          style: "destructive",
-          onPress: async () => {
-            await clearAllData();
-            await resetUserStats();
-            Alert.alert("Success", "All user data has been reset.");
-            // Refresh?
-            loadData();
-          },
-        },
-      ],
-    );
   };
 
   const filteredExercises = exercises.filter((ex) => {
@@ -109,15 +82,6 @@ export default function VaultScreen() {
             iconColor="white"
             onPress={() => setIsAddSheetVisible(true)}
           />
-        </View>
-
-        {/* Reset Button (Temporary Placement as requested) */}
-        <View className="flex-row justify-end mb-4">
-          <Button variant="ghost" size="sm" onPress={handleResetData}>
-            <Text className="text-zinc-500 text-xs font-bold ml-2">
-              RESET DATA
-            </Text>
-          </Button>
         </View>
 
         {/* Search Bar */}

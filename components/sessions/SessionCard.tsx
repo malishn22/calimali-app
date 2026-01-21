@@ -1,4 +1,4 @@
-import { ScheduledSession } from "@/services/Database";
+import { ScheduledSession } from "@/constants/Types";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useMemo } from "react";

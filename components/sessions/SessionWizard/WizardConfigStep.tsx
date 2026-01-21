@@ -1,8 +1,8 @@
-import { Exercise } from "@/services/Database";
+import { Button } from "@/components/ui/Button";
+import { Exercise } from "@/constants/Types";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { Button } from "../ui/Button";
 import { BottomActionPanel } from "./BottomActionPanel";
 import { WizardScreenWrapper } from "./WizardScreenWrapper";
 

@@ -1,12 +1,10 @@
-import SessionWizard from "@/components/SessionWizard";
-import { Calendar } from "@/components/ui/Calendar";
-import { SessionCard } from "@/components/ui/SessionCard";
+import { Calendar } from "@/components/calendar/Calendar";
+import { PlannerSessionRow as SessionCard } from "@/components/sessions/PlannerSessionRow";
+import SessionWizard from "@/components/sessions/SessionWizard";
+import { ScheduledSession } from "@/constants/Types";
 import { useCalendarContext } from "@/context/CalendarContext";
-import {
-  deleteSession,
-  isSessionActiveOnDate,
-  ScheduledSession,
-} from "@/services/Database";
+import { Api } from "@/services/api";
+import { isSessionActiveOnDate } from "@/utilities/SessionUtils";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useState } from "react";
 import {
@@ -32,7 +30,7 @@ export default function PlannerScreen() {
   );
 
   const handleDeleteSession = async (id: string) => {
-    await deleteSession(id);
+    await Api.deletePlannedSession(id);
     await refreshSessions();
   };
 

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import Colors from "@/constants/Colors";
 import { UserProfile } from "@/constants/Types";
 import { FontAwesome } from "@expo/vector-icons";
@@ -9,7 +10,6 @@ import React, {
 } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button } from "../ui/Button";
 
 interface Props {
   elapsedTime: number;

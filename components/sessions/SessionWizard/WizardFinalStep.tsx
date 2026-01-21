@@ -1,6 +1,6 @@
+import { Input } from "@/components/ui/Input";
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { Input } from "../ui/Input";
 import { WizardScreenWrapper } from "./WizardScreenWrapper";
 
 interface Props {

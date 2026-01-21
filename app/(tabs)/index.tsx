@@ -1,12 +1,7 @@
-import SessionCard from "@/components/SessionCard";
-import {
-  getSessionHistory,
-  getSessions,
-  getUserProfile,
-  isSessionActiveOnDate,
-  ScheduledSession,
-  UserProfile,
-} from "@/services/Database";
+import SessionCard from "@/components/sessions/SessionCard";
+import { ScheduledSession, UserProfile } from "@/constants/Types";
+import { Api } from "@/services/api";
+import { isSessionActiveOnDate } from "@/utilities/SessionUtils";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -37,9 +32,9 @@ export default function DashboardScreen() {
   );
 
   const loadDailySessions = async () => {
-    const allSessions = await getSessions();
-    const history = await getSessionHistory();
-    const profile = await getUserProfile();
+    const allSessions = await Api.getPlannedSessions();
+    const history = await Api.getSessionHistory();
+    const profile = await Api.getUserProfile();
     setUserProfile(profile);
 
     const today = new Date();

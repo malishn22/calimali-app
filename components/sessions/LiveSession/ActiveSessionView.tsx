@@ -1,4 +1,4 @@
-import { SessionExercise } from "@/services/Database";
+import { SessionExercise } from "@/constants/Types";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, View } from "react-native";

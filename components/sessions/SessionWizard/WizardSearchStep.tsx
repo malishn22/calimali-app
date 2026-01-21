@@ -1,9 +1,10 @@
+import { Input } from "@/components/ui/Input";
 import Colors from "@/constants/Colors";
-import { Exercise, getExercises } from "@/services/Database";
+import { Exercise } from "@/constants/Types";
+import { Api } from "@/services/api";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
-import { Input } from "../ui/Input";
 import { WizardScreenWrapper } from "./WizardScreenWrapper";
 
 interface Props {
@@ -19,7 +20,7 @@ export function WizardSearchStep({ onSelect }: Props) {
   }, []);
 
   const load = async () => {
-    const data = await getExercises();
+    const data = await Api.getExercises();
     data.sort((a, b) => a.name.localeCompare(b.name));
     setExercises(data);
   };

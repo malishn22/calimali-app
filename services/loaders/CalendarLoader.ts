@@ -1,9 +1,7 @@
 import Colors from "@/constants/Colors";
-import {
-  getSessions,
-  isSessionActiveOnDate,
-  ScheduledSession,
-} from "@/services/Database";
+import { ScheduledSession } from "@/constants/Types";
+import { isSessionActiveOnDate } from "@/utilities/SessionUtils";
+import { Api } from "../api";
 
 export interface CalendarData {
   sessions: ScheduledSession[];
@@ -13,7 +11,7 @@ export interface CalendarData {
 export class CalendarLoader {
   static async load(): Promise<CalendarData> {
     // 1. Fetch Sessions from DB
-    const sessions = await getSessions();
+    const sessions = await Api.getPlannedSessions();
 
     // 2. Pre-calculate markedDates (Dots)
     // We will generate markers for a range: 6 months back, 12 months forward

@@ -1,9 +1,9 @@
+import { Button } from "@/components/ui/Button";
+import { SessionButton } from "@/components/ui/SessionButton";
 import Colors from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Text, View } from "react-native";
-import { Button } from "../ui/Button";
-import { SessionButton } from "../ui/SessionButton";
 
 type Props =
   | {

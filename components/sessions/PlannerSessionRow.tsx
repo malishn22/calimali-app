@@ -1,4 +1,4 @@
-import { ScheduledSession } from "@/services/Database";
+import { ScheduledSession } from "@/constants/Types";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
@@ -9,7 +9,11 @@ interface SessionCardProps {
   onDelete: (id: string) => void;
 }
 
-export function SessionCard({ session, onPress, onDelete }: SessionCardProps) {
+export function PlannerSessionRow({
+  session,
+  onPress,
+  onDelete,
+}: SessionCardProps) {
   const exCount = JSON.parse(session.exercises || "[]").length;
 
   return (

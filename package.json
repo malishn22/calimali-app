@@ -25,7 +25,6 @@
     "expo-navigation-bar": "~5.0.10",
     "expo-router": "~6.0.21",
     "expo-splash-screen": "~31.0.13",
-    "expo-sqlite": "~16.0.10",
     "expo-status-bar": "~3.0.9",
     "expo-web-browser": "~15.0.10",
     "lodash": "^4.17.21",

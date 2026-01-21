@@ -1,12 +1,6 @@
-import { WizardFooter } from "@/components/SessionWizard/WizardFooter";
-import {
-  addSession,
-  Exercise,
-  getExercise,
-  ScheduledSession,
-  SessionExercise,
-  updateSession,
-} from "@/services/Database";
+import { WizardFooter } from "@/components/sessions/SessionWizard/WizardFooter";
+import { Exercise, ScheduledSession, SessionExercise } from "@/constants/Types";
+import { Api } from "@/services/api";
 import React, { useEffect, useState } from "react";
 import { Alert, Modal, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -117,7 +111,7 @@ export default function SessionWizard({
 
   const handleEditExercise = async (index: number) => {
     const sessionEx = sessionExercises[index];
-    const fullEx = await getExercise(sessionEx.exerciseId);
+    const fullEx = await Api.getExercise(sessionEx.exerciseId);
     if (fullEx) {
       setSelectedExercise(fullEx);
       setEditingIndex(index);
@@ -139,7 +133,7 @@ export default function SessionWizard({
     try {
       const exerciseJson = JSON.stringify(sessionExercises);
       if (initialSession) {
-        await updateSession({
+        await Api.updatePlannedSession({
           id: initialSession.id,
           title: finalTitle,
           date: initialSession.date,
@@ -148,8 +142,8 @@ export default function SessionWizard({
           color,
         });
       } else {
-        await addSession({
-          id: Date.now().toString(),
+        await Api.postPlannedSession({
+          id: "", // Server generated
           title: finalTitle,
           date: selectedDate.toISOString(),
           frequency,

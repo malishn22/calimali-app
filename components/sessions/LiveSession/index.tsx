@@ -1,5 +1,5 @@
 import { ScheduledSession, SessionHistory } from "@/constants/Types";
-import { addSessionHistory, updateUserStats } from "@/services/Database";
+import { Api } from "@/services/api";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
@@ -180,7 +180,7 @@ export default function LiveSession({
 
       const xpEarned = 60 + Math.floor(totalRepsInSession / 10); // Dynamic XP: 60 base + 1 XP per 10 reps
 
-      const newStats = await updateUserStats(xpEarned, totalRepsInSession);
+      const newStats = await Api.applyStats(xpEarned, totalRepsInSession);
       // Then show the completion modal with actual stats
       completionModalRef.current?.present(xpEarned, newStats);
     } catch (e) {
@@ -211,7 +211,7 @@ export default function LiveSession({
       }),
     };
 
-    await addSessionHistory(historyData);
+    await Api.postSession(historyData);
     completedDataRef.current = historyData;
   };
 
