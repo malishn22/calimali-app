@@ -153,8 +153,8 @@ export default function SessionWizard({
       }
       onSave();
       onClose();
-    } catch (e) {
-      Alert.alert("Error", "Failed to save session.");
+    } catch (e: any) {
+      Alert.alert("Error", e.message || "Failed to save session.");
     }
   };
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 interface Props {
   children: React.ReactNode;
@@ -7,5 +7,12 @@ interface Props {
 }
 
 export function WizardScreenWrapper({ children, className = "" }: Props) {
-  return <View className={`flex-1 px-6 pt-6 ${className}`}>{children}</View>;
+  return (
+    <Animated.View
+      entering={FadeInDown.duration(600)}
+      className={`flex-1 px-6 pt-6 ${className}`}
+    >
+      {children}
+    </Animated.View>
+  );
 }

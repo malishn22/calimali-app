@@ -19,76 +19,84 @@ export const getPlannedSessions = async (): Promise<ScheduledSession[]> => {
       exercises: JSON.stringify(
         s.exercises.map((e) => ({
           exerciseId: e.exerciseId,
-          name: e.exercise.name,
+          name: e.exercise?.name || "Unknown Exercise",
           sets: e.targetSets || 3,
           reps: e.targetReps || 10,
         })),
       ),
     }));
   } catch (error) {
-    console.error(error);
+    console.error("getPlannedSessions Error:", error);
     return [];
   }
 };
 
 export const postPlannedSession = async (session: ScheduledSession) => {
-  try {
-    // Parse exercises string if needed, or assume it's already an object if types were strict.
-    // Frontend uses stringified JSON for local DB.
-    // We need to decode it to send to API.
-    const exercises =
-      typeof session.exercises === "string"
-        ? JSON.parse(session.exercises)
-        : session.exercises;
+  // Parse exercises string if needed, or assume it's already an object if types were strict.
+  // Frontend uses stringified JSON for local DB.
+  // We need to decode it to send to API.
+  const exercises =
+    typeof session.exercises === "string"
+      ? JSON.parse(session.exercises)
+      : session.exercises;
 
-    const body = {
-      title: session.title,
-      startDate: session.date,
-      frequency: session.frequency,
-      color: session.color,
-      exercises: exercises.map((e: any, idx: number) => ({
-        exerciseId: e.exerciseId || e.id, // Handle legacy 'id' usage
-        orderIndex: idx,
-        targetSets: e.sets,
-        targetReps: Array.isArray(e.reps) ? e.reps[0] : e.reps, // API expects int for now? Or we should handle array?
-        // API PlannedSessionExercise has `target_reps` (int).
-        // Frontend support variable reps per set (number[]).
-        // This is a mismatch. The backend `PlannedSessionExercise` is simple properly.
-        // The `SessionExercise` (performed) has sets.
-        // For Planning, let's just take the first value or max.
-      })),
-    };
+  const body = {
+    title: session.title,
+    // Fix: Convert to Local YYYY-MM-DD to avoid UTC timezone shift (e.g. 21:00 Z previous day)
+    startDate: (() => {
+      const d = new Date(session.date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    })(),
+    frequency: session.frequency,
+    color: session.color,
+    exercises: exercises.map((e: any, idx: number) => ({
+      exerciseId: e.exerciseId || e.id, // Handle legacy 'id' usage
+      orderIndex: idx,
+      targetSets: e.sets,
+      targetReps: Array.isArray(e.reps) ? e.reps[0] : e.reps, // API expects int for now? Or we should handle array?
+      // API PlannedSessionExercise has `target_reps` (int).
+      // Frontend support variable reps per set (number[]).
+      // This is a mismatch. The backend `PlannedSessionExercise` is simple properly.
+      // The `SessionExercise` (performed) has sets.
+      // For Planning, let's just take the first value or max.
+    })),
+  };
 
-    await fetch(`${API_URL}/planned-sessions`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-    });
-  } catch (e) {
-    console.error(e);
+  const response = await fetch(`${API_URL}/planned-sessions`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Failed to post session: ${response.status} ${text}`);
   }
 };
 
 export const deletePlannedSession = async (id: string) => {
-  try {
-    await fetch(`${API_URL}/planned-sessions/${id}`, {
-      method: "DELETE",
-    });
-  } catch (e) {
-    console.error(e);
+  const response = await fetch(`${API_URL}/planned-sessions/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error("Failed to delete planned session");
   }
 };
 
 export const updatePlannedSession = async (session: ScheduledSession) => {
-  try {
-    // WORKAROUND: Delete and Re-create since PUT is not fully ready/verified on backend
-    if (session.id) {
+  // WORKAROUND: Delete and Re-create since PUT is not fully ready/verified on backend
+  if (session.id) {
+    // We try to delete, but if it fails (e.g. 404), we proceed to post
+    try {
       await deletePlannedSession(session.id);
+    } catch (e) {
+      console.warn("Update: Delete failed, proceeding to create", e);
     }
-    await postPlannedSession(session);
-  } catch (e) {
-    console.error(e);
   }
+  await postPlannedSession(session);
 };
 
 // Session History
@@ -102,28 +110,15 @@ export const getSessionHistory = async (): Promise<SessionHistory[]> => {
       id: s.id,
       session_id: s.plannedSessionId || "",
       date: s.performedAt,
-      performance_data: JSON.stringify(
-        s.sessionExercises.map((se) => ({
-          exercise: {
-            id: se.exerciseId, // Need full exercise data? For history it might be needed.
-            // The API session only returns snapshots.
-            // If FE relies on `exercise` object in history, we might need to reconstruct it or fetch it.
-            // But `SessionHistory` usually just displays.
-            // However, `LiveSession` saves full objects.
-            // `getSessionHistory` isn't used much except for 'Last Session' stats where it counts reps?
-            // `SessionCard` (completed) uses it? `SessionCard` uses `ScheduledSession`.
-            // Dashboard uses history to check completions.
-            // The `performance_data` is used in `SessionDetail`? (If exists).
-            // Let's assume snapshot name is enough for now.
-            name: se.exerciseNameSnapshot,
-          },
-          sets: se.sets.map((set) => ({
-            reps: set.reps,
-            weight: set.weight,
-            seconds: set.seconds,
-          })),
+      performance_data: JSON.stringify({
+        // Reconstruct expected frontend object for History
+        elapsedTime: s.durationSeconds || 0,
+        exercises: s.sessionExercises.map((se) => ({
+          name: se.exerciseNameSnapshot,
+          sets: se.sets.length,
+          reps: se.sets.map((set) => set.reps || 0),
         })),
-      ),
+      }),
     }));
   } catch (error) {
     console.error(error);
@@ -150,7 +145,7 @@ export const postSession = async (data: any) => {
     // }
 
     // So we need to PARSE performance_data string.
-    const exercises =
+    const parsedData =
       typeof data.performance_data === "string"
         ? JSON.parse(data.performance_data)
         : data.performance_data;
@@ -159,9 +154,9 @@ export const postSession = async (data: any) => {
       plannedSessionId: data.session_id || null, // Might need UUID validation? string empty vs null
       titleSnapshot: "Workout", // Default title if not provided
       performedAt: data.date,
-      durationSeconds: 0, // FE doesn't track total duration?
+      durationSeconds: parsedData.elapsedTime || 0, // Get actual duration from parsed data
       notes: "",
-      exercises: exercises.exercises.map((ex: any, idx: number) => ({
+      exercises: parsedData.exercises.map((ex: any, idx: number) => ({
         // exercises.exercises because structure in LiveSession is { exercises: [], ... }
         exerciseId: ex.id || ex.exerciseId, // Check structure in LiveSession
         orderIndex: idx,

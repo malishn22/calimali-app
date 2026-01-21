@@ -1,16 +1,22 @@
 import { CategoryColors } from "@/constants/Colors";
 import { Exercise } from "@/constants/Types";
 import { FontAwesome } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import {
-  Animated,
   Dimensions,
+  Easing,
   Modal,
   Pressable,
   ScrollView,
   Text,
   View,
 } from "react-native";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  SlideInDown,
+  SlideOutDown,
+} from "react-native-reanimated";
 
 interface ExerciseDetailSheetProps {
   visible: boolean;
@@ -26,28 +32,7 @@ export default function ExerciseDetailSheet({
   exercise,
   onClose,
 }: ExerciseDetailSheetProps) {
-  const [showModal, setShowModal] = useState(false);
-  const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
-
-  useEffect(() => {
-    if (visible) {
-      setShowModal(true);
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        damping: 20,
-        stiffness: 90,
-      }).start();
-    } else {
-      Animated.timing(slideAnim, {
-        toValue: SHEET_HEIGHT,
-        duration: 250,
-        useNativeDriver: true,
-      }).start(() => setShowModal(false));
-    }
-  }, [visible]);
-
-  if (!showModal || !exercise) return null;
+  if (!visible || !exercise) return null;
 
   const getCategoryColor = (category: string) => {
     return (
@@ -58,20 +43,26 @@ export default function ExerciseDetailSheet({
 
   return (
     <Modal
-      visible={showModal}
+      visible={visible}
       transparent
       statusBarTranslucent
-      animationType="fade"
+      animationType="none" // Controlled by Reanimated
+      onRequestClose={onClose}
     >
-      <View className="flex-1 bg-black/60 justify-end">
+      <Animated.View
+        className="flex-1 bg-black/60 justify-end"
+        entering={FadeIn.duration(200)}
+        exiting={FadeOut.duration(200)}
+      >
         <Pressable className="flex-1" onPress={onClose} />
         <Animated.View
+          entering={SlideInDown.duration(500).easing(Easing.out(Easing.cubic))}
+          exiting={SlideOutDown.duration(200)}
           style={{
             height: SHEET_HEIGHT,
-            transform: [{ translateY: slideAnim }],
             borderTopLeftRadius: 32,
             borderTopRightRadius: 32,
-            backgroundColor: "#1c1c1e", // Background Dark, slightly lighter
+            backgroundColor: "#1c1c1e",
             overflow: "hidden",
           }}
         >
@@ -188,7 +179,7 @@ export default function ExerciseDetailSheet({
             <View className="h-20" />
           </ScrollView>
         </Animated.View>
-      </View>
+      </Animated.View>
     </Modal>
   );
 }
