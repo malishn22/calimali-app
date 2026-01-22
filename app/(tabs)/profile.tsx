@@ -5,7 +5,7 @@ import { getLevelRank, getLevelRequirement } from "@/utilities/Gamification";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect } from "expo-router";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -33,9 +33,37 @@ export default function ProfileScreen() {
   );
   const [detailVisible, setDetailVisible] = useState(false);
 
-  useFocusEffect(() => {
-    loadHistory();
-  });
+  // Cache timestamp to avoid excessive API calls
+  const lastFetchTime = useRef<number>(0);
+  const CACHE_DURATION_MS = 30000; // 30 seconds cache
+
+  const loadHistory = useCallback(async () => {
+    const now = Date.now();
+    // Skip if data was fetched recently (within cache duration)
+    if (now - lastFetchTime.current < CACHE_DURATION_MS) {
+      return;
+    }
+
+    lastFetchTime.current = now;
+    
+    // Fetch both API calls in parallel for better performance
+    try {
+      const [historyData, profileData] = await Promise.all([
+        Api.getSessionHistory(),
+        Api.getUserProfile(),
+      ]);
+      setHistory(historyData);
+      setProfile(profileData);
+    } catch (error) {
+      console.error("Failed to load profile data:", error);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadHistory();
+    }, [loadHistory])
+  );
 
   // ... loadHistory and renderOverview remain ...
 
@@ -110,12 +138,6 @@ export default function ProfileScreen() {
     </View>
   );
 
-  const loadHistory = async () => {
-    const data = await Api.getSessionHistory();
-    setHistory(data);
-    const user = await Api.getUserProfile();
-    setProfile(user);
-  };
 
   const renderOverview = () => (
     <>
