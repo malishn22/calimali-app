@@ -4,7 +4,6 @@ import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
   Dimensions,
-  Easing,
   Modal,
   Pressable,
   ScrollView,
@@ -56,7 +55,7 @@ export default function ExerciseDetailSheet({
       >
         <Pressable className="flex-1" onPress={onClose} />
         <Animated.View
-          entering={SlideInDown.duration(500).easing(Easing.out(Easing.cubic))}
+          entering={SlideInDown.duration(500)}
           exiting={SlideOutDown.duration(200)}
           style={{
             height: SHEET_HEIGHT,
