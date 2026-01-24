@@ -2,11 +2,13 @@ import Colors from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, ViewStyle } from "react-native";
+import * as Haptics from "expo-haptics";
 import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
 interface SessionButtonProps {
@@ -30,34 +32,32 @@ export function SessionButton({
   className = "",
   style,
 }: SessionButtonProps) {
-  const interaction = useSharedValue(0); // 0 = idle, 1 = pressed
+  // Animation State
+  const interaction = useSharedValue(0);
 
   const handlePressIn = () => {
     if (!disabled) {
-      // Minimal bounce, crisp response
-      interaction.value = withSpring(1, { damping: 50, stiffness: 500 });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      interaction.value = withTiming(1, { duration: 100 });
     }
   };
 
   const handlePressOut = () => {
     if (!disabled) {
-      interaction.value = withSpring(0, { damping: 50, stiffness: 500 });
+      interaction.value = withSpring(0, { damping: 80, stiffness: 1500 });
     }
   };
 
   const animatedStyle = useAnimatedStyle(() => {
-    const scale = interpolate(interaction.value, [0, 1], [1, 0.92]); // Slightly deeper scale for juice
-
-    // Shadow animation logic (simulating button press depth)
+    const scale = interpolate(interaction.value, [0, 1], [1, 0.95]);
     const shadowOpacity = interpolate(interaction.value, [0, 1], [0.3, 0.1]);
     const shadowRadius = interpolate(interaction.value, [0, 1], [8, 4]);
-    const translateY = interpolate(interaction.value, [0, 1], [0, 2]); // Move button down physically
+    const translateY = interpolate(interaction.value, [0, 1], [0, 2]);
 
     return {
       transform: [{ scale }, { translateY }],
       shadowOpacity,
       shadowRadius,
-      // Elevation for Android
       elevation: interpolate(interaction.value, [0, 1], [5, 2]),
     };
   });

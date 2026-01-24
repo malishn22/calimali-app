@@ -2,10 +2,12 @@ import Colors from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text } from "react-native";
+import * as Haptics from "expo-haptics";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -48,22 +50,29 @@ export function Button({
 }: ButtonProps) {
   // Animation State
   const scale = useSharedValue(1);
+  const translateY = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ scale: scale.value }],
+      transform: [{ scale: scale.value }, { translateY: translateY.value }],
+      zIndex: scale.value < 1 ? 100 : 0, // Ensure active button is on top
     };
   });
 
   const handlePressIn = () => {
     if (!disabled) {
-      scale.value = withSpring(0.99, { damping: 20, stiffness: 500 });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      // Eager response: 100ms duration
+      scale.value = withTiming(0.95, { duration: 100 });
+      translateY.value = withTiming(2, { duration: 100 });
     }
   };
 
   const handlePressOut = () => {
     if (!disabled) {
-      scale.value = withSpring(1, { damping: 20, stiffness: 500 });
+      // Bouncy recovery: Tight & Fast (stiffness 1000, damping 50)
+      scale.value = withSpring(1, { damping: 80, stiffness: 1500 });
+      translateY.value = withSpring(0, { damping: 80, stiffness: 1500 });
     }
   };
 
@@ -163,6 +172,7 @@ export function Button({
       onPress={disabled ? undefined : onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
+      hitSlop={20}
       className={containerClasses}
       style={[style, animatedStyle]}
     >
