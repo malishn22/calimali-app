@@ -15,6 +15,7 @@ export interface Exercise {
   default_reps: number;
   unit: ExerciseUnit;
   is_unilateral: boolean;
+  muscleGroups: string[];
 }
 
 export interface SessionExercise {

@@ -30,6 +30,7 @@ import {
   ReanimatedLogLevel,
 } from "react-native-reanimated"; // Import configureReanimatedLogger
 import "../global.css";
+//import { PerformanceStats } from "@/components/dev/PerformanceStats";
 
 // Disable Strict Mode for Reanimated to avoid warnings
 configureReanimatedLogger({
@@ -104,10 +105,6 @@ function RootLayoutNav() {
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen
-                  name="modal"
-                  options={{ presentation: "modal" }}
-                />
-                <Stack.Screen
                   name="live-session"
                   options={{
                     headerShown: false,
@@ -115,6 +112,8 @@ function RootLayoutNav() {
                   }}
                 />
               </Stack>
+              {/* Dev Only: Performance Overlay */}
+              {/* {__DEV__ && <PerformanceStats />} */}
             </ThemeProvider>
           </CalendarContextWrapper>
         </CacheProvider>

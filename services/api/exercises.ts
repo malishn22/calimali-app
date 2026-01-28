@@ -19,6 +19,9 @@ export const getExercises = async (): Promise<Exercise[]> => {
       default_reps: e.defaultReps,
       unit: e.unit as any,
       is_unilateral: e.isUnilateral,
+      muscleGroups: e.exerciseMuscleGroups
+        ? e.exerciseMuscleGroups.map((group) => group.muscleGroup.code)
+        : [],
     }));
   } catch (error) {
     console.error(error);
@@ -42,6 +45,9 @@ export const getExercise = async (id: string): Promise<Exercise | null> => {
       default_reps: e.defaultReps,
       unit: e.unit as any,
       is_unilateral: e.isUnilateral,
+      muscleGroups: e.exerciseMuscleGroups
+        ? e.exerciseMuscleGroups.map((group) => group.muscleGroup.code)
+        : [],
     };
   } catch (error) {
     console.error(error);
@@ -64,7 +70,13 @@ export const postExercise = async (
       unit: exercise.unit,
       isUnilateral: exercise.is_unilateral,
       isDefault: false,
-      muscleGroups: [], // For now empty, as UI doesn't allow selecting them yet
+      exerciseMuscleGroups: exercise.muscleGroups
+        ? exercise.muscleGroups.map((code) => ({
+            muscleGroup: { code, side: "Both" }, // Default side
+            impact: 1, // Default impact
+            effect: "Primary", // Default effect
+          }))
+        : [],
     };
 
     const response = await fetch(`${API_URL}/exercises`, {
@@ -86,6 +98,9 @@ export const postExercise = async (
       default_reps: e.defaultReps,
       unit: e.unit as any,
       is_unilateral: e.isUnilateral,
+      muscleGroups: e.exerciseMuscleGroups
+        ? e.exerciseMuscleGroups.map((group) => group.muscleGroup.code)
+        : [],
     };
   } catch (e) {
     console.error(e);
