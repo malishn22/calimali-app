@@ -13,10 +13,20 @@ export interface MuscleWork {
   effect: ExerciseEffect;
 }
 
+export interface ExerciseCategoryModel {
+  id: number;
+  slug: string;
+  name: string;
+  orderIndex: number;
+}
+
 export interface Exercise {
   id: string;
   name: string;
-  category: ExerciseCategory;
+  category: ExerciseCategoryModel;
+  baseExerciseId?: string;
+  baseExercise?: Exercise;
+  variants?: Exercise[];
   difficulty: ExerciseDifficulty;
   description: string;
   equipment: ExerciseEquipment;

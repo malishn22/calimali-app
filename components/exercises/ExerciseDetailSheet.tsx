@@ -52,12 +52,14 @@ export default function ExerciseDetailSheet({
     );
   }, [exercise?.muscleGroups]);
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = (categorySlug: string) => {
     return (
-      CategoryColors[category as keyof typeof CategoryColors] ||
+      CategoryColors[categorySlug.toUpperCase() as keyof typeof CategoryColors] ||
       CategoryColors.OTHER
     );
   };
+
+  const categorySlug = exercise?.category.slug.toUpperCase() || "OTHER";
 
   if (!visible || !exercise) return null;
 
@@ -95,21 +97,21 @@ export default function ExerciseDetailSheet({
 
             <View className="w-16 h-16 bg-card-dark rounded-full items-center justify-center border-2 border-zinc-800 shadow-xl">
               <Text className="text-2xl">
-                {exercise.category === "PUSH"
+                {categorySlug === "PUSH"
                   ? "👊"
-                  : exercise.category === "PULL"
+                  : categorySlug === "PULL"
                     ? "🦾"
-                    : exercise.category === "LEGS"
+                    : categorySlug === "LEGS"
                       ? "🦵"
-                      : exercise.category === "CORE"
+                      : categorySlug === "CORE"
                         ? "🔥"
-                        : exercise.category === "NECK"
+                        : categorySlug === "NECK"
                           ? "🧠"
-                          : exercise.category === "MOBILITY"
+                          : categorySlug === "MOBILITY"
                             ? "🤸"
-                            : exercise.category === "STRETCH"
+                            : categorySlug === "STRETCH"
                               ? "🧘"
-                              : exercise.category === "CARDIO"
+                              : categorySlug === "CARDIO"
                                 ? "⚡"
                                 : "✨"}
               </Text>
@@ -134,15 +136,15 @@ export default function ExerciseDetailSheet({
                 <View
                   className="px-3 py-1 rounded-full border"
                   style={{
-                    borderColor: getCategoryColor(exercise.category),
-                    backgroundColor: `${getCategoryColor(exercise.category)}20`,
+                    borderColor: getCategoryColor(categorySlug),
+                    backgroundColor: `${getCategoryColor(categorySlug)}20`,
                   }}
                 >
                   <Text
                     className="text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: getCategoryColor(exercise.category) }}
+                    style={{ color: getCategoryColor(categorySlug) }}
                   >
-                    {exercise.category}
+                    {exercise.category.name}
                   </Text>
                 </View>
 
@@ -209,6 +211,40 @@ export default function ExerciseDetailSheet({
                   "No description provided for this exercise."}
               </Text>
             </View>
+
+            {/* Variations / Base Exercise */}
+            {(exercise.baseExercise || (exercise.variants && exercise.variants.length > 0)) && (
+              <View className="mb-12">
+                <Text className="text-zinc-300 font-bold text-sm uppercase tracking-widest mb-4 border-b border-zinc-800 pb-2">
+                  Variations
+                </Text>
+
+                {exercise.baseExercise && (
+                  <View className="mb-4">
+                    <Text className="text-zinc-500 text-xs font-bold uppercase mb-1">Base Movement</Text>
+                    <View className="bg-card-dark p-3 rounded-xl border border-zinc-800">
+                      <Text className="text-white font-bold">{exercise.baseExercise.name}</Text>
+                    </View>
+                  </View>
+                )}
+
+                {exercise.variants && exercise.variants.length > 0 && (
+                  <View>
+                    <Text className="text-zinc-500 text-xs font-bold uppercase mb-1">
+                      {exercise.baseExercise ? "Other Variations" : "Variations of this movement"}
+                    </Text>
+                    <View className="gap-2">
+                      {exercise.variants.map(variant => (
+                        <View key={variant.id} className="bg-card-dark p-3 rounded-xl border border-zinc-800">
+                          <Text className="text-white font-bold">{variant.name}</Text>
+                          <Text className="text-zinc-500 text-xs">{variant.difficulty}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </View>
+            )}
 
             <View style={{ height: 100 }} />
           </ScrollView>

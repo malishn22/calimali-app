@@ -1,8 +1,7 @@
 import ExerciseDetailSheet from "@/components/exercises/ExerciseDetailSheet";
 import { Input } from "@/components/ui/Input";
 import Colors, { CategoryColors } from "@/constants/Colors";
-import { ExerciseCategory } from "@/constants/Enums";
-import { Exercise } from "@/constants/Types";
+import { Exercise, ExerciseCategoryModel } from "@/constants/Types";
 import { Api } from "@/services/api";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
@@ -21,11 +20,10 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const FILTERS = ["All", ...Object.values(ExerciseCategory)];
-
 export default function VaultScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState("All");
+  const [categories, setCategories] = useState<ExerciseCategoryModel[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null,
@@ -41,15 +39,23 @@ export default function VaultScreen() {
 
   const loadData = async () => {
     try {
-      const data = await Api.getExercises();
-      if (!data || data.length === 0) {
-         // If data is empty, it might be the error caught in getExercises returning []
-         setErrorStatus("No exercises found. Check connectivity.");
+      const [exData, catData] = await Promise.all([
+        Api.getExercises(),
+        Api.getExerciseCategories()
+      ]);
+
+      if (!exData || exData.length === 0) {
+        setErrorStatus("No exercises found. Check connectivity.");
       } else {
-        data.sort((a, b) => a.name.localeCompare(b.name));
-        setExercises(data);
+        exData.sort((a, b) => a.name.localeCompare(b.name));
+        setExercises(exData);
         setErrorStatus(null);
       }
+
+      if (catData) {
+        setCategories(catData);
+      }
+
     } catch (e: any) {
       setErrorStatus(e.message || "Unknown error occurred");
     }
@@ -57,17 +63,17 @@ export default function VaultScreen() {
 
   const filteredExercises = exercises.filter((ex) => {
     const matchesFilter =
-      selectedFilter === "All" ||
-      ex.category.toUpperCase() === selectedFilter.toUpperCase();
+      selectedFilter === "all" ||
+      ex.category.slug.toLowerCase() === selectedFilter.toLowerCase();
     const matchesSearch = ex.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = (categorySlug: string) => {
     return (
-      CategoryColors[category as keyof typeof CategoryColors] ||
+      CategoryColors[categorySlug.toUpperCase() as keyof typeof CategoryColors] ||
       CategoryColors.OTHER
     );
   };
@@ -108,22 +114,33 @@ export default function VaultScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: 8 }}
           >
-            {FILTERS.map((filter) => {
-              const isSelected = selectedFilter === filter;
+            <Pressable
+              onPress={() => setSelectedFilter("all")}
+              className={`px-5 py-2 rounded-2xl justify-center ${selectedFilter === "all" ? "bg-white" : "bg-card-dark"
+                }`}
+            >
+              <Text
+                className={`font-bold text-xs ${selectedFilter === "all" ? "text-black" : "text-zinc-500"
+                  }`}
+              >
+                All
+              </Text>
+            </Pressable>
+
+            {categories.map((cat) => {
+              const isSelected = selectedFilter === cat.slug;
               return (
                 <Pressable
-                  key={filter}
-                  onPress={() => setSelectedFilter(filter)}
-                  className={`px-5 py-2 rounded-2xl justify-center ${
-                    isSelected ? "bg-white" : "bg-card-dark"
-                  }`}
+                  key={cat.id}
+                  onPress={() => setSelectedFilter(cat.slug)}
+                  className={`px-5 py-2 rounded-2xl justify-center ${isSelected ? "bg-white" : "bg-card-dark"
+                    }`}
                 >
                   <Text
-                    className={`font-bold text-xs ${
-                      isSelected ? "text-black" : "text-zinc-500"
-                    }`}
+                    className={`font-bold text-xs ${isSelected ? "text-black" : "text-zinc-500"
+                      }`}
                   >
-                    {filter}
+                    {cat.name}
                   </Text>
                 </Pressable>
               );
@@ -167,10 +184,10 @@ export default function VaultScreen() {
                   </Text>
                   <Text
                     className="text-[10px] font-bold uppercase"
-                    style={{ color: getCategoryColor(item.category) }}
+                    style={{ color: getCategoryColor(item.category.slug) }}
                   >
                     {" "}
-                    {item.category}
+                    {item.category.name}
                   </Text>
                 </View>
               </Pressable>

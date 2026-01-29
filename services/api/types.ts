@@ -1,9 +1,19 @@
 // --- API Types (matching Backend DTOs) ---
 
+export interface ApiCategory {
+  id: number;
+  slug: string;
+  name: string;
+  orderIndex: number;
+}
+
 export interface ApiExercise {
   id: string;
   name: string;
-  category: string;
+  category: ApiCategory;
+  baseExerciseId?: string;
+  baseExercise?: ApiExercise;
+  variants?: ApiExercise[];
   difficulty: string;
   description?: string;
   equipment: string;
