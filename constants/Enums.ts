@@ -1,9 +1,29 @@
 export enum ExerciseCategory {
+  // Strength
   PUSH = "PUSH",
   PULL = "PULL",
   LEGS = "LEGS",
   CORE = "CORE",
-  SKILLS = "SKILLS",
+  NECK = "NECK",
+  // Movement / recovery
+  MOBILITY = "MOBILITY",
+  STRETCH = "STRETCH",
+  // Conditioning / skill
+  CARDIO = "CARDIO",
+  SKILL = "SKILL",
+}
+
+export enum ExerciseEffect {
+  TRAIN = "TRAIN",
+  STRETCH = "STRETCH",
+  MOBILITY = "MOBILITY",
+  ISOMETRIC = "ISOMETRIC",
+}
+
+export enum ExerciseImpact {
+  PRIMARY = 1,
+  SECONDARY = 2,
+  STABILIZER = 3,
 }
 
 export enum ExerciseDifficulty {

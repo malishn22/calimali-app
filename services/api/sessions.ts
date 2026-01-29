@@ -26,7 +26,7 @@ export const getPlannedSessions = async (): Promise<ScheduledSession[]> => {
       ),
     }));
   } catch (error) {
-    console.error("getPlannedSessions Error:", error);
+    // console.warn("getPlannedSessions failed, returning empty list.");
     return [];
   }
 };
@@ -121,7 +121,7 @@ export const getSessionHistory = async (): Promise<SessionHistory[]> => {
       }),
     }));
   } catch (error) {
-    console.error(error);
+    // console.warn("getSessionHistory failed, returning empty list.");
     return [];
   }
 };

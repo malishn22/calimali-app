@@ -18,7 +18,7 @@ export const getUserProfile = async (): Promise<UserProfile> => {
       total_reps: data.totalReps,
     };
   } catch (error) {
-    console.error(error);
+    // console.warn("getUserProfile failed, returning default.");
     return {
       id: "user",
       level: 1,

@@ -1,9 +1,17 @@
 import {
   ExerciseCategory,
   ExerciseDifficulty,
+  ExerciseEffect,
   ExerciseEquipment,
+  ExerciseImpact,
   ExerciseUnit,
 } from "./Enums";
+
+export interface MuscleWork {
+  muscleDescription: string; // The group code, e.g. "front_chest_lower"
+  impact: ExerciseImpact;
+  effect: ExerciseEffect;
+}
 
 export interface Exercise {
   id: string;
@@ -15,7 +23,7 @@ export interface Exercise {
   default_reps: number;
   unit: ExerciseUnit;
   is_unilateral: boolean;
-  muscleGroups: string[];
+  muscleGroups: MuscleWork[];
 }
 
 export interface SessionExercise {

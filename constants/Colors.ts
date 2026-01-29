@@ -60,12 +60,42 @@ const Colors = {
 };
 
 export const CategoryColors = {
+  // Strength
   PUSH: Palette.red500,
   PULL: Palette.blue500,
   LEGS: Palette.orange500,
   CORE: Palette.purple500,
-  SKILLS: Palette.yellow400,
+  NECK: "#8B5CF6", // Violet
+  // Movement / recovery
+  MOBILITY: Palette.yellow400,
+  STRETCH: Palette.green500,
+  // Conditioning / skill
+  CARDIO: "#EC4899", // Pink
+  SKILL: Palette.yellow400,
   OTHER: Palette.zinc400,
+};
+
+export const EffectColors = {
+  TRAIN: {
+    PRIMARY: "#00F2FF",    // Neon Cyan (Strongest)
+    SECONDARY: "#3B82F6",  // Electric Blue (Stronger)
+    STABILIZER: "#1E3A8A", // Dark Navy (Strong)
+  },
+  ISOMETRIC: {
+    PRIMARY: "#E879F9",    // Neon Pink/Purple
+    SECONDARY: "#A855F7",  // Purple
+    STABILIZER: "#581C87", // Dark Deep Purple
+  },
+  STRETCH: {
+    PRIMARY: "#4ADE80",    // Neon Green
+    SECONDARY: "#16A34A",  // Forest Green
+    STABILIZER: "#14532D", // Dark Green
+  },
+  MOBILITY: {
+    PRIMARY: "#FDE047",    // Neon Yellow
+    SECONDARY: "#EAB308",  // Golden Yellow
+    STABILIZER: "#713F12", // Dark Earth Yellow
+  },
 };
 
 export const SessionColors = {

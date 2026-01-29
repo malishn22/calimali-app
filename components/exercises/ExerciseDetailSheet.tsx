@@ -1,7 +1,9 @@
 import { CategoryColors } from "@/constants/Colors";
 import { Exercise } from "@/constants/Types";
 import { FontAwesome } from "@expo/vector-icons";
-import React from "react";
+import React, { useMemo } from "react";
+import BodyMap from "./BodyMap";
+import NeckMap from "./NeckMap";
 import {
   Dimensions,
   Modal,
@@ -10,6 +12,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -26,12 +29,28 @@ interface ExerciseDetailSheetProps {
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.85;
 
+const NECK_MUSCLE_GROUPS = [
+  "front_neck_flexors",
+  "front_neck_rotators",
+  "front_neck_lateral_flexors",
+  "back_neck_extensors",
+  "back_neck_lateral_extensors",
+  "back_neck_rotators",
+];
+
 export default function ExerciseDetailSheet({
   visible,
   exercise,
   onClose,
 }: ExerciseDetailSheetProps) {
-  if (!visible || !exercise) return null;
+  const insets = useSafeAreaInsets();
+
+  const isNeckExercise = useMemo(() => {
+    if (!exercise?.muscleGroups) return false;
+    return exercise.muscleGroups.some((group) =>
+      NECK_MUSCLE_GROUPS.includes(group.muscleDescription)
+    );
+  }, [exercise?.muscleGroups]);
 
   const getCategoryColor = (category: string) => {
     return (
@@ -40,12 +59,14 @@ export default function ExerciseDetailSheet({
     );
   };
 
+  if (!visible || !exercise) return null;
+
   return (
     <Modal
       visible={visible}
       transparent
       statusBarTranslucent
-      animationType="none" // Controlled by Reanimated
+      animationType="none"
       onRequestClose={onClose}
     >
       <Animated.View
@@ -58,23 +79,22 @@ export default function ExerciseDetailSheet({
           entering={SlideInDown.duration(500)}
           exiting={SlideOutDown.duration(200)}
           style={{
-            height: SHEET_HEIGHT,
+            height: SHEET_HEIGHT - (insets.bottom + 80),
             borderTopLeftRadius: 32,
             borderTopRightRadius: 32,
             backgroundColor: "#1c1c1e",
             overflow: "hidden",
+            marginBottom: insets.bottom + 40,
           }}
         >
-          {/* Header Image / Icon Area */}
-          <View className="h-48 w-full items-center justify-center relative overflow-hidden bg-zinc-900">
-            {/* Gradient or Pattern Background */}
+          {/* Header */}
+          <View className="h-28 w-full items-center justify-center relative overflow-hidden bg-zinc-900">
             <View className="absolute inset-0 bg-blue-500/10" />
             <View className="w-64 h-64 bg-blue-500/20 rounded-full blur-3xl absolute -top-10 -right-10" />
             <View className="w-64 h-64 bg-purple-500/20 rounded-full blur-3xl absolute top-20 -left-10" />
 
-            {/* Main Icon */}
-            <View className="w-24 h-24 bg-card-dark rounded-full items-center justify-center border-4 border-zinc-800 shadow-2xl">
-              <Text className="text-4xl">
+            <View className="w-16 h-16 bg-card-dark rounded-full items-center justify-center border-2 border-zinc-800 shadow-xl">
+              <Text className="text-2xl">
                 {exercise.category === "PUSH"
                   ? "👊"
                   : exercise.category === "PULL"
@@ -83,13 +103,18 @@ export default function ExerciseDetailSheet({
                       ? "🦵"
                       : exercise.category === "CORE"
                         ? "🔥"
-                        : exercise.category === "SKILLS"
-                          ? "🤸"
-                          : "⚡"}
+                        : exercise.category === "NECK"
+                          ? "🧠"
+                          : exercise.category === "MOBILITY"
+                            ? "🤸"
+                            : exercise.category === "STRETCH"
+                              ? "🧘"
+                              : exercise.category === "CARDIO"
+                                ? "⚡"
+                                : "✨"}
               </Text>
             </View>
 
-            {/* Close Button Absolute */}
             <Pressable
               onPress={onClose}
               className="absolute top-4 right-4 w-10 h-10 bg-black/30 rounded-full items-center justify-center backdrop-blur-md"
@@ -98,9 +123,8 @@ export default function ExerciseDetailSheet({
             </Pressable>
           </View>
 
-          {/* Content */}
+          {/* Scrollable Content */}
           <ScrollView className="flex-1 px-8 pt-6">
-            {/* Title & Category */}
             <View className="items-center mb-8">
               <Text className="text-3xl font-black text-white text-center mb-2 leading-tight">
                 {exercise.name}
@@ -164,7 +188,18 @@ export default function ExerciseDetailSheet({
               </View>
             </View>
 
-            {/* Description */}
+            {/* Body/Neck Map - Visual representation only */}
+            {exercise.muscleGroups && exercise.muscleGroups.length > 0 && (
+              <View className="mb-8">
+                {isNeckExercise ? (
+                  <NeckMap muscleGroups={exercise.muscleGroups} />
+                ) : (
+                  <BodyMap muscleGroups={exercise.muscleGroups} />
+                )}
+              </View>
+            )}
+
+            {/* Instructions */}
             <View className="mb-12">
               <Text className="text-zinc-300 font-bold text-sm uppercase tracking-widest mb-4 border-b border-zinc-800 pb-2">
                 Instructions
@@ -175,7 +210,7 @@ export default function ExerciseDetailSheet({
               </Text>
             </View>
 
-            <View className="h-20" />
+            <View style={{ height: 100 }} />
           </ScrollView>
         </Animated.View>
       </Animated.View>

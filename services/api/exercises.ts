@@ -8,11 +8,10 @@ export const getExercises = async (): Promise<Exercise[]> => {
     if (!response.ok) throw new Error("Failed to fetch exercises");
     const data: ApiExercise[] = await response.json();
 
-    // Map to frontend Exercise type
     return data.map((e) => ({
       id: e.id,
       name: e.name,
-      category: e.category as any, // Cast to enum
+      category: e.category as any,
       difficulty: e.difficulty as any,
       description: e.description || "",
       equipment: e.equipment as any,
@@ -20,11 +19,14 @@ export const getExercises = async (): Promise<Exercise[]> => {
       unit: e.unit as any,
       is_unilateral: e.isUnilateral,
       muscleGroups: e.exerciseMuscleGroups
-        ? e.exerciseMuscleGroups.map((group) => group.muscleGroup.code)
+        ? e.exerciseMuscleGroups.map((g) => ({
+            muscleDescription: g.muscleGroup.code,
+            impact: g.impact as any,
+            effect: g.effect as any,
+          }))
         : [],
     }));
   } catch (error) {
-    console.error(error);
     return [];
   }
 };
@@ -46,11 +48,14 @@ export const getExercise = async (id: string): Promise<Exercise | null> => {
       unit: e.unit as any,
       is_unilateral: e.isUnilateral,
       muscleGroups: e.exerciseMuscleGroups
-        ? e.exerciseMuscleGroups.map((group) => group.muscleGroup.code)
+        ? e.exerciseMuscleGroups.map((g) => ({
+            muscleDescription: g.muscleGroup.code,
+            impact: g.impact as any,
+            effect: g.effect as any,
+          }))
         : [],
     };
   } catch (error) {
-    console.error(error);
     return null;
   }
 };
@@ -59,7 +64,6 @@ export const postExercise = async (
   exercise: Partial<Exercise>,
 ): Promise<Exercise | null> => {
   try {
-    // Transform to backend DTO
     const body = {
       name: exercise.name,
       category: exercise.category,
@@ -71,10 +75,10 @@ export const postExercise = async (
       isUnilateral: exercise.is_unilateral,
       isDefault: false,
       exerciseMuscleGroups: exercise.muscleGroups
-        ? exercise.muscleGroups.map((code) => ({
-            muscleGroup: { code, side: "Both" }, // Default side
-            impact: 1, // Default impact
-            effect: "Primary", // Default effect
+        ? exercise.muscleGroups.map((mw) => ({
+            muscleGroup: { code: mw.muscleDescription, side: "Both" },
+            impact: mw.impact,
+            effect: mw.effect,
           }))
         : [],
     };
@@ -99,11 +103,14 @@ export const postExercise = async (
       unit: e.unit as any,
       is_unilateral: e.isUnilateral,
       muscleGroups: e.exerciseMuscleGroups
-        ? e.exerciseMuscleGroups.map((group) => group.muscleGroup.code)
+        ? e.exerciseMuscleGroups.map((g) => ({
+            muscleDescription: g.muscleGroup.code,
+            impact: g.impact as any,
+            effect: g.effect as any,
+          }))
         : [],
     };
   } catch (e) {
-    console.error(e);
     return null;
   }
 };

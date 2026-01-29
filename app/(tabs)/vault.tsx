@@ -37,10 +37,22 @@ export default function VaultScreen() {
     }, []),
   );
 
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
+
   const loadData = async () => {
-    const data = await Api.getExercises();
-    data.sort((a, b) => a.name.localeCompare(b.name));
-    setExercises(data);
+    try {
+      const data = await Api.getExercises();
+      if (!data || data.length === 0) {
+         // If data is empty, it might be the error caught in getExercises returning []
+         setErrorStatus("No exercises found. Check connectivity.");
+      } else {
+        data.sort((a, b) => a.name.localeCompare(b.name));
+        setExercises(data);
+        setErrorStatus(null);
+      }
+    } catch (e: any) {
+      setErrorStatus(e.message || "Unknown error occurred");
+    }
   };
 
   const filteredExercises = exercises.filter((ex) => {
@@ -73,6 +85,13 @@ export default function VaultScreen() {
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-3xl font-extrabold text-white">Vault</Text>
         </View>
+
+        {errorStatus && (
+          <View className="bg-red-900/50 p-3 rounded-lg mb-4 border border-red-500">
+            <Text className="text-red-200 font-bold">Error: {errorStatus}</Text>
+            <Text className="text-red-200 text-xs">Target: {process.env.EXPO_PUBLIC_API_URL}</Text>
+          </View>
+        )}
 
         {/* Search Bar */}
         <Input
