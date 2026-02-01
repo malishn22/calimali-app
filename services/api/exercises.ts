@@ -13,32 +13,29 @@ export const getExerciseCategories = async (): Promise<any[]> => {
 };
 
 export const getExercises = async (): Promise<Exercise[]> => {
-  try {
-    const response = await fetch(`${API_URL}/exercises`);
-    if (!response.ok) throw new Error("Failed to fetch exercises");
-    const data: ApiExercise[] = await response.json();
+  // try-catch removed to allow UI to handle errors
+  const response = await fetch(`${API_URL}/exercises`);
+  if (!response.ok) throw new Error("Failed to fetch exercises");
+  const data: ApiExercise[] = await response.json();
 
-    return data.map((e) => ({
-      id: e.id,
-      name: e.name,
-      category: e.category, // Now matches ExerciseCategoryModel
-      difficulty: e.difficulty as any,
-      description: e.description || "",
-      equipment: e.equipment as any,
-      default_reps: e.defaultReps,
-      unit: e.unit as any,
-      is_unilateral: e.isUnilateral,
-      muscleGroups: e.exerciseMuscleGroups
-        ? e.exerciseMuscleGroups.map((g) => ({
-            muscleDescription: g.muscleGroup.code,
-            impact: g.impact as any,
-            effect: g.effect as any,
-          }))
-        : [],
-    }));
-  } catch (error) {
-    return [];
-  }
+  return data.map((e) => ({
+    id: e.id,
+    name: e.name,
+    category: e.category, // Now matches ExerciseCategoryModel
+    difficulty: e.difficulty as any,
+    description: e.description || "",
+    equipment: e.equipment as any,
+    default_reps: e.defaultReps,
+    unit: e.unit as any,
+    is_unilateral: e.isUnilateral,
+    muscleGroups: e.exerciseMuscleGroups
+      ? e.exerciseMuscleGroups.map((g) => ({
+          muscleDescription: g.code,
+          impact: g.impact as any,
+          effect: g.effect as any,
+        }))
+      : [],
+  }));
 };
 
 export const getExercise = async (id: string): Promise<Exercise | null> => {
@@ -60,7 +57,7 @@ export const getExercise = async (id: string): Promise<Exercise | null> => {
         is_unilateral: apiEx.isUnilateral,
         muscleGroups: apiEx.exerciseMuscleGroups
           ? apiEx.exerciseMuscleGroups.map((g) => ({
-              muscleDescription: g.muscleGroup.code,
+              muscleDescription: g.code,
               impact: g.impact as any,
               effect: g.effect as any,
             }))
@@ -95,7 +92,7 @@ export const postExercise = async (
       baseExerciseId: exercise.baseExerciseId, 
       exerciseMuscleGroups: exercise.muscleGroups
         ? exercise.muscleGroups.map((mw) => ({
-            muscleGroup: { code: mw.muscleDescription, side: "Both" },
+            code: mw.muscleDescription,
             impact: mw.impact,
             effect: mw.effect,
           }))
@@ -123,7 +120,7 @@ export const postExercise = async (
       is_unilateral: e.isUnilateral,
       muscleGroups: e.exerciseMuscleGroups
         ? e.exerciseMuscleGroups.map((g) => ({
-            muscleDescription: g.muscleGroup.code,
+            muscleDescription: g.code,
             impact: g.impact as any,
             effect: g.effect as any,
           }))

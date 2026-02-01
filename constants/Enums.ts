@@ -43,6 +43,8 @@ export enum ExerciseEquipment {
   STALL_BAR = "STALL BAR",
   BOX = "BOX",
   BENCH = "BENCH",
+  DIP_BARS = "DIP BARS",
+  JUMP_ROPE = "JUMP ROPE",
 }
 
 export enum ExerciseUnit {

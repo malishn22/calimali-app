@@ -21,10 +21,7 @@ export interface ApiExercise {
   unit: string;
   isUnilateral: boolean;
   exerciseMuscleGroups: {
-    muscleGroup: {
       code: string;
-      side: string;
-    };
     impact: number;
     effect: string;
   }[];
