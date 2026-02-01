@@ -298,34 +298,26 @@ export default function LiveSession({
       step.repIndex !== undefined ? step.repIndex : step.setIndex;
 
     if (Array.isArray(ex.reps)) {
-      return ex.reps[targetIndex];
+      return ex.reps[targetIndex] ?? ex.reps[0] ?? 0;
     }
-    return ex.reps;
+    return ex.reps ?? 0;
   };
-
-  // ... (handleDeleteSet remains same)
-
-  // ...
 
   const handleDeleteSet = () => {
     if (editingStepIndex === null) return;
     const step = steps[editingStepIndex];
     if (!step) return;
 
-    // To delete a set, we need to decrease the set count of the exercise
     const newExercises = [...exercises];
     const exercise = newExercises[step.exerciseIndex];
 
     if (exercise.sets > 1) {
       exercise.sets -= 1;
       setExercises(newExercises);
-      // Adjust active step if needed? The steps array will re-calculate.
-      // If we are on the last step, we might need to go back.
       if (activeStepIndex >= steps.length - 1) {
         if (activeStepIndex > 0) setActiveStepIndex(activeStepIndex - 1);
       }
     } else {
-      // Remove exercise entirely? or prevent deletion of last set?
       Alert.alert("Cannot delete", "You must have at least one set.");
     }
     setEditModalVisible(false);
@@ -333,7 +325,6 @@ export default function LiveSession({
 
   if (!session || !currentStep) return null;
 
-  // Determine Button Labels and Variants
   let mainActionLabel = "Next";
   let mainActionVariant: "primary" | "completed" | "start" = "primary";
   let mainActionIcon: keyof typeof FontAwesome.glyphMap | undefined = undefined;
@@ -345,17 +336,16 @@ export default function LiveSession({
   } else if (activeStepIndex >= totalSteps - 1) {
     mainActionLabel = "Complete Session";
     mainActionVariant = "completed";
-    mainActionIcon = "bolt"; // "flag-checkered" might be better but user asked for Zap
+    mainActionIcon = "bolt";
   } else {
-    // Check if next step is new exercise? Optional UX enhancement
     mainActionLabel = "Complete Set";
-    mainActionVariant = "completed"; // Green for completion
+    mainActionVariant = "completed";
     mainActionIcon = "check";
   }
 
   const isCurrentSetCompleted =
     completedSets[
-      `${currentStep.exerciseIndex}-${currentStep.setIndex}-${(currentStep as any).side || "BILATERAL"}`
+    `${currentStep.exerciseIndex}-${currentStep.setIndex}-${(currentStep as any).side || "BILATERAL"}`
     ];
 
   return (
@@ -376,7 +366,16 @@ export default function LiveSession({
         exercise={currentStep.exercise}
         exerciseIndex={currentStep.exerciseIndex}
         totalExercises={exercises.length}
-        currentSetIndex={currentStep.setIndex}
+        currentSetIndex={
+          currentStep.exercise.is_unilateral
+            ? currentStep.setIndex * 2 + (currentStep.side === "RIGHT" ? 1 : 0)
+            : currentStep.setIndex
+        }
+        totalSets={
+          currentStep.exercise.is_unilateral
+            ? (currentStep.exercise.sets || 1) * 2
+            : currentStep.exercise.sets || 1
+        }
         isSetCompleted={!!isCurrentSetCompleted}
         onEditSet={handleEditSet}
         side={(currentStep as any).side}
@@ -403,7 +402,6 @@ export default function LiveSession({
         />
       )}
 
-      {/* Session Completion Modal */}
       <SessionCompletion
         ref={completionModalRef}
         elapsedTime={elapsedTime}

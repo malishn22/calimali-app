@@ -76,12 +76,12 @@ export function SessionButton({
     case "secondary":
       bgClass = "bg-zinc-800";
       textClass = "text-zinc-300";
-      iconColor = Colors.palette.zinc400;
+      iconColor = Colors.palette.silver;
       break;
     case "destructive":
       bgClass = "bg-red-900"; // Darker red background
       textClass = "text-red-400";
-      iconColor = Colors.palette.red500;
+      iconColor = Colors.palette.crimsonRed;
       break;
     case "completed":
       bgClass = "bg-green-500";

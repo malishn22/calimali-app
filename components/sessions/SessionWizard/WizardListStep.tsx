@@ -57,7 +57,7 @@ export function WizardListStep({ exercises, onAdd, onRemove, onEdit }: Props) {
                     <MaterialCommunityIcons
                       name="alpha-u-box"
                       size={14}
-                      color={Colors.palette.blue500}
+                      color={Colors.palette.electricBlue}
                       style={{ marginRight: 6 }}
                     />
                   )}
@@ -74,7 +74,7 @@ export function WizardListStep({ exercises, onAdd, onRemove, onEdit }: Props) {
                   icon="pencil"
                   onPress={() => onEdit(index)}
                   className="w-10 h-10 rounded-full bg-zinc-800"
-                  iconColor={Colors.palette.blue500}
+                  iconColor={Colors.palette.electricBlue}
                 />
                 {/* Delete Button */}
                 <Button
@@ -83,7 +83,7 @@ export function WizardListStep({ exercises, onAdd, onRemove, onEdit }: Props) {
                   icon="trash"
                   onPress={() => onRemove(index)}
                   className="w-10 h-10 rounded-full bg-zinc-800/50"
-                  iconColor={Colors.palette.red500}
+                  iconColor={Colors.palette.crimsonRed}
                 />
               </View>
             </View>
@@ -91,7 +91,7 @@ export function WizardListStep({ exercises, onAdd, onRemove, onEdit }: Props) {
         }}
         ListEmptyComponent={
           <View className="items-center justify-center flex-1 mt-20">
-            <Text className="text-zinc-600 font-bold tracking-widest text-xs uppercase">
+            <Text className="text-zinc-400 font-bold tracking-widest text-xs uppercase">
               NO EXERCISES ADDED YET
             </Text>
           </View>

@@ -1,4 +1,4 @@
-import { CategoryColors } from "@/constants/Colors";
+import { CategoryColors, DifficultyColors } from "@/constants/Colors";
 import { Exercise } from "@/constants/Types";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useMemo } from "react";
@@ -148,8 +148,19 @@ export default function ExerciseDetailSheet({
                   </Text>
                 </View>
 
-                <View className="px-3 py-1 rounded-full border border-zinc-700 bg-zinc-800">
-                  <Text className="text-[10px] font-bold uppercase tracking-widest text-zinc-300">
+                <View
+                  className="px-3 py-1 rounded-full border"
+                  style={{
+                    borderColor: DifficultyColors[exercise.difficulty as keyof typeof DifficultyColors] || "#52525B",
+                    backgroundColor: `${DifficultyColors[exercise.difficulty as keyof typeof DifficultyColors] || "#52525B"}20`,
+                  }}
+                >
+                  <Text
+                    className="text-[10px] font-bold uppercase tracking-widest"
+                    style={{
+                      color: DifficultyColors[exercise.difficulty as keyof typeof DifficultyColors] || "#A1A1AA"
+                    }}
+                  >
                     {exercise.difficulty}
                   </Text>
                 </View>

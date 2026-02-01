@@ -43,7 +43,7 @@ export function WizardFinalStep({
         </View>
 
         <View className="mb-8">
-          <Text className="text-zinc-500 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">
+          <Text className="text-zinc-400 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">
             WORKOUT TITLE
           </Text>
           <Input
@@ -57,7 +57,7 @@ export function WizardFinalStep({
 
         {/* Colors */}
         <View className="mb-8">
-          <Text className="text-zinc-500 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">
+          <Text className="text-zinc-400 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">
             CARD COLOR
           </Text>
           <View className="flex-row flex-wrap gap-4">
@@ -65,9 +65,8 @@ export function WizardFinalStep({
               <Pressable
                 key={c}
                 onPress={() => setColor(c)}
-                className={`w-12 h-12 rounded-full ${
-                  color === c ? "border-[5px] border-white" : ""
-                }`}
+                className={`w-12 h-12 rounded-full ${color === c ? "border-[5px] border-white" : ""
+                  }`}
                 style={{ backgroundColor: c }}
               />
             ))}
@@ -76,7 +75,7 @@ export function WizardFinalStep({
 
         {/* Frequency */}
         <View className="mb-8">
-          <Text className="text-zinc-500 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">
+          <Text className="text-zinc-400 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">
             FREQUENCY
           </Text>
           <View className="flex-row flex-wrap gap-3">
@@ -86,16 +85,14 @@ export function WizardFinalStep({
                 <Pressable
                   key={freq.value}
                   onPress={() => setFrequency(freq.value)}
-                  className={`w-[48%] py-5 rounded-xl border items-center justify-center ${
-                    isSelected
+                  className={`w-[48%] py-5 rounded-xl border items-center justify-center ${isSelected
                       ? "bg-white border-white"
                       : "bg-zinc-900 border-zinc-700"
-                  }`}
+                    }`}
                 >
                   <Text
-                    className={`text-sm font-bold ${
-                      isSelected ? "text-black" : "text-zinc-400"
-                    }`}
+                    className={`text-sm font-bold ${isSelected ? "text-black" : "text-zinc-400"
+                      }`}
                   >
                     {freq.label}
                   </Text>

@@ -20,8 +20,23 @@ export const getPlannedSessions = async (): Promise<ScheduledSession[]> => {
         s.exercises.map((e) => ({
           exerciseId: e.exerciseId,
           name: e.exercise?.name || "Unknown Exercise",
-          sets: e.targetSets || 3,
-          reps: e.targetReps || 10,
+          description: e.exercise?.description,
+          muscleGroups: e.exercise?.exerciseMuscleGroups?.map((mg: any) => ({
+            muscleDescription: mg.muscleGroup?.code,
+            impact: mg.impact as any,
+            effect: mg.effect as any,
+          })),
+          is_unilateral: e.exercise?.isUnilateral,
+          sets:
+            e.sets && e.sets.length > 0
+              ? e.exercise?.isUnilateral
+                ? Math.ceil(e.sets.length / 2)
+                : e.sets.length
+              : e.targetSets || 3,
+          reps:
+            e.sets && e.sets.length > 0
+              ? e.sets.sort((a, b) => a.setIndex - b.setIndex).map((s) => s.targetReps || 0)
+              : e.targetReps || 10,
         })),
       ),
     }));
@@ -56,12 +71,20 @@ export const postPlannedSession = async (session: ScheduledSession) => {
       exerciseId: e.exerciseId || e.id, // Handle legacy 'id' usage
       orderIndex: idx,
       targetSets: e.sets,
-      targetReps: Array.isArray(e.reps) ? e.reps[0] : e.reps, // API expects int for now? Or we should handle array?
-      // API PlannedSessionExercise has `target_reps` (int).
-      // Frontend support variable reps per set (number[]).
-      // This is a mismatch. The backend `PlannedSessionExercise` is simple properly.
-      // The `SessionExercise` (performed) has sets.
-      // For Planning, let's just take the first value or max.
+      targetReps: Array.isArray(e.reps) ? e.reps[0] : e.reps, // Legacy support
+      sets: Array.isArray(e.reps)
+        ? e.reps.map((r: number, i: number) => ({
+            setIndex: i,
+            targetReps: r,
+            targetSeconds: 0,
+            restSeconds: 0,
+          }))
+        : Array.from({ length: e.sets || 1 }).map((_, i) => ({
+            setIndex: i,
+            targetReps: e.reps,
+            targetSeconds: 0,
+            restSeconds: 0,
+          })),
     })),
   };
 

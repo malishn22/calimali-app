@@ -1,17 +1,28 @@
+import BodyMap from "@/components/exercises/BodyMap";
+import NeckMap from "@/components/exercises/NeckMap";
 import { SessionExercise } from "@/constants/Types";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
+
+const NECK_MUSCLE_GROUPS = [
+  "front_neck_flexors",
+  "front_neck_rotators",
+  "front_neck_lateral_flexors",
+  "back_neck_extensors",
+  "back_neck_lateral_extensors",
+  "back_neck_rotators",
+];
 
 interface Props {
   exercise: SessionExercise;
   exerciseIndex: number;
   totalExercises: number;
   currentSetIndex: number;
+  totalSets: number;
   isSetCompleted: boolean;
   onEditSet: () => void;
   side?: "LEFT" | "RIGHT";
-  // New: Pass resolved reps directly
   currentReps: number;
 }
 
@@ -20,11 +31,19 @@ export function ActiveSessionView({
   exerciseIndex,
   totalExercises,
   currentSetIndex,
+  totalSets,
   isSetCompleted,
   onEditSet,
   side,
   currentReps,
 }: Props) {
+  const isNeckExercise = useMemo(() => {
+    if (!exercise?.muscleGroups) return false;
+    return exercise.muscleGroups.some((group) =>
+      NECK_MUSCLE_GROUPS.includes(group.muscleDescription)
+    );
+  }, [exercise?.muscleGroups]);
+
   return (
     <View className="flex-1 items-center justify-start pt-10 px-6">
       {/* Exercise Info */}
@@ -35,53 +54,23 @@ export function ActiveSessionView({
           </Text>
         </View>
 
-        {exercise.is_unilateral && (
-          <View className="mb-4 flex-row items-center bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-            <MaterialCommunityIcons
-              name="alpha-u-box"
-              size={14}
-              color="#3B82F6"
-              style={{ marginRight: 6 }}
-            />
-            <Text className="text-blue-500 font-bold text-[10px] tracking-widest uppercase">
-              Unilateral
-            </Text>
-          </View>
-        )}
         <Text className="text-4xl text-center font-black text-white mb-2 leading-tight">
           {exercise.name}
         </Text>
-        <Text className="text-zinc-500 text-center font-medium">
-          {exerciseIndex + 1} of {totalExercises} — "Fundamental push against a
-          wall."
-        </Text>
-      </View>
 
-      {/* Side Indicator */}
-      {side && (
-        <View
-          className={`mb-8 px-6 py-2 rounded-xl border ${
-            side === "LEFT"
-              ? "bg-blue-500/10 border-blue-500/30"
-              : "bg-purple-500/10 border-purple-500/30"
-          }`}
-        >
-          <Text
-            className={`text-2xl font-black tracking-widest text-center ${
-              side === "LEFT" ? "text-blue-500" : "text-purple-500"
-            }`}
-          >
-            {side} SIDE
+        {exercise.description && (
+          <Text className="text-zinc-400 text-center text-sm px-4 leading-relaxed mb-4">
+            {exercise.description}
           </Text>
-        </View>
-      )}
+        )}
+      </View>
 
       {/* Set Card */}
       <View className="w-full px-6 items-center relative">
         <View className="flex-row items-center justify-center w-full relative">
           <View className="flex-row items-start">
             <Text className="text-6xl font-black text-white leading-none">
-              {currentReps}
+              {currentReps ?? "-"}
             </Text>
             <Text className="text-zinc-500 font-bold ml-2 text-lg">REPS</Text>
           </View>
@@ -92,6 +81,21 @@ export function ActiveSessionView({
             <FontAwesome name="pencil" size={16} color="#71717a" />
           </Pressable>
         </View>
+      </View>
+
+      {/* Muscle Map Visualization */}
+      <View className="flex-1 justify-center items-center mb-8">
+        {exercise.muscleGroups && exercise.muscleGroups.length > 0 ? (
+          isNeckExercise ? (
+            <NeckMap muscleGroups={exercise.muscleGroups} height={220} />
+          ) : (
+            <BodyMap muscleGroups={exercise.muscleGroups} height={300} />
+          )
+        ) : (
+          <View className="h-[220px] justify-center">
+            <Text className="text-zinc-700 italic">No muscle data</Text>
+          </View>
+        )}
       </View>
     </View>
   );

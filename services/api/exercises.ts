@@ -3,13 +3,12 @@ import { API_URL, headers } from "./config";
 import { ApiExercise } from "./types";
 
 export const getExerciseCategories = async (): Promise<any[]> => {
-  try {
-    const response = await fetch(`${API_URL}/exercise-categories`);
-    if (!response.ok) throw new Error("Failed to fetch categories");
-    return await response.json();
-  } catch (error) {
-    return [];
+  const response = await fetch(`${API_URL}/exercise-categories`);
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Fetch Failed (${response.status}): ${text.substring(0, 100)}`);
   }
+  return await response.json();
 };
 
 export const getExercises = async (): Promise<Exercise[]> => {

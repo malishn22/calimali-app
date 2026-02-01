@@ -39,6 +39,13 @@ export interface ApiScheduledSession {
     targetSets?: number;
     targetReps?: number;
     notes?: string;
+    // New
+    sets?: {
+      setIndex: number;
+      targetReps?: number;
+      targetSeconds?: number;
+      restSeconds?: number;
+    }[];
     exercise: ApiExercise;
   }[];
 }

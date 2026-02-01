@@ -9,10 +9,14 @@ import { ExerciseImpact } from "@/constants/Enums";
 
 interface BodyMapProps {
   muscleGroups: MuscleWork[];
+  height?: number;
 }
 
-export default function BodyMap({ muscleGroups }: BodyMapProps) {
+export default function BodyMap({ muscleGroups, height = 400 }: BodyMapProps) {
+  const width = height * (170 / 400);
+
   const muscleStyleMap = useMemo(() => {
+    // ... (unchanged logic)
     const map: Record<string, { fill: string; stroke: string; strokeWidth: number; intensity: number }> = {};
 
     muscleGroups.forEach((work) => {
@@ -49,12 +53,12 @@ export default function BodyMap({ muscleGroups }: BodyMapProps) {
   return (
     <View className="flex-row justify-center items-start space-x-2 my-4">
       <View className="items-center">
-        <BodyMapFront muscleStyleMap={muscleStyleMap} width={170} height={400} />
+        <BodyMapFront muscleStyleMap={muscleStyleMap} width={width} height={height} />
         <Text className="text-zinc-600 text-[10px] font-bold tracking-[0.2em] uppercase mt-2">Front</Text>
       </View>
 
       <View className="items-center">
-        <BodyMapBack muscleStyleMap={muscleStyleMap} width={170} height={400} />
+        <BodyMapBack muscleStyleMap={muscleStyleMap} width={width} height={height} />
         <Text className="text-zinc-600 text-[10px] font-bold tracking-[0.2em] uppercase mt-2">Back</Text>
       </View>
     </View>

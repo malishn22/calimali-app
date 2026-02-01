@@ -7,25 +7,25 @@ import { Text, View } from "react-native";
 
 type Props =
   | {
-      fullWidthBack: true;
-      onBack: () => void;
-      onPrimaryPress?: never;
-      primaryLabel?: never;
-      primaryIcon?: never;
-      primaryVariant?: never;
-      backLabel?: never;
-      onSecondaryPress?: never;
-    }
+    fullWidthBack: true;
+    onBack: () => void;
+    onPrimaryPress?: never;
+    primaryLabel?: never;
+    primaryIcon?: never;
+    primaryVariant?: never;
+    backLabel?: never;
+    onSecondaryPress?: never;
+  }
   | {
-      fullWidthBack?: false;
-      onBack: () => void;
-      onPrimaryPress: () => void;
-      primaryLabel: string;
-      primaryIcon?: any;
-      primaryVariant?: "primary" | "completed" | "destructive" | "start";
-      backLabel?: string;
-      onSecondaryPress?: () => void;
-    };
+    fullWidthBack?: false;
+    onBack: () => void;
+    onPrimaryPress: () => void;
+    primaryLabel: string;
+    primaryIcon?: any;
+    primaryVariant?: "primary" | "completed" | "destructive" | "start";
+    backLabel?: string;
+    onSecondaryPress?: () => void;
+  };
 
 export function BottomActionPanel({
   onPrimaryPress,
@@ -47,7 +47,7 @@ export function BottomActionPanel({
           <FontAwesome
             name="chevron-left"
             size={16}
-            color={Colors.palette.zinc400}
+            color={Colors.palette.silver}
           />
         </Button>
       </View>
@@ -64,7 +64,7 @@ export function BottomActionPanel({
         <FontAwesome
           name={!backLabel ? "chevron-left" : undefined}
           size={16}
-          color={Colors.palette.zinc400}
+          color={Colors.palette.silver}
         />
         {backLabel && (
           <Text className="text-zinc-400 font-bold ml-2">{backLabel}</Text>

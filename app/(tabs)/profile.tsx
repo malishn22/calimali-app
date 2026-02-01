@@ -45,7 +45,7 @@ export default function ProfileScreen() {
     }
 
     lastFetchTime.current = now;
-    
+
     // Fetch both API calls in parallel for better performance
     try {
       const [historyData, profileData] = await Promise.all([
@@ -88,7 +88,7 @@ export default function ProfileScreen() {
           let perf = { elapsedTime: 0, exercises: [] };
           try {
             perf = JSON.parse(item.performance_data);
-          } catch (e) {}
+          } catch (e) { }
 
           const duration =
             Math.floor(perf.elapsedTime / 60) +
@@ -111,7 +111,7 @@ export default function ProfileScreen() {
                   <Feather
                     name="check"
                     size={16}
-                    color={Colors.palette.green500}
+                    color={Colors.palette.emeraldGreen}
                   />
                 </View>
                 <View>
@@ -184,65 +184,65 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <View className="flex-row flex-wrap gap-3 mb-6">
-        <View className="bg-card-dark rounded-3xl p-5 w-[47%] mb-3">
+      <View className="flex-row flex-wrap justify-between mb-6">
+        <View className="bg-card-dark rounded-3xl p-5 w-[48%] mb-3">
           <Feather
             name="activity"
             size={18}
-            color={Colors.palette.blue500}
+            color={Colors.palette.electricBlue}
             style={{ marginBottom: 12 }}
           />
           <Text className="text-2xl font-bold text-white mb-1">
             {history.length}
           </Text>
-          <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
+          <Text className="text-[10px] font-bold text-zinc-400 tracking-wider">
             TOTAL SESSIONS
           </Text>
         </View>
 
-        <View className="bg-card-dark rounded-3xl p-5 w-[47%] mb-3">
+        <View className="bg-card-dark rounded-3xl p-5 w-[48%] mb-3">
           <Feather
             name="trending-up"
             size={18}
-            color={Colors.palette.green500}
+            color={Colors.palette.emeraldGreen}
             style={{ marginBottom: 12 }}
           />
           <Text className="text-2xl font-bold text-white mb-1">
             {profile?.total_reps || 0}
           </Text>
-          <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
+          <Text className="text-[10px] font-bold text-zinc-400 tracking-wider">
             TOTAL REPS
           </Text>
         </View>
 
-        <View className="bg-card-dark rounded-3xl p-5 w-[47%] mb-3">
+        <View className="bg-card-dark rounded-3xl p-5 w-[48%] mb-3">
           <Feather
             name="zap"
             size={18}
-            color={Colors.palette.orange500}
+            color={Colors.palette.burntOrange}
             style={{ marginBottom: 12 }}
           />
           <Text className="text-2xl font-bold text-white mb-1">
             {profile?.streak_current || 0}{" "}
             <Text className="text-xs font-semibold text-zinc-400">DAYS</Text>
           </Text>
-          <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
+          <Text className="text-[10px] font-bold text-zinc-400 tracking-wider">
             CURRENT STREAK
           </Text>
         </View>
 
-        <View className="bg-card-dark rounded-3xl p-5 w-[47%] mb-3">
+        <View className="bg-card-dark rounded-3xl p-5 w-[48%] mb-3">
           <Feather
             name="github"
             size={18}
-            color={Colors.palette.purple500}
+            color={Colors.palette.royalPurple}
             style={{ marginBottom: 12 }}
           />
           <Text className="text-2xl font-bold text-white mb-1">
             {profile?.streak_best || 0}{" "}
             <Text className="text-xs font-semibold text-zinc-400">DAYS</Text>
           </Text>
-          <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
+          <Text className="text-[10px] font-bold text-zinc-400 tracking-wider">
             BEST STREAK
           </Text>
         </View>
@@ -252,19 +252,19 @@ export default function ProfileScreen() {
         <View>
           <Text className="text-2xl font-bold text-white mb-1">
             {profile?.streak_current &&
-            profile.streak_current > 0 &&
-            profile.streak_start_date
+              profile.streak_current > 0 &&
+              profile.streak_start_date
               ? new Date(profile.streak_start_date).toLocaleDateString()
               : "-"}
           </Text>
-          <Text className="text-[10px] font-bold text-zinc-600 tracking-wider">
+          <Text className="text-[10px] font-bold text-zinc-400 tracking-wider">
             STREAK STARTED
           </Text>
         </View>
         <Feather
           name="calendar"
           size={24}
-          color={Colors.palette.zinc600}
+          color={Colors.palette.silver}
           style={{ opacity: 0.5 }}
         />
       </View>
@@ -290,29 +290,25 @@ export default function ProfileScreen() {
 
         <View className="flex-row bg-card-dark rounded-xl p-1 mb-6">
           <Pressable
-            className={`flex-1 py-2.5 rounded-lg items-center ${
-              activeTab === "OVERVIEW" ? "bg-zinc-800" : ""
-            }`}
+            className={`flex-1 py-2.5 rounded-lg items-center ${activeTab === "OVERVIEW" ? "bg-zinc-800" : ""
+              }`}
             onPress={() => setActiveTab("OVERVIEW")}
           >
             <Text
-              className={`font-bold text-xs ${
-                activeTab === "OVERVIEW" ? "text-white" : "text-zinc-500"
-              }`}
+              className={`font-bold text-xs ${activeTab === "OVERVIEW" ? "text-white" : "text-zinc-500"
+                }`}
             >
               OVERVIEW
             </Text>
           </Pressable>
           <Pressable
-            className={`flex-1 py-2.5 items-center ${
-              activeTab === "HISTORY" ? "bg-zinc-800 rounded-lg" : ""
-            }`}
+            className={`flex-1 py-2.5 items-center ${activeTab === "HISTORY" ? "bg-zinc-800 rounded-lg" : ""
+              }`}
             onPress={() => setActiveTab("HISTORY")}
           >
             <Text
-              className={`font-bold text-xs ${
-                activeTab === "HISTORY" ? "text-white" : "text-zinc-500"
-              }`}
+              className={`font-bold text-xs ${activeTab === "HISTORY" ? "text-white" : "text-zinc-500"
+                }`}
             >
               HISTORY
             </Text>
@@ -320,6 +316,33 @@ export default function ProfileScreen() {
         </View>
 
         {activeTab === "OVERVIEW" ? renderOverview() : renderHistory()}
+
+        {/* Developer / Testing Tools */}
+        <View className="mt-8 pt-8 border-t border-zinc-800">
+          <Text className="text-zinc-500 font-bold text-xs mb-4 uppercase tracking-widest text-center">
+            Testing Zone
+          </Text>
+          <View className="flex-row gap-4">
+            <Pressable
+              className="flex-1 border border-red-500/50 rounded-xl p-3 items-center active:bg-red-500/10"
+              onPress={async () => {
+                if (confirm("Reset all data? This cannot be undone.")) {
+                  try {
+                    await Api.resetUserData();
+                    alert("Data Reset!");
+                    loadHistory(); // Reload
+                  } catch (e) {
+                    alert("Reset Failed");
+                  }
+                }
+              }}
+            >
+              <Text className="text-red-400 font-bold text-xs">RESET DATA</Text>
+            </Pressable>
+
+
+          </View>
+        </View>
       </ScrollView>
 
       {/* Detail Sheet */}

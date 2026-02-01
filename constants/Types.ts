@@ -43,6 +43,8 @@ export interface SessionExercise {
   reps: number | number[];
   weight?: number;
   is_unilateral?: boolean;
+  description?: string;
+  muscleGroups?: MuscleWork[];
 }
 
 export interface ScheduledSession {

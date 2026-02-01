@@ -1,6 +1,6 @@
 import ExerciseDetailSheet from "@/components/exercises/ExerciseDetailSheet";
 import { Input } from "@/components/ui/Input";
-import Colors, { CategoryColors } from "@/constants/Colors";
+import Colors, { CategoryColors, DifficultyColors } from "@/constants/Colors";
 import { Exercise, ExerciseCategoryModel } from "@/constants/Types";
 import { Api } from "@/services/api";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -162,33 +162,53 @@ export default function VaultScreen() {
             >
               <Pressable
                 onPress={() => setSelectedExercise(item)}
-                className="bg-card-dark rounded-2xl p-5 flex-row justify-between items-center"
+                className="bg-card-dark rounded-2xl p-4 flex-row justify-between items-center border border-zinc-800/50 active:scale-95 transition-transform"
               >
-                <View className="flex-1 bg-transparent flex-row items-center">
-                  <Text className="text-sm font-bold text-white">
+                {/* Left: Name + Unilateral Icon */}
+                <View className="flex-1 flex-row items-center mr-4">
+                  <Text className="text-sm font-bold text-white" numberOfLines={1}>
                     {item.name}
                   </Text>
                   {item.is_unilateral && (
                     <MaterialCommunityIcons
                       name="alpha-u-box"
                       size={16}
-                      color={Colors.palette.blue500}
-                      style={{ marginLeft: 6 }}
+                      color={Colors.palette.electricBlue}
+                      style={{ marginLeft: 6, opacity: 0.8 }}
                     />
                   )}
                 </View>
 
-                <View className="flex-row items-center bg-transparent">
-                  <Text className="text-[10px] font-bold text-green-500 mr-2">
-                    {item.difficulty}
-                  </Text>
-                  <Text
-                    className="text-[10px] font-bold uppercase"
-                    style={{ color: getCategoryColor(item.category.slug) }}
+                {/* Right: Badges */}
+                <View className="flex-row items-center gap-3">
+                  {/* Difficulty Dot */}
+                  <View className="flex-row items-center gap-1.5">
+                    <View
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor:
+                          DifficultyColors[item.difficulty as keyof typeof DifficultyColors] ||
+                          Colors.palette.stone,
+                      }}
+                    />
+                  </View>
+
+                  {/* Category Pill */}
+                  <View
+                    className="px-2 py-1 rounded-md"
+                    style={{
+                      backgroundColor: getCategoryColor(item.category.slug),
+                    }}
                   >
-                    {" "}
-                    {item.category.name}
-                  </Text>
+                    <Text
+                      className="text-[10px] font-bold text-white uppercase tracking-wider"
+                      numberOfLines={1}
+                    >
+                      {item.category.name}
+                    </Text>
+                  </View>
                 </View>
               </Pressable>
             </Animated.View>

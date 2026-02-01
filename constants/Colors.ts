@@ -1,32 +1,51 @@
 const Palette = {
-  // Zinc Scale (Grays)
-  zinc950: "#09090B",
-  zinc900: "#18181B",
-  zinc800: "#27272A", // Progress bg, Dark Borders
-  zinc700: "#3F3F46", // Separators, Dark Icons
-  zinc600: "#52525B", // Placeholders, Muted Icons
-  zinc500: "#71717A", // Subtitles
-  zinc400: "#A1A1AA", // Lighter Text/Icons
-  zinc300: "#D4D4D8",
-  zinc100: "#F4F4F5",
+  // Grayscale / Materials
+  obsidian: "#09090B", // zinc950
+  night: "#18181B",    // zinc900
+  charcoal: "#27272A", // zinc800
+  iron: "#3F3F46",     // zinc700
+  steel: "#52525B",    // zinc600
+  stone: "#71717A",    // zinc500
+  silver: "#A1A1AA",   // zinc400
+  fog: "#D4D4D8",      // zinc300
+  cloud: "#F4F4F5",    // zinc100
 
   // Base
   white: "#FFFFFF",
   black: "#000000",
   transparent: "transparent",
 
-  // Accents
-  blue500: "#3B82F6", // Electric Blue (Primary)
-  blue900: "#1B3B6F", // Gradient Start
-  green500: "#22C55E", // Success
-  yellow400: "#FACC15", // Warning/Skills
-  red500: "#EF4444", // Error/Push
-  orange500: "#F97316", // Legs
-  purple500: "#A855F7", // Core
+  // thematic Accents (Primary)
+  electricBlue: "#3B82F6",
+  deepBlue: "#1B3B6F",
+  emeraldGreen: "#22C55E",
+  solarYellow: "#FACC15",
+  crimsonRed: "#EF4444",
+  burntOrange: "#F97316",
+  royalPurple: "#A855F7",
+
+  // Secondary / Stabilizer Variants (Wholesome/Soft)
+  skyBlue: "#60A5FA",
+  softBlue: "#93C5FD",
+  
+  lighterPurple: "#C084FC",
+  palePurple: "#E9D5FF",
+  
+  freshGreen: "#4ADE80",
+  paleGreen: "#BBF7D0",
+  
+  sunshineYellow: "#FDE047",
+  paleYellow: "#FEF08A",
+
+  // Extras
+  teal: "#14B8A6",
+  pink: "#EC4899",
+  gold: "#EAB308",
+  slate: "#94A3B8",
 
   // Semantic (Custom)
-  backgroundDark: "#121214", // Main App BG
-  cardDark: "#1E1E22", // Paper/Card BG
+  backgroundDark: "#121214",
+  cardDark: "#1E1E22",
 };
 
 const Colors = {
@@ -38,74 +57,83 @@ const Colors = {
     tint: "#2f95dc",
     tabIconDefault: "#ccc",
     tabIconSelected: "#2f95dc",
-    success: Palette.green500,
-    warning: Palette.yellow400,
+    success: Palette.emeraldGreen,
+    warning: Palette.solarYellow,
     card: Palette.white,
-    icon: Palette.zinc600,
-    border: Palette.zinc300,
+    icon: Palette.steel,
+    border: Palette.fog,
   },
   dark: {
     text: Palette.white,
     background: Palette.backgroundDark,
-    navigationBackground: Palette.zinc900,
-    tint: Palette.blue500,
-    tabIconDefault: Palette.zinc600,
-    tabIconSelected: Palette.blue500,
-    success: Palette.green500,
-    warning: Palette.yellow400,
+    navigationBackground: Palette.night,
+    tint: Palette.electricBlue,
+    tabIconDefault: Palette.steel,
+    tabIconSelected: Palette.electricBlue,
+    success: Palette.emeraldGreen,
+    warning: Palette.solarYellow,
     card: Palette.cardDark,
-    icon: Palette.zinc400,
-    border: Palette.zinc800,
+    icon: Palette.silver,
+    border: Palette.charcoal,
   },
 };
 
 export const CategoryColors = {
   // Strength
-  PUSH: Palette.red500,
-  PULL: Palette.blue500,
-  LEGS: Palette.orange500,
-  CORE: Palette.purple500,
-  NECK: "#8B5CF6", // Violet
+  PUSH: Palette.royalPurple,
+  PULL: Palette.electricBlue,
+  LEGS: Palette.burntOrange,
+  CORE: Palette.crimsonRed,
+  NECK: Palette.slate,
+
   // Movement / recovery
-  MOBILITY: Palette.yellow400,
-  STRETCH: Palette.green500,
+  MOBILITY: Palette.solarYellow,
+  STRETCH: Palette.teal,
+
   // Conditioning / skill
-  CARDIO: "#EC4899", // Pink
-  SKILL: Palette.yellow400,
-  OTHER: Palette.zinc400,
+  CARDIO: Palette.pink,
+  SKILL: Palette.gold,
+  OTHER: Palette.silver,
+};
+
+export const DifficultyColors = {
+  BEGINNER: Palette.emeraldGreen,
+  INTERMEDIATE: Palette.burntOrange,
+  ADVANCED: Palette.crimsonRed,
+  ELITE: Palette.royalPurple,
 };
 
 export const EffectColors = {
   TRAIN: {
-    PRIMARY: "#00F2FF",    // Neon Cyan (Strongest)
-    SECONDARY: "#3B82F6",  // Electric Blue (Stronger)
-    STABILIZER: "#1E3A8A", // Dark Navy (Strong)
+    PRIMARY: Palette.electricBlue,
+    SECONDARY: Palette.skyBlue,
+    STABILIZER: Palette.softBlue,
   },
   ISOMETRIC: {
-    PRIMARY: "#E879F9",    // Neon Pink/Purple
-    SECONDARY: "#A855F7",  // Purple
-    STABILIZER: "#581C87", // Dark Deep Purple
+    PRIMARY: Palette.royalPurple,
+    SECONDARY: Palette.lighterPurple,
+    STABILIZER: Palette.palePurple,
   },
   STRETCH: {
-    PRIMARY: "#4ADE80",    // Neon Green
-    SECONDARY: "#16A34A",  // Forest Green
-    STABILIZER: "#14532D", // Dark Green
+    PRIMARY: Palette.emeraldGreen,
+    SECONDARY: Palette.freshGreen,
+    STABILIZER: Palette.paleGreen,
   },
   MOBILITY: {
-    PRIMARY: "#FDE047",    // Neon Yellow
-    SECONDARY: "#EAB308",  // Golden Yellow
-    STABILIZER: "#713F12", // Dark Earth Yellow
+    PRIMARY: Palette.solarYellow,
+    SECONDARY: Palette.sunshineYellow,
+    STABILIZER: Palette.paleYellow,
   },
 };
 
 export const SessionColors = {
-  BLUE: "#3B82F6", // Palette.blue500
-  RED: "#EF4444", // Palette.red500
-  GREEN: "#22C55E", // Palette.green500
-  ORANGE: "#F97316", // Palette.orange500
-  PURPLE: "#A855F7", // Palette.purple500
-  PINK: "#EC4899", // New Pink
-  YELLOW: "#FACC15", // Palette.yellow400
+  BLUE: Palette.electricBlue,
+  RED: Palette.crimsonRed,
+  GREEN: Palette.emeraldGreen,
+  ORANGE: Palette.burntOrange,
+  PURPLE: Palette.royalPurple,
+  PINK: Palette.pink,
+  YELLOW: Palette.solarYellow,
 };
 
 export default Colors;

@@ -41,7 +41,7 @@ export default function EditSetModal({
               <FontAwesome
                 name="close"
                 size={16}
-                color={Colors.palette.zinc400}
+                color={Colors.palette.silver}
               />
             </Pressable>
           </View>
@@ -49,20 +49,20 @@ export default function EditSetModal({
           {/* Counter */}
           <View className="flex-row items-center mb-8 gap-6">
             <Pressable
-              className="w-16 h-16 rounded-3xl bg-zinc-800 items-center justify-center"
+              className="w-16 h-16 rounded-3xl bg-zinc-700 items-center justify-center"
               onPress={() => updateReps(-1)}
             >
               <FontAwesome
                 name="minus"
                 size={16}
-                color={Colors.palette.zinc400}
+                color={Colors.palette.white}
               />
             </Pressable>
             <Text className="text-5xl font-extrabold text-white min-w-[80px] text-center">
               {reps}
             </Text>
             <Pressable
-              className="w-16 h-16 rounded-3xl bg-zinc-800 items-center justify-center"
+              className="w-16 h-16 rounded-3xl bg-zinc-700 items-center justify-center"
               onPress={() => updateReps(1)}
             >
               <FontAwesome name="plus" size={16} color={Colors.palette.white} />
@@ -86,7 +86,7 @@ export default function EditSetModal({
             <FontAwesome
               name="trash"
               size={16}
-              color={Colors.palette.red500}
+              color={Colors.palette.crimsonRed}
               style={{ marginRight: 8 }}
             />
             <Text className="text-red-500 font-bold text-base">Delete Set</Text>

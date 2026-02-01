@@ -33,9 +33,9 @@ export function SessionHeader({
         </View>
         <Pressable
           onPress={onClose}
-          className="w-8 h-8 rounded-full bg-zinc-800 items-center justify-center"
+          className="w-8 h-8 rounded-full bg-zinc-700 items-center justify-center"
         >
-          <FontAwesome name="close" size={14} color={Colors.palette.zinc400} />
+          <FontAwesome name="close" size={14} color={Colors.palette.white} />
         </Pressable>
       </View>
 

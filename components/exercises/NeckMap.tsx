@@ -9,10 +9,14 @@ import { ExerciseImpact } from "@/constants/Enums";
 
 interface NeckMapProps {
     muscleGroups: MuscleWork[];
+    height?: number;
 }
 
-export default function NeckMap({ muscleGroups }: NeckMapProps) {
+export default function NeckMap({ muscleGroups, height = 200 }: NeckMapProps) {
+    const width = height * (150 / 200);
+
     const muscleStyleMap = useMemo(() => {
+        // ... (unchanged logic)
         const map: Record<string, { fill: string; stroke: string; strokeWidth: number; intensity: number }> = {};
 
         muscleGroups.forEach((work) => {
@@ -49,12 +53,12 @@ export default function NeckMap({ muscleGroups }: NeckMapProps) {
     return (
         <View className="flex-row justify-center items-start space-x-4 my-4">
             <View className="items-center">
-                <NeckMapFront muscleStyleMap={muscleStyleMap} width={150} height={200} />
+                <NeckMapFront muscleStyleMap={muscleStyleMap} width={width} height={height} />
                 <Text className="text-zinc-600 text-[10px] font-bold tracking-[0.2em] uppercase mt-2">Front</Text>
             </View>
 
             <View className="items-center">
-                <NeckMapBack muscleStyleMap={muscleStyleMap} width={150} height={200} />
+                <NeckMapBack muscleStyleMap={muscleStyleMap} width={width} height={height} />
                 <Text className="text-zinc-600 text-[10px] font-bold tracking-[0.2em] uppercase mt-2">Back</Text>
             </View>
         </View>

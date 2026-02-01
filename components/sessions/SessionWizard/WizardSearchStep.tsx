@@ -65,19 +65,19 @@ export function WizardSearchStep({ onSelect }: Props) {
                   <MaterialCommunityIcons
                     name="alpha-u-box"
                     size={14}
-                    color={Colors.palette.blue500}
+                    color={Colors.palette.electricBlue}
                     style={{ marginRight: 6 }}
                   />
                 )}
-                <Text className="text-xs text-zinc-500 font-bold uppercase tracking-wide">
-                  {item.category} • {item.difficulty}
+                <Text className="text-xs text-zinc-400 font-bold uppercase tracking-wide">
+                  {item.category?.name} • {item.difficulty}
                 </Text>
               </View>
             </View>
             <FontAwesome
               name="chevron-right"
               size={12}
-              color={Colors.palette.zinc600}
+              color={Colors.palette.silver}
             />
           </Pressable>
         )}

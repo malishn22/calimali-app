@@ -34,12 +34,12 @@ export function Input({
           <FontAwesome
             name={icon}
             size={16}
-            color={Colors.palette.zinc600}
+            color={Colors.palette.steel}
             style={{ marginRight: 12 }}
           />
         )}
         <TextInput
-          placeholderTextColor={Colors.palette.zinc600}
+          placeholderTextColor={Colors.palette.steel}
           className={`flex-1 text-white text-base font-semibold ${className}`}
           {...props}
         />

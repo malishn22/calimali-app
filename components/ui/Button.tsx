@@ -16,13 +16,13 @@ interface ButtonProps {
   onPress?: () => void;
   title?: string;
   variant?:
-    | "primary"
-    | "secondary"
-    | "destructive"
-    | "ghost"
-    | "outline"
-    | "completed"
-    | "start";
+  | "primary"
+  | "secondary"
+  | "destructive"
+  | "ghost"
+  | "outline"
+  | "completed"
+  | "start";
   size?: "sm" | "md" | "lg";
   icon?: keyof typeof FontAwesome.glyphMap;
   iconPosition?: "left" | "right";
@@ -94,22 +94,22 @@ export function Button({
     case "secondary":
       variantContainer = "bg-card-dark";
       variantText = "text-zinc-400 font-bold uppercase tracking-wider";
-      defaultIconColor = Colors.palette.zinc400;
+      defaultIconColor = Colors.palette.silver;
       break;
     case "destructive":
       variantContainer = "bg-card-dark border border-red-500/30";
       variantText = "text-red-500 font-bold uppercase tracking-wider";
-      defaultIconColor = Colors.palette.red500;
+      defaultIconColor = Colors.palette.crimsonRed;
       break;
     case "ghost":
       variantContainer = "bg-transparent";
       variantText = "text-zinc-400 font-bold uppercase tracking-wider";
-      defaultIconColor = Colors.palette.zinc400;
+      defaultIconColor = Colors.palette.silver;
       break;
     case "outline":
       variantContainer = "bg-transparent border border-zinc-700";
       variantText = "text-zinc-400 font-bold uppercase tracking-wider";
-      defaultIconColor = Colors.palette.zinc400;
+      defaultIconColor = Colors.palette.silver;
       break;
     case "completed":
       variantContainer = "bg-green-500";
