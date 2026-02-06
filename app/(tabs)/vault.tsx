@@ -1,9 +1,10 @@
 import ExerciseDetailSheet from "@/components/exercises/ExerciseDetailSheet";
-import { Input } from "@/components/ui/Input";
-import Colors, { CategoryColors, DifficultyColors } from "@/constants/Colors";
+import { Badge } from "@/components/ui/Badge";
+import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
+import { SearchBar } from "@/components/ui/SearchBar";
+import Colors, { DifficultyColors, getCategoryColor } from "@/constants/Colors";
 import { Exercise, ExerciseCategoryModel } from "@/constants/Types";
 import { Api } from "@/services/api";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -71,13 +72,6 @@ export default function VaultScreen() {
     return matchesFilter && matchesSearch;
   });
 
-  const getCategoryColor = (categorySlug: string) => {
-    return (
-      CategoryColors[categorySlug.toUpperCase() as keyof typeof CategoryColors] ||
-      CategoryColors.OTHER
-    );
-  };
-
   return (
     <SafeAreaView
       className="flex-1 bg-background-dark"
@@ -100,9 +94,7 @@ export default function VaultScreen() {
         )}
 
         {/* Search Bar */}
-        <Input
-          placeholder="Search movements..."
-          icon="search"
+        <SearchBar
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -154,6 +146,7 @@ export default function VaultScreen() {
           keyExtractor={(item) => item.id}
           itemLayoutAnimation={LinearTransition}
           contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item, index }) => (
             <Animated.View
               entering={FadeInDown.delay(index * 50).springify()}
@@ -170,12 +163,7 @@ export default function VaultScreen() {
                     {item.name}
                   </Text>
                   {item.is_unilateral && (
-                    <MaterialCommunityIcons
-                      name="alpha-u-box"
-                      size={16}
-                      color={Colors.palette.electricBlue}
-                      style={{ marginLeft: 6, opacity: 0.8 }}
-                    />
+                    <UnilateralIndicator variant="inline" size={16} className="ml-1.5" />
                   )}
                 </View>
 
@@ -196,19 +184,12 @@ export default function VaultScreen() {
                   </View>
 
                   {/* Category Pill */}
-                  <View
-                    className="px-2 py-1 rounded-md"
-                    style={{
-                      backgroundColor: getCategoryColor(item.category.slug),
-                    }}
-                  >
-                    <Text
-                      className="text-[10px] font-bold text-white uppercase tracking-wider"
-                      numberOfLines={1}
-                    >
-                      {item.category.name}
-                    </Text>
-                  </View>
+                  <Badge
+                    label={item.category.name}
+                    color={getCategoryColor(item.category.slug)}
+                    variant="filled"
+                    size="sm"
+                  />
                 </View>
               </Pressable>
             </Animated.View>

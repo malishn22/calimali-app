@@ -1,9 +1,11 @@
-import { CategoryColors, DifficultyColors } from "@/constants/Colors";
+import { Badge } from "@/components/ui/Badge";
+import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
+import { DifficultyColors, getCategoryColor } from "@/constants/Colors";
+import { BOTTOM_SHEET_OFFSET } from "@/constants/Layout";
 import { Exercise } from "@/constants/Types";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useMemo } from "react";
-import BodyMap from "./BodyMap";
-import NeckMap from "./NeckMap";
+import MuscleMapView from "./MuscleMapView";
 import {
   Dimensions,
   Modal,
@@ -52,13 +54,6 @@ export default function ExerciseDetailSheet({
     );
   }, [exercise?.muscleGroups]);
 
-  const getCategoryColor = (categorySlug: string) => {
-    return (
-      CategoryColors[categorySlug.toUpperCase() as keyof typeof CategoryColors] ||
-      CategoryColors.OTHER
-    );
-  };
-
   const categorySlug = exercise?.category.slug.toUpperCase() || "OTHER";
 
   if (!visible || !exercise) return null;
@@ -81,12 +76,12 @@ export default function ExerciseDetailSheet({
           entering={SlideInDown.duration(500)}
           exiting={SlideOutDown.duration(200)}
           style={{
-            height: SHEET_HEIGHT - (insets.bottom + 80),
+            height: SHEET_HEIGHT - 24 - BOTTOM_SHEET_OFFSET,
             borderTopLeftRadius: 32,
             borderTopRightRadius: 32,
             backgroundColor: "#1c1c1e",
             overflow: "hidden",
-            marginBottom: insets.bottom + 40,
+            marginBottom: BOTTOM_SHEET_OFFSET,
           }}
         >
           {/* Header */}
@@ -133,44 +128,19 @@ export default function ExerciseDetailSheet({
               </Text>
 
               <View className="flex-row gap-2 flex-wrap justify-center">
-                <View
-                  className="px-3 py-1 rounded-full border"
-                  style={{
-                    borderColor: getCategoryColor(categorySlug),
-                    backgroundColor: `${getCategoryColor(categorySlug)}20`,
-                  }}
-                >
-                  <Text
-                    className="text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: getCategoryColor(categorySlug) }}
-                  >
-                    {exercise.category.name}
-                  </Text>
-                </View>
-
-                <View
-                  className="px-3 py-1 rounded-full border"
-                  style={{
-                    borderColor: DifficultyColors[exercise.difficulty as keyof typeof DifficultyColors] || "#52525B",
-                    backgroundColor: `${DifficultyColors[exercise.difficulty as keyof typeof DifficultyColors] || "#52525B"}20`,
-                  }}
-                >
-                  <Text
-                    className="text-[10px] font-bold uppercase tracking-widest"
-                    style={{
-                      color: DifficultyColors[exercise.difficulty as keyof typeof DifficultyColors] || "#A1A1AA"
-                    }}
-                  >
-                    {exercise.difficulty}
-                  </Text>
-                </View>
-
+                <Badge
+                  label={exercise.category.name}
+                  color={getCategoryColor(categorySlug)}
+                />
+                <Badge
+                  label={exercise.difficulty}
+                  color={
+                    DifficultyColors[exercise.difficulty as keyof typeof DifficultyColors] ||
+                    "#52525B"
+                  }
+                />
                 {exercise.is_unilateral && (
-                  <View className="px-3 py-1 rounded-full border border-blue-500/30 bg-blue-500/10">
-                    <Text className="text-[10px] font-bold uppercase tracking-widest text-blue-400">
-                      Unilateral
-                    </Text>
-                  </View>
+                  <UnilateralIndicator variant="badge" />
                 )}
               </View>
             </View>
@@ -201,15 +171,12 @@ export default function ExerciseDetailSheet({
               </View>
             </View>
 
-            {/* Body/Neck Map - Visual representation only */}
+            {/* Muscle Map - Body or Neck according to exercise targets */}
             {exercise.muscleGroups && exercise.muscleGroups.length > 0 && (
-              <View className="mb-8">
-                {isNeckExercise ? (
-                  <NeckMap muscleGroups={exercise.muscleGroups} />
-                ) : (
-                  <BodyMap muscleGroups={exercise.muscleGroups} />
-                )}
-              </View>
+              <MuscleMapView
+                muscleGroups={exercise.muscleGroups}
+                displayMode={isNeckExercise ? "neck" : "body"}
+              />
             )}
 
             {/* Instructions */}
@@ -257,7 +224,7 @@ export default function ExerciseDetailSheet({
               </View>
             )}
 
-            <View style={{ height: 100 }} />
+            <View style={{ height: 100 + insets.bottom }} />
           </ScrollView>
         </Animated.View>
       </Animated.View>

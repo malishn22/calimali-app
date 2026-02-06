@@ -96,6 +96,24 @@ export const CategoryColors = {
   OTHER: Palette.silver,
 };
 
+export const getCategoryColor = (slugOrName: string): string =>
+  CategoryColors[slugOrName?.toUpperCase() as keyof typeof CategoryColors] ??
+  CategoryColors.OTHER;
+
+/** Colors for exercise unit labels (REPS, SECS, etc.) */
+export const UnitColors: Record<string, string> = {
+  REPS: Palette.electricBlue,
+  REP: Palette.electricBlue,
+  SECS: Palette.teal,
+  SEC: Palette.teal,
+  SECONDS: Palette.teal,
+  SECOND: Palette.teal,
+  default: Palette.electricBlue,
+};
+
+export const getUnitColor = (unit: string): string =>
+  UnitColors[unit?.toUpperCase()] ?? UnitColors.default;
+
 export const DifficultyColors = {
   BEGINNER: Palette.emeraldGreen,
   INTERMEDIATE: Palette.burntOrange,

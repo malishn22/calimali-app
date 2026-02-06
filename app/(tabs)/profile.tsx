@@ -1,5 +1,6 @@
 import Colors from "@/constants/Colors";
 import { SessionHistory, UserProfile } from "@/constants/Types";
+import { useCache } from "@/context/CacheContext";
 import { Api } from "@/services/api";
 import { getLevelRank, getLevelRequirement } from "@/utilities/Gamification";
 import Feather from "@expo/vector-icons/Feather";
@@ -7,6 +8,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import {
+  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -21,6 +23,7 @@ import SessionDetailSheet from "@/components/sessions/SessionDetailSheet";
 // ... imports remain ...
 
 export default function ProfileScreen() {
+  const { refreshCalendar } = useCache();
   const [activeTab, setActiveTab] = useState<"OVERVIEW" | "HISTORY">(
     "OVERVIEW",
   );
@@ -325,16 +328,31 @@ export default function ProfileScreen() {
           <View className="flex-row gap-4">
             <Pressable
               className="flex-1 border border-red-500/50 rounded-xl p-3 items-center active:bg-red-500/10"
-              onPress={async () => {
-                if (confirm("Reset all data? This cannot be undone.")) {
-                  try {
-                    await Api.resetUserData();
-                    alert("Data Reset!");
-                    loadHistory(); // Reload
-                  } catch (e) {
-                    alert("Reset Failed");
-                  }
-                }
+              onPress={() => {
+                Alert.alert(
+                  "Reset Data",
+                  "Reset all data? This cannot be undone.",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                      text: "Reset",
+                      style: "destructive",
+                      onPress: async () => {
+                        try {
+                          await Api.resetUserData();
+                          lastFetchTime.current = 0;
+                          await Promise.all([loadHistory(), refreshCalendar()]);
+                          Alert.alert("Success", "Data reset successfully.");
+                        } catch (e) {
+                          Alert.alert(
+                            "Reset Failed",
+                            e instanceof Error ? e.message : "Could not reset data. Please try again.",
+                          );
+                        }
+                      },
+                    },
+                  ]
+                );
               }}
             >
               <Text className="text-red-400 font-bold text-xs">RESET DATA</Text>

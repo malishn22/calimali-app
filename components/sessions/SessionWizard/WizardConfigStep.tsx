@@ -1,8 +1,10 @@
-import { Button } from "@/components/ui/Button";
+import { SetRepsArea } from "@/components/ui/SetRepsArea";
+import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
+import { WizardHeader } from "@/components/ui/WizardHeader";
+import { getCategoryColor } from "@/constants/Colors";
 import { Exercise } from "@/constants/Types";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { BottomActionPanel } from "./BottomActionPanel";
 import { WizardScreenWrapper } from "./WizardScreenWrapper";
 
@@ -105,183 +107,34 @@ export function WizardConfigStep({
   return (
     <View className="flex-1">
       <WizardScreenWrapper className="pb-0">
-        {/* Header */}
-        <View className="items-center py-4 mb-4">
-          <Text className="text-xl font-bold text-white mb-2">
-            Configure Sets
-          </Text>
-          <Text className="text-4xl font-extrabold text-white text-center leading-tight mb-1">
+        <WizardHeader title="Configure Sets" className="mb-4" />
+
+        <View className="items-center mb-4">
+          <Text className="text-3xl font-extrabold text-white text-center leading-tight mb-1">
             {exercise.name}
           </Text>
-          <Text className="text-blue-500 font-bold uppercase tracking-widest text-xs mb-6">
+          <Text
+            className="font-bold uppercase tracking-widest text-xs mb-2"
+            style={{ color: getCategoryColor(exercise.category?.name || "") }}
+          >
             {exercise.category?.name}
           </Text>
-
-          {exercise.is_unilateral && (
-            <View className="mb-6 flex-row items-center bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-              <MaterialCommunityIcons
-                name="alpha-u-box"
-                size={14}
-                color="#3B82F6"
-                style={{ marginRight: 6 }}
-              />
-              <Text className="text-blue-500 font-bold text-[10px] tracking-widest uppercase">
-                Unilateral
-              </Text>
-            </View>
-          )}
-
-          {/* Set Controls - Minimalistic */}
-          <View className="flex-row items-center justify-center gap-4 bg-zinc-800/50 p-2 rounded-2xl border border-zinc-700/50">
-            <Button
-              variant="secondary"
-              icon="minus"
-              onPress={handleRemoveSet}
-              disabled={sets <= 1}
-              className={`w-8 h-8 rounded-lg bg-zinc-700 items-center justify-center ${sets <= 1 ? "opacity-30" : ""
-                }`}
-            />
-            <View className="w-2" />
-            <Button
-              variant="secondary"
-              icon="plus"
-              onPress={handleAddSet}
-              className="w-8 h-8 rounded-lg bg-zinc-700 items-center justify-center"
-            />
-          </View>
-
-          {/* Unilateral Link Toggle */}
-          {exercise.is_unilateral && (
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={isLinked ? "link" : "chain-broken"}
-              title={isLinked ? "LINKED" : "UNLINKED"}
-              onPress={() => setIsLinked(!isLinked)}
-              className={`mt-4 border px-3 py-1 rounded-full ${isLinked
-                ? "border-blue-500/30 bg-blue-500/10"
-                : "border-zinc-600 bg-zinc-800"
-                }`}
-              textClassName={isLinked ? "text-blue-400" : "text-zinc-500"}
-              iconColor={isLinked ? "#60A5FA" : "#71717a"}
-            />
-          )}
+          {exercise.is_unilateral && <UnilateralIndicator variant="pill" />}
         </View>
 
-        <ScrollView className="flex-1 mb-4">
-          {exercise.is_unilateral
-            ? // UNILATERAL RENDER (Pairs)
-            Array.from({ length: sets }).map((_, i) => {
-              const leftIndex = i * 2;
-              const rightIndex = i * 2 + 1;
-              const leftReps = reps[leftIndex];
-              const rightReps = reps[rightIndex];
-
-              return (
-                <View
-                  key={i}
-                  className="bg-zinc-800 rounded-2xl p-4 mb-2 border border-zinc-700 mx-1"
-                >
-                  <View className="mb-3 flex-row justify-between items-center">
-                    <Text className="text-zinc-500 font-bold text-sm">
-                      Set {i + 1}
-                    </Text>
-                    <Text className="text-blue-500 font-bold text-xs uppercase tracking-wider">
-                      {exercise.unit}
-                    </Text>
-                  </View>
-
-                  {/* Left Control */}
-                  <View className="flex-row items-center justify-between mb-3 bg-zinc-900/50 p-2 rounded-xl">
-                    <Text className="text-zinc-400 font-bold text-xs w-10">
-                      LEFT
-                    </Text>
-                    <View className="flex-row items-center gap-3">
-                      <Button
-                        variant="secondary"
-                        icon="minus"
-                        size="sm"
-                        onPress={() => updateRep(leftIndex, -1)}
-                        className="w-8 h-8 rounded-full bg-zinc-700"
-                      />
-                      <Text className="text-2xl font-extrabold text-white w-10 text-center">
-                        {leftReps}
-                      </Text>
-                      <Button
-                        variant="secondary"
-                        icon="plus"
-                        size="sm"
-                        onPress={() => updateRep(leftIndex, 1)}
-                        className="w-8 h-8 rounded-full bg-zinc-700"
-                      />
-                    </View>
-                  </View>
-
-                  {/* Right Control */}
-                  <View className="flex-row items-center justify-between bg-zinc-900/50 p-2 rounded-xl">
-                    <Text className="text-zinc-400 font-bold text-xs w-10">
-                      RIGHT
-                    </Text>
-                    <View className="flex-row items-center gap-3">
-                      <Button
-                        variant="secondary"
-                        icon="minus"
-                        size="sm"
-                        onPress={() => updateRep(rightIndex, -1)}
-                        className="w-8 h-8 rounded-full bg-zinc-700"
-                      />
-                      <Text className="text-2xl font-extrabold text-white w-10 text-center">
-                        {rightReps}
-                      </Text>
-                      <Button
-                        variant="secondary"
-                        icon="plus"
-                        size="sm"
-                        onPress={() => updateRep(rightIndex, 1)}
-                        className="w-8 h-8 rounded-full bg-zinc-700"
-                      />
-                    </View>
-                  </View>
-                </View>
-              );
-            })
-            : // NORMAL RENDER
-            reps.map((repCount, i) => (
-              <View
-                key={i}
-                className="bg-zinc-800 rounded-2xl p-4 mb-2 border border-zinc-700 mx-1"
-              >
-                <View className="flex-row items-center justify-between">
-                  <View>
-                    <Text className="text-zinc-500 font-bold text-sm mb-1">
-                      Set {i + 1}
-                    </Text>
-                    <Text className="text-blue-500 font-bold text-sm uppercase tracking-wider">
-                      {exercise.unit}
-                    </Text>
-                  </View>
-
-                  <View className="flex-row items-center gap-4">
-                    <Button
-                      variant="secondary"
-                      icon="minus"
-                      onPress={() => updateRep(i, -1)}
-                      className="w-8 h-8 rounded-full bg-zinc-700"
-                    />
-                    <Text className="text-3xl font-extrabold text-white w-12 text-center">
-                      {repCount}
-                    </Text>
-                    <Button
-                      variant="secondary"
-                      icon="plus"
-                      onPress={() => updateRep(i, 1)}
-                      className="w-8 h-8 rounded-full bg-zinc-700"
-                    />
-                  </View>
-                </View>
-              </View>
-            ))}
-        </ScrollView>
+        <SetRepsArea
+          mode={exercise.is_unilateral ? "unilateral" : "default"}
+          reps={reps}
+          unit={exercise.unit || "REPS"}
+          onAddSet={handleAddSet}
+          onRemoveSet={handleRemoveSet}
+          onUpdateRep={updateRep}
+          isLinked={isLinked}
+          onToggleLinked={
+            exercise.is_unilateral ? () => setIsLinked(!isLinked) : undefined
+          }
+          stepperSize={exercise.is_unilateral ? "sm" : "md"}
+        />
       </WizardScreenWrapper >
 
       {/* Footer using Standard Action Panel */}

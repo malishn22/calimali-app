@@ -1,3 +1,7 @@
+/**
+ * Session-specific button for SessionWizard and LiveSession flows.
+ * Fixed h-16, session styling. For general UI, use Button instead.
+ */
 import Colors from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";

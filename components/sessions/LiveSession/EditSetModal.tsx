@@ -1,3 +1,4 @@
+import { Stepper } from "@/components/ui/Stepper";
 import Colors from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useEffect, useState } from "react";
@@ -47,26 +48,15 @@ export default function EditSetModal({
           </View>
 
           {/* Counter */}
-          <View className="flex-row items-center mb-8 gap-6">
-            <Pressable
-              className="w-16 h-16 rounded-3xl bg-zinc-700 items-center justify-center"
-              onPress={() => updateReps(-1)}
-            >
-              <FontAwesome
-                name="minus"
-                size={16}
-                color={Colors.palette.white}
-              />
-            </Pressable>
-            <Text className="text-5xl font-extrabold text-white min-w-[80px] text-center">
-              {reps}
-            </Text>
-            <Pressable
-              className="w-16 h-16 rounded-3xl bg-zinc-700 items-center justify-center"
-              onPress={() => updateReps(1)}
-            >
-              <FontAwesome name="plus" size={16} color={Colors.palette.white} />
-            </Pressable>
+          <View className="mb-8">
+            <Stepper
+              value={reps}
+              onIncrement={() => updateReps(1)}
+              onDecrement={() => updateReps(-1)}
+              min={1}
+              size="lg"
+              containerClassName="justify-center"
+            />
           </View>
 
           {/* Actions */}

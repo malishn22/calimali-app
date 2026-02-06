@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/Input";
+import { WizardHeader } from "@/components/ui/WizardHeader";
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { WizardScreenWrapper } from "./WizardScreenWrapper";
@@ -38,9 +39,7 @@ export function WizardFinalStep({
   return (
     <WizardScreenWrapper>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="items-center py-4 mb-8">
-          <Text className="text-xl font-bold text-white">Final Details</Text>
-        </View>
+        <WizardHeader title="Final Details" className="mb-8" />
 
         <View className="mb-8">
           <Text className="text-zinc-400 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">

@@ -1,18 +1,9 @@
-import BodyMap from "@/components/exercises/BodyMap";
-import NeckMap from "@/components/exercises/NeckMap";
+import MuscleMapView from "@/components/exercises/MuscleMapView";
+import { Badge } from "@/components/ui/Badge";
 import { SessionExercise } from "@/constants/Types";
-import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import React, { useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
-
-const NECK_MUSCLE_GROUPS = [
-  "front_neck_flexors",
-  "front_neck_rotators",
-  "front_neck_lateral_flexors",
-  "back_neck_extensors",
-  "back_neck_lateral_extensors",
-  "back_neck_rotators",
-];
 
 interface Props {
   exercise: SessionExercise;
@@ -37,6 +28,15 @@ export function ActiveSessionView({
   side,
   currentReps,
 }: Props) {
+  const NECK_MUSCLE_GROUPS = [
+    "front_neck_flexors",
+    "front_neck_rotators",
+    "front_neck_lateral_flexors",
+    "back_neck_extensors",
+    "back_neck_lateral_extensors",
+    "back_neck_rotators",
+  ];
+
   const isNeckExercise = useMemo(() => {
     if (!exercise?.muscleGroups) return false;
     return exercise.muscleGroups.some((group) =>
@@ -48,11 +48,7 @@ export function ActiveSessionView({
     <View className="flex-1 items-center justify-start pt-10 px-6">
       {/* Exercise Info */}
       <View className="items-center mb-12">
-        <View className="bg-blue-500/20 px-3 py-1 rounded-full mb-4">
-          <Text className="text-blue-500 text-xs font-bold uppercase tracking-wider">
-            Push
-          </Text>
-        </View>
+        <Badge label="Push" color="#3B82F6" size="md" className="mb-4" />
 
         <Text className="text-4xl text-center font-black text-white mb-2 leading-tight">
           {exercise.name}
@@ -83,19 +79,13 @@ export function ActiveSessionView({
         </View>
       </View>
 
-      {/* Muscle Map Visualization */}
+      {/* Muscle Map - Body or Neck according to exercise targets */}
       <View className="flex-1 justify-center items-center mb-8">
-        {exercise.muscleGroups && exercise.muscleGroups.length > 0 ? (
-          isNeckExercise ? (
-            <NeckMap muscleGroups={exercise.muscleGroups} height={220} />
-          ) : (
-            <BodyMap muscleGroups={exercise.muscleGroups} height={300} />
-          )
-        ) : (
-          <View className="h-[220px] justify-center">
-            <Text className="text-zinc-700 italic">No muscle data</Text>
-          </View>
-        )}
+        <MuscleMapView
+          muscleGroups={exercise.muscleGroups || []}
+          displayMode={isNeckExercise ? "neck" : "body"}
+          height={300}
+        />
       </View>
     </View>
   );

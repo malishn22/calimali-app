@@ -1,8 +1,10 @@
-import { Input } from "@/components/ui/Input";
+import { SearchBar } from "@/components/ui/SearchBar";
+import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
 import Colors from "@/constants/Colors";
+import { WizardHeader } from "@/components/ui/WizardHeader";
 import { Exercise } from "@/constants/Types";
 import { Api } from "@/services/api";
-import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
 import { WizardScreenWrapper } from "./WizardScreenWrapper";
@@ -31,17 +33,13 @@ export function WizardSearchStep({ onSelect }: Props) {
 
   return (
     <WizardScreenWrapper>
-      <View className="items-center py-4 mb-4">
-        <Text className="text-xl font-bold text-white">Search Movement</Text>
-      </View>
+      <WizardHeader title="Search Movement" className="mb-4" />
 
       <View className="mb-4">
-        <Input
-          placeholder="Find movement..."
-          icon="search"
+        <SearchBar
           value={search}
           onChangeText={setSearch}
-          // Custom styling to match design (darker bg, blue accent)
+          placeholder="Find movement..."
           inputContainerClassName="bg-zinc-900 border border-zinc-700"
           className="text-lg"
         />
@@ -49,6 +47,7 @@ export function WizardSearchStep({ onSelect }: Props) {
 
       <FlatList
         data={filtered}
+        showsVerticalScrollIndicator={false}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <Pressable
@@ -60,14 +59,8 @@ export function WizardSearchStep({ onSelect }: Props) {
                 {item.name}
               </Text>
               <View className="flex-row items-center">
-                {/* Unilateral Icon - Blue Box U */}
                 {item.is_unilateral && (
-                  <MaterialCommunityIcons
-                    name="alpha-u-box"
-                    size={14}
-                    color={Colors.palette.electricBlue}
-                    style={{ marginRight: 6 }}
-                  />
+                  <UnilateralIndicator variant="inline" size={14} className="mr-1.5" />
                 )}
                 <Text className="text-xs text-zinc-400 font-bold uppercase tracking-wide">
                   {item.category?.name} • {item.difficulty}

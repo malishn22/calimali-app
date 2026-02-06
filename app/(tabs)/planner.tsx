@@ -1,15 +1,15 @@
 import { Calendar } from "@/components/calendar/Calendar";
+import { FAB } from "@/components/ui/FAB";
 import { PlannerSessionRow as SessionCard } from "@/components/sessions/PlannerSessionRow";
 import SessionWizard from "@/components/sessions/SessionWizard";
 import { ScheduledSession } from "@/constants/Types";
 import { useCalendarContext } from "@/context/CalendarContext";
 import { Api } from "@/services/api";
 import { isSessionActiveOnDate } from "@/utilities/SessionUtils";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useState } from "react";
 import {
+  Alert,
   LayoutAnimation,
-  Pressable,
   ScrollView,
   Text,
   View,
@@ -30,8 +30,15 @@ export default function PlannerScreen() {
   );
 
   const handleDeleteSession = async (id: string) => {
-    await Api.deletePlannedSession(id);
-    await refreshSessions();
+    try {
+      await Api.deletePlannedSession(id);
+      await refreshSessions();
+    } catch (e) {
+      Alert.alert(
+        "Delete failed",
+        e instanceof Error ? e.message : "Could not delete session. Please try again.",
+      );
+    }
   };
 
   const handleEditSession = (session: ScheduledSession) => {
@@ -46,32 +53,32 @@ export default function PlannerScreen() {
     return isSessionActiveOnDate(session, selectedDate);
   });
 
+  const handleAddSession = () => {
+    setEditingSession(null);
+    setWizardVisible(true);
+  };
+
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-background-dark">
+      <View className="flex-1">
       <ScrollView className="flex-1">
         <View className="flex-1 pt-4">
           <View className="flex-row justify-between items-center mb-6 px-4">
             <Text className="text-3xl font-bold text-white font-inter-700">
               Planner
             </Text>
-            {/* View Mode Toggle */}
-            <Pressable
-              onPress={() => {
-                LayoutAnimation.configureNext(
-                  LayoutAnimation.Presets.easeInEaseOut,
-                );
-                setViewMode(viewMode === "Week" ? "Month" : "Week");
-              }}
-              className="bg-zinc-800 px-4 py-2 rounded-xl border border-zinc-700"
-            >
-              <Text className="text-zinc-200 text-xs font-bold">
-                {viewMode === "Week" ? "Month" : "Week"}
-              </Text>
-            </Pressable>
           </View>
 
           {/* Calendar Component */}
-          <Calendar viewMode={viewMode} />
+          <Calendar
+            viewMode={viewMode}
+            onViewModeChange={(mode) => {
+              LayoutAnimation.configureNext(
+                LayoutAnimation.Presets.easeInEaseOut,
+              );
+              setViewMode(mode);
+            }}
+          />
 
           {/* Sessions List */}
           <View className="mt-6 mb-20 px-4">
@@ -79,15 +86,6 @@ export default function PlannerScreen() {
               <Text className="text-stone-400 text-xs font-bold tracking-widest uppercase">
                 SESSIONS
               </Text>
-              <Pressable
-                className="w-8 h-8 rounded-full bg-blue-500 items-center justify-center"
-                onPress={() => {
-                  setEditingSession(null);
-                  setWizardVisible(true);
-                }}
-              >
-                <FontAwesome name="plus" size={16} color="#fff" />
-              </Pressable>
             </View>
 
             <View className="gap-3">
@@ -109,6 +107,10 @@ export default function PlannerScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <FAB onPress={handleAddSession} bottomOffset={88} />
+
+      </View>
 
       <SessionWizard
         visible={wizardVisible}

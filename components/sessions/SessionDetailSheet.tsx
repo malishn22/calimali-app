@@ -7,8 +7,10 @@ import {
   BottomSheetScrollView,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import { BOTTOM_SHEET_OFFSET } from "@/constants/Layout";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface SessionDetailSheetProps {
   visible: boolean;
@@ -21,7 +23,7 @@ export default function SessionDetailSheet({
   session,
   onClose,
 }: SessionDetailSheetProps) {
-  // Ref
+  const insets = useSafeAreaInsets();
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   // Variables
@@ -97,6 +99,7 @@ export default function SessionDetailSheet({
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: "#1c1c1e" }}
       handleIndicatorStyle={{ backgroundColor: "#3f3f46" }}
+      bottomInset={BOTTOM_SHEET_OFFSET}
     >
       <BottomSheetView className="flex-1 bg-card-dark">
         {/* Header */}
@@ -118,7 +121,7 @@ export default function SessionDetailSheet({
             <Feather
               name="clock"
               size={14}
-              color={Colors.palette.blue500}
+              color={Colors.palette.electricBlue}
               style={{ marginBottom: 4 }}
             />
             <Text className="text-white font-bold">{duration}</Text>
@@ -130,7 +133,7 @@ export default function SessionDetailSheet({
             <Feather
               name="layers"
               size={14}
-              color={Colors.palette.green500}
+              color={Colors.palette.emeraldGreen}
               style={{ marginBottom: 4 }}
             />
             <Text className="text-white font-bold">
@@ -188,7 +191,7 @@ export default function SessionDetailSheet({
               </View>
             </View>
           ))}
-          <View className="h-10" />
+          <View style={{ height: 24 + insets.bottom }} />
         </BottomSheetScrollView>
       </BottomSheetView>
     </BottomSheetModal>
