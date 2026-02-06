@@ -86,6 +86,11 @@ export default function PlannerScreen() {
               <Text className="text-stone-400 text-xs font-bold tracking-widest uppercase">
                 SESSIONS
               </Text>
+              <FAB
+                onPress={handleAddSession}
+                position="inline"
+                size="sm"
+              />
             </View>
 
             <View className="gap-3">
@@ -107,9 +112,6 @@ export default function PlannerScreen() {
           </View>
         </View>
       </ScrollView>
-
-      <FAB onPress={handleAddSession} bottomOffset={88} />
-
       </View>
 
       <SessionWizard

@@ -15,10 +15,12 @@ export interface FABProps {
   /** FontAwesome icon name (default "plus") */
   icon?: keyof typeof FontAwesome.glyphMap;
   onPress: () => void;
-  /** Position (default "bottom-right") */
-  position?: "bottom-right" | "bottom-left";
-  /** Bottom offset in px for footer clearance (default 96) */
+  /** Position: floating bottom corners, or inline (no absolute, for layout embedding) */
+  position?: "bottom-right" | "bottom-left" | "inline";
+  /** Bottom offset in px for footer clearance when floating (default 96) */
   bottomOffset?: number;
+  /** Size when inline: "sm" | "md" (default "md" = 56px, "sm" = 40px) */
+  size?: "sm" | "md";
   className?: string;
 }
 
@@ -31,6 +33,7 @@ export function FAB({
   onPress,
   position = "bottom-right",
   bottomOffset = 96,
+  size = "md",
   className = "",
 }: FABProps) {
   const scale = useSharedValue(1);
@@ -48,21 +51,22 @@ export function FAB({
     scale.value = withSpring(1, { damping: 80, stiffness: 1500 });
   };
 
+  const isInline = position === "inline";
+  const sizeClasses = size === "sm" ? "w-10 h-10" : "w-14 h-14";
+  const iconSize = size === "sm" ? 18 : 20;
+
   const positionClasses =
-    position === "bottom-right" ? "right-6" : "left-6";
+    position === "bottom-right" ? "right-6" : position === "bottom-left" ? "left-6" : "";
 
   return (
     <AnimatedPressable
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={[
-        { bottom: bottomOffset },
-        animatedStyle,
-      ]}
-      className={`absolute ${positionClasses} z-10 w-14 h-14 rounded-full bg-blue-500 items-center justify-center shadow-lg ${className}`}
+      style={[!isInline && { bottom: bottomOffset }, animatedStyle]}
+      className={`${isInline ? "" : "absolute"} ${positionClasses} ${isInline ? "" : "z-10"} ${sizeClasses} rounded-full bg-blue-500 items-center justify-center shadow-lg ${className}`}
     >
-      <FontAwesome name={icon} size={20} color="white" />
+      <FontAwesome name={icon} size={iconSize} color="white" />
     </AnimatedPressable>
   );
 }
