@@ -30,11 +30,16 @@ export function CalendarHeader({
   isTodaySelected,
 }: CalendarHeaderProps) {
   return (
-    <View
-      className={`flex-row items-center px-4 py-3 gap-3 ${onViewModeChange ? "justify-between" : "justify-end"}`}
-    >
-      {onViewModeChange && (
-        <View className="flex-row items-center gap-2">
+    <View className="flex-row items-center px-4 py-3 justify-between">
+      {viewMode === "Month" && displayMonthLabel ? (
+        <Text className="text-zinc-400 text-sm font-inter-500 capitalize">
+          {displayMonthLabel}
+        </Text>
+      ) : (
+        <View />
+      )}
+      <View className="flex-row items-center gap-2">
+        {onViewModeChange && (
           <Pressable
             onPress={() => onViewModeChange(viewMode === "Week" ? "Month" : "Week")}
             className="w-10 h-10 items-center justify-center rounded-xl border-2 border-zinc-600 bg-zinc-800 active:bg-zinc-700"
@@ -46,14 +51,7 @@ export function CalendarHeader({
               color="#fff"
             />
           </Pressable>
-          {viewMode === "Month" && displayMonthLabel && (
-            <Text className="text-zinc-400 text-sm font-inter-500 capitalize">
-              {displayMonthLabel}
-            </Text>
-          )}
-        </View>
-      )}
-      <View className="flex-row items-center gap-2">
+        )}
         <Pressable
           onPress={onPrevPress}
           className="w-10 h-10 items-center justify-center rounded-full active:bg-zinc-800"
