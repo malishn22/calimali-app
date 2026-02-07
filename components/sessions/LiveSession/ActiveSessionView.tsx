@@ -2,8 +2,15 @@ import MuscleMapView from "@/components/exercises/MuscleMapView";
 import { Badge } from "@/components/ui/Badge";
 import { SessionExercise } from "@/constants/Types";
 import { FontAwesome } from "@expo/vector-icons";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
+import Animated, {
+  cancelAnimation,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+} from "react-native-reanimated";
 
 interface Props {
   exercise: SessionExercise;
@@ -15,6 +22,8 @@ interface Props {
   onEditSet: () => void;
   side?: "LEFT" | "RIGHT";
   currentReps: number;
+  /** Step index from parent - when this changes and set is completed, animation replays */
+  stepIndex: number;
 }
 
 export function ActiveSessionView({
@@ -27,6 +36,7 @@ export function ActiveSessionView({
   onEditSet,
   side,
   currentReps,
+  stepIndex,
 }: Props) {
   const NECK_MUSCLE_GROUPS = [
     "front_neck_flexors",
@@ -36,6 +46,25 @@ export function ActiveSessionView({
     "back_neck_lateral_extensors",
     "back_neck_rotators",
   ];
+
+  const checkScale = useSharedValue(1);
+
+  useEffect(() => {
+    if (isSetCompleted) {
+      cancelAnimation(checkScale);
+      checkScale.value = 1;
+      checkScale.value = withSequence(
+        withSpring(1.2, { damping: 12 }),
+        withSpring(1)
+      );
+    } else {
+      checkScale.value = 1;
+    }
+  }, [isSetCompleted, stepIndex]);
+
+  const animatedCheckStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: checkScale.value }],
+  }));
 
   const isNeckExercise = useMemo(() => {
     if (!exercise?.muscleGroups) return false;
@@ -47,7 +76,15 @@ export function ActiveSessionView({
   return (
     <View className="flex-1 items-center justify-start pt-10 px-6">
       {/* Exercise Info */}
-      <View className="items-center mb-12">
+      <View className="items-center mb-12 relative w-full">
+        {isSetCompleted && (
+          <Animated.View
+            style={animatedCheckStyle}
+            className="absolute right-0 top-0"
+          >
+            <FontAwesome name="check-circle" size={32} color="#22C55E" />
+          </Animated.View>
+        )}
         <Badge label="Push" color="#3B82F6" size="md" className="mb-4" />
 
         <Text className="text-4xl text-center font-black text-white mb-2 leading-tight">

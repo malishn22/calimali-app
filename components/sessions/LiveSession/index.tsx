@@ -143,20 +143,29 @@ export default function LiveSession({
     }));
   };
 
+  const getSetKey = (stepIndex: number) => {
+    const step = steps[stepIndex] as any;
+    if (!step) return "";
+    return `${step.exerciseIndex}-${step.setIndex}-${step.side || "BILATERAL"}`;
+  };
+
   const handleMainAction = () => {
     if (!isSessionStarted) {
       setIsSessionStarted(true);
       return;
     }
 
-    // Complete Current Set
-    markSetComplete(activeStepIndex);
+    const setKey = getSetKey(activeStepIndex);
+    const alreadyCompleted = !!completedSets[setKey];
+
+    if (!alreadyCompleted) {
+      markSetComplete(activeStepIndex);
+    }
 
     // If Last Step
     if (activeStepIndex >= totalSteps - 1) {
       handleFinish();
     } else {
-      // Go Next
       setActiveStepIndex((prev) => prev + 1);
     }
   };
@@ -325,6 +334,10 @@ export default function LiveSession({
 
   if (!session || !currentStep) return null;
 
+  const isCurrentSetCompleted = !!completedSets[
+    `${currentStep.exerciseIndex}-${currentStep.setIndex}-${(currentStep as any).side || "BILATERAL"}`
+  ];
+
   let mainActionLabel = "Next";
   let mainActionVariant: "primary" | "completed" | "start" = "primary";
   let mainActionIcon: keyof typeof FontAwesome.glyphMap | undefined = undefined;
@@ -337,16 +350,15 @@ export default function LiveSession({
     mainActionLabel = "Complete Session";
     mainActionVariant = "completed";
     mainActionIcon = "bolt";
+  } else if (isCurrentSetCompleted) {
+    mainActionLabel = "Next";
+    mainActionVariant = "primary";
+    mainActionIcon = "chevron-right";
   } else {
     mainActionLabel = "Complete Set";
     mainActionVariant = "completed";
     mainActionIcon = "check";
   }
-
-  const isCurrentSetCompleted =
-    completedSets[
-    `${currentStep.exerciseIndex}-${currentStep.setIndex}-${(currentStep as any).side || "BILATERAL"}`
-    ];
 
   return (
     <SafeAreaView className="flex-1 bg-background-dark">
@@ -364,6 +376,7 @@ export default function LiveSession({
 
       <ActiveSessionView
         exercise={currentStep.exercise}
+        stepIndex={activeStepIndex}
         exerciseIndex={currentStep.exerciseIndex}
         totalExercises={exercises.length}
         currentSetIndex={
