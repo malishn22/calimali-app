@@ -1,6 +1,9 @@
 import { ScheduledSession, SessionHistory } from "@/constants/Types";
 import { Api } from "@/services/api";
-import { calculateSessionXP } from "@/utilities/Gamification";
+import {
+  calculateSessionXP,
+  XP_PER_SET,
+} from "@/utilities/Gamification";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
@@ -226,10 +229,15 @@ export default function LiveSession({
       const xpEarned = calculateSessionXP(totalSets, varietyBonus);
 
       const newStats = await Api.applyStats(xpEarned, totalRepsInSession);
-      completionModalRef.current?.present(xpEarned, newStats);
+      completionModalRef.current?.present(xpEarned, newStats, {
+        baseXP: totalSets * XP_PER_SET,
+        bonusXP: varietyBonus,
+      });
     } catch (e) {
       console.error("Failed to update stats", e);
-      completionModalRef.current?.present(calculateSessionXP(steps.length), {
+      completionModalRef.current?.present(
+        calculateSessionXP(steps.length),
+        {
           id: "user",
           xp: 0,
           level: 1,
@@ -237,7 +245,9 @@ export default function LiveSession({
           streak_best: 0,
           streak_start_date: new Date().toISOString(),
           total_reps: 0,
-        });
+        },
+        { baseXP: steps.length * XP_PER_SET },
+      );
     }
   };
 
