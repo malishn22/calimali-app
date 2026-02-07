@@ -5,6 +5,7 @@ import React, { useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { SessionColors } from "@/constants/Colors";
+import { calculateSessionXP } from "@/utilities/Gamification";
 
 interface SessionCardProps {
   session: ScheduledSession;
@@ -90,7 +91,7 @@ export default function SessionCard({
                 EXP
               </Text>
               <Text className="text-sm text-white font-bold">
-                +{totalSets * 10}
+                +{calculateSessionXP(totalSets)}
               </Text>
             </View>
             <View className="w-[1px] h-5 bg-zinc-700 mx-3" />

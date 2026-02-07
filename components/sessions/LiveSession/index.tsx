@@ -1,5 +1,6 @@
 import { ScheduledSession, SessionHistory } from "@/constants/Types";
 import { Api } from "@/services/api";
+import { calculateSessionXP } from "@/utilities/Gamification";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
@@ -177,7 +178,6 @@ export default function LiveSession({
 
     // Update Stats
     try {
-      // Calculate Total Reps
       let totalRepsInSession = 0;
       exercises.forEach((ex) => {
         if (Array.isArray(ex.reps)) {
@@ -187,23 +187,57 @@ export default function LiveSession({
         }
       });
 
-      const xpEarned = 60 + Math.floor(totalRepsInSession / 10); // Dynamic XP: 60 base + 1 XP per 10 reps
+      const totalSets = steps.length;
+      let varietyBonus = 0;
+
+      try {
+        const [profile, history] = await Promise.all([
+          Api.getUserProfile(),
+          Api.getSessionHistory(),
+        ]);
+        if (profile.streak_current >= 1 && history.length > 0) {
+          const lastSession = history[0];
+          const parsed = (() => {
+            try {
+              return typeof lastSession.performance_data === "string"
+                ? JSON.parse(lastSession.performance_data)
+                : lastSession.performance_data;
+            } catch {
+              return { exercises: [] };
+            }
+          })();
+          const lastExerciseIds = new Set(
+            (parsed.exercises || [])
+              .map((e: any) => e.exerciseId || e.exercise_id)
+              .filter(Boolean),
+          );
+          const currentExerciseIds = new Set(
+            exercises.map((e: any) => e.exerciseId || e.id).filter(Boolean),
+          );
+          const newInCurrent = [...currentExerciseIds].filter(
+            (id) => !lastExerciseIds.has(id),
+          );
+          if (newInCurrent.length >= 2) varietyBonus = 5;
+        }
+      } catch (_) {
+        // Ignore – bonus is optional
+      }
+
+      const xpEarned = calculateSessionXP(totalSets, varietyBonus);
 
       const newStats = await Api.applyStats(xpEarned, totalRepsInSession);
-      // Then show the completion modal with actual stats
       completionModalRef.current?.present(xpEarned, newStats);
     } catch (e) {
       console.error("Failed to update stats", e);
-      // Fallback
-      completionModalRef.current?.present(60, {
-        id: "user",
-        xp: 0,
-        level: 1,
-        streak_current: 0,
-        streak_best: 0,
-        streak_start_date: new Date().toISOString(),
-        total_reps: 0,
-      });
+      completionModalRef.current?.present(calculateSessionXP(steps.length), {
+          id: "user",
+          xp: 0,
+          level: 1,
+          streak_current: 0,
+          streak_best: 0,
+          streak_start_date: new Date().toISOString(),
+          total_reps: 0,
+        });
     }
   };
 

@@ -1,3 +1,16 @@
+/** Base XP per set. Session XP = totalSets * XP_PER_SET + optional bonus. */
+export const XP_PER_SET = 10;
+
+/**
+ * Calculate XP earned for completing a session.
+ * @param totalSets - Total number of sets completed
+ * @param bonusXP - Optional bonus (e.g. consistency + variety)
+ */
+export const calculateSessionXP = (
+  totalSets: number,
+  bonusXP: number = 0,
+): number => totalSets * XP_PER_SET + bonusXP;
+
 export const getLevelRank = (level: number): string => {
   if (level >= 100) return "GODLIKE";
   if (level >= 90) return "MYTHIC";

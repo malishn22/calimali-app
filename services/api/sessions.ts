@@ -137,6 +137,7 @@ export const getSessionHistory = async (): Promise<SessionHistory[]> => {
         // Reconstruct expected frontend object for History
         elapsedTime: s.durationSeconds || 0,
         exercises: s.sessionExercises.map((se) => ({
+          exerciseId: se.exerciseId,
           name: se.exerciseNameSnapshot,
           sets: se.sets.length,
           reps: se.sets.map((set) => set.reps || 0),
