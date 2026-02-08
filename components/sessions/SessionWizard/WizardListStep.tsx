@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/Button";
-import { FAB } from "@/components/ui/FAB";
+import { SideActionButton } from "@/components/ui/SideActionButton";
 import Colors from "@/constants/Colors";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
 import { WizardHeader } from "@/components/ui/WizardHeader";
@@ -82,7 +82,7 @@ export function WizardListStep({ exercises, onAdd, onRemove, onEdit }: Props) {
         />
       </WizardScreenWrapper>
 
-      <FAB onPress={onAdd} bottomOffset={96} />
+      <SideActionButton onPress={onAdd} bottomOffset={96} />
     </View>
   );
 }

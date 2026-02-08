@@ -5,12 +5,14 @@ import { Pressable, Text, View } from "react-native";
 
 interface SessionCardProps {
   session: ScheduledSession;
+  isCompleted?: boolean;
   onPress: () => void;
   onDelete: (id: string) => void;
 }
 
 export function PlannerSessionRow({
   session,
+  isCompleted = false,
   onPress,
   onDelete,
 }: SessionCardProps) {
@@ -18,8 +20,9 @@ export function PlannerSessionRow({
 
   return (
     <Pressable
-      onPress={onPress}
-      className="flex-row justify-between items-center bg-card-dark rounded-2xl p-4 mb-3 border border-zinc-800"
+      onPress={isCompleted ? undefined : onPress}
+      disabled={isCompleted}
+      className={`flex-row justify-between items-center bg-card-dark rounded-2xl p-4 mb-3 border ${isCompleted ? "border-green-500/50 opacity-90" : "border-zinc-800"}`}
     >
       <View className="flex-row items-center bg-transparent">
         <View
@@ -27,17 +30,20 @@ export function PlannerSessionRow({
           style={{ backgroundColor: session.color }}
         />
         <View className="bg-transparent">
-          <Text className="text-white text-base font-bold mb-0.5">
+          <Text className={`text-base font-bold mb-0.5 ${isCompleted ? "text-zinc-400 line-through" : "text-white"}`}>
             {session.title}
           </Text>
           <Text className="text-zinc-400 text-xs">
             {exCount} Exercises • {session.frequency}
+            {isCompleted ? " • Completed" : ""}
           </Text>
         </View>
       </View>
-      <Pressable onPress={() => onDelete(session.id)}>
-        <FontAwesome name="trash" size={16} color="#3F3F46" />
-      </Pressable>
+      {!isCompleted && (
+        <Pressable onPress={() => onDelete(session.id)}>
+          <FontAwesome name="trash" size={16} color="#3F3F46" />
+        </Pressable>
+      )}
     </Pressable>
   );
 }

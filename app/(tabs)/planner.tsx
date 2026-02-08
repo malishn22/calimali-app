@@ -1,12 +1,13 @@
 import { Calendar } from "@/components/calendar/Calendar";
-import { FAB } from "@/components/ui/FAB";
+import { SideActionButton } from "@/components/ui/SideActionButton";
 import { PlannerSessionRow as SessionCard } from "@/components/sessions/PlannerSessionRow";
 import SessionWizard from "@/components/sessions/SessionWizard";
 import { ScheduledSession } from "@/constants/Types";
 import { useCalendarContext } from "@/context/CalendarContext";
 import { Api } from "@/services/api";
 import { isSessionActiveOnDate } from "@/utilities/SessionUtils";
-import React, { useState } from "react";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   LayoutAnimation,
@@ -22,6 +23,33 @@ export default function PlannerScreen() {
   // Use Context for Data
   const { selectedDate, setSelectedDate, sessions, refreshSessions } =
     useCalendarContext();
+
+  // Session history to determine which sessions are completed on selected date
+  const [sessionHistory, setSessionHistory] = useState<{ session_id: string; date: string }[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      Api.getSessionHistory().then((history) => {
+        setSessionHistory(history.map((h) => ({ session_id: h.session_id, date: h.date })));
+      });
+    }, []),
+  );
+
+  const completedSessionIdsForSelectedDate = useMemo(() => {
+    const d = selectedDate;
+    const ids = new Set<string>();
+    sessionHistory.forEach((h) => {
+      const hDate = new Date(h.date);
+      if (
+        hDate.getDate() === d.getDate() &&
+        hDate.getMonth() === d.getMonth() &&
+        hDate.getFullYear() === d.getFullYear()
+      ) {
+        ids.add(h.session_id);
+      }
+    });
+    return ids;
+  }, [selectedDate, sessionHistory]);
 
   // Wizard State (Props-based control as per original)
   const [wizardVisible, setWizardVisible] = useState(false);
@@ -82,15 +110,10 @@ export default function PlannerScreen() {
 
           {/* Sessions List */}
           <View className="mt-6 mb-20 px-4">
-            <View className="flex-row justify-between items-center mb-4">
+            <View className="mb-4">
               <Text className="text-stone-400 text-xs font-bold tracking-widest uppercase">
                 SESSIONS
               </Text>
-              <FAB
-                onPress={handleAddSession}
-                position="inline"
-                size="sm"
-              />
             </View>
 
             <View className="gap-3">
@@ -99,6 +122,7 @@ export default function PlannerScreen() {
                   <SessionCard
                     key={session.id}
                     session={session}
+                    isCompleted={completedSessionIdsForSelectedDate.has(session.id)}
                     onDelete={handleDeleteSession}
                     onPress={() => handleEditSession(session)}
                   />
@@ -112,6 +136,13 @@ export default function PlannerScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <SideActionButton
+        onPress={handleAddSession}
+        position="top-right"
+        size="sm"
+        topOffset={240}
+      />
       </View>
 
       <SessionWizard

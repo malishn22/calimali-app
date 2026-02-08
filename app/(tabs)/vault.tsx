@@ -1,12 +1,14 @@
 import ExerciseDetailSheet from "@/components/exercises/ExerciseDetailSheet";
+import { VaultFilterSheet, VaultSortOrder } from "@/components/vault/VaultFilterSheet";
 import { Badge } from "@/components/ui/Badge";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
 import { SearchBar } from "@/components/ui/SearchBar";
 import Colors, { DifficultyColors, getCategoryColor } from "@/constants/Colors";
 import { Exercise, ExerciseCategoryModel } from "@/constants/Types";
+import { ExerciseDifficulty } from "@/constants/Enums";
 import { Api } from "@/services/api";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -15,6 +17,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
 import Animated, {
   FadeInDown,
   LinearTransition,
@@ -25,7 +28,9 @@ export default function VaultScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [categories, setCategories] = useState<ExerciseCategoryModel[]>([]);
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState<VaultSortOrder>("name_asc");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterSheetVisible, setFilterSheetVisible] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
     null,
   );
@@ -62,15 +67,49 @@ export default function VaultScreen() {
     }
   };
 
-  const filteredExercises = exercises.filter((ex) => {
-    const matchesFilter =
-      selectedFilter === "all" ||
-      ex.category.slug.toLowerCase() === selectedFilter.toLowerCase();
-    const matchesSearch = ex.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  const filteredExercises = useMemo(() => {
+    const filtered = exercises.filter((ex) => {
+      const matchesFilter =
+        selectedFilter === "all" ||
+        ex.category.slug.toLowerCase() === selectedFilter.toLowerCase();
+      const matchesSearch = ex.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
+
+    const difficultyRank = (d: string) => {
+      const order = [
+        ExerciseDifficulty.BEGINNER,
+        ExerciseDifficulty.INTERMEDIATE,
+        ExerciseDifficulty.ADVANCED,
+        ExerciseDifficulty.ELITE,
+      ];
+      const i = order.indexOf(d as ExerciseDifficulty);
+      return i === -1 ? 99 : i;
+    };
+
+    const sorted = [...filtered];
+    switch (sortOrder) {
+      case "name_asc":
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "name_desc":
+        sorted.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case "difficulty":
+        sorted.sort(
+          (a, b) => difficultyRank(a.difficulty) - difficultyRank(b.difficulty),
+        );
+        break;
+      case "category":
+        sorted.sort((a, b) =>
+          a.category.name.localeCompare(b.category.name),
+        );
+        break;
+    }
+    return sorted;
+  }, [exercises, selectedFilter, searchQuery, sortOrder]);
 
   return (
     <SafeAreaView
@@ -84,6 +123,13 @@ export default function VaultScreen() {
         {/* Header */}
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-3xl font-extrabold text-white">Vault</Text>
+          <Pressable
+            onPress={() => setFilterSheetVisible(true)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            className="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 items-center justify-center active:opacity-80"
+          >
+            <FontAwesome name="sliders" size={18} color="#A1A1AA" />
+          </Pressable>
         </View>
 
         {errorStatus && (
@@ -99,8 +145,8 @@ export default function VaultScreen() {
           onChangeText={setSearchQuery}
         />
 
-        {/* Filter Tags */}
-        <View className="flex-row mb-6 h-10">
+        {/* Category filter */}
+        <View className="flex-row mb-4 h-10">
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -108,29 +154,24 @@ export default function VaultScreen() {
           >
             <Pressable
               onPress={() => setSelectedFilter("all")}
-              className={`px-5 py-2 rounded-2xl justify-center ${selectedFilter === "all" ? "bg-white" : "bg-card-dark"
-                }`}
+              className={`px-5 py-2 rounded-2xl justify-center ${selectedFilter === "all" ? "bg-white" : "bg-card-dark"}`}
             >
               <Text
-                className={`font-bold text-xs ${selectedFilter === "all" ? "text-black" : "text-zinc-500"
-                  }`}
+                className={`font-bold text-xs ${selectedFilter === "all" ? "text-black" : "text-zinc-500"}`}
               >
                 All
               </Text>
             </Pressable>
-
             {categories.map((cat) => {
               const isSelected = selectedFilter === cat.slug;
               return (
                 <Pressable
                   key={cat.id}
                   onPress={() => setSelectedFilter(cat.slug)}
-                  className={`px-5 py-2 rounded-2xl justify-center ${isSelected ? "bg-white" : "bg-card-dark"
-                    }`}
+                  className={`px-5 py-2 rounded-2xl justify-center ${isSelected ? "bg-white" : "bg-card-dark"}`}
                 >
                   <Text
-                    className={`font-bold text-xs ${isSelected ? "text-black" : "text-zinc-500"
-                      }`}
+                    className={`font-bold text-xs ${isSelected ? "text-black" : "text-zinc-500"}`}
                   >
                     {cat.name}
                   </Text>
@@ -196,6 +237,13 @@ export default function VaultScreen() {
           )}
         />
       </View>
+
+      <VaultFilterSheet
+        visible={filterSheetVisible}
+        onClose={() => setFilterSheetVisible(false)}
+        sortOrder={sortOrder}
+        onSortOrderChange={setSortOrder}
+      />
 
       <ExerciseDetailSheet
         visible={!!selectedExercise}
