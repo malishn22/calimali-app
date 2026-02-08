@@ -23,17 +23,24 @@
       },
       "edgeToEdgeEnabled": false,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.calimaliapp",
-      "usesCleartextTraffic": true
+      "package": "com.anonymous.calimaliapp"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/calimali-icon.png"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7f80568b-a974-4342-9fa0-233577331992"
+      }
     }
   }
 }
