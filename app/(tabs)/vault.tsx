@@ -18,11 +18,11 @@ import {
   View,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import Animated, {
-  FadeInDown,
-  LinearTransition,
-} from "react-native-reanimated";
+import Animated, { FadeInRight } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+const STAGGER_CAP = 12;
+const STAGGER_MS = 28;
 
 export default function VaultScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -181,17 +181,20 @@ export default function VaultScreen() {
           </ScrollView>
         </View>
 
-        {/* Exercise List */}
+        {/* Exercise List - key forces remount on filter/sort/search so entrance animations replay */}
         <Animated.FlatList
+          key={`${selectedFilter}-${sortOrder}-${searchQuery}`}
           data={filteredExercises}
           keyExtractor={(item) => item.id}
-          itemLayoutAnimation={LinearTransition}
           contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item, index }) => (
             <Animated.View
-              entering={FadeInDown.delay(index * 50).springify()}
-              layout={LinearTransition}
+              entering={
+                index < STAGGER_CAP
+                  ? FadeInRight.delay(index * STAGGER_MS).duration(240)
+                  : FadeInRight.duration(240)
+              }
               className="mb-3"
             >
               <Pressable
