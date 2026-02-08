@@ -23,7 +23,8 @@
       },
       "edgeToEdgeEnabled": false,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.calimaliapp"
+      "package": "com.anonymous.calimaliapp",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",
