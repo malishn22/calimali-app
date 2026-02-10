@@ -11,6 +11,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   LayoutAnimation,
+  LayoutChangeEvent,
   ScrollView,
   Text,
   View,
@@ -86,27 +87,42 @@ export default function PlannerScreen() {
     setWizardVisible(true);
   };
 
+  // FAB position from measured layout so it sits just below the calendar
+  const [calendarBlockBottom, setCalendarBlockBottom] = useState(280);
+  const handleCalendarBlockLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      const { y, height } = e.nativeEvent.layout;
+      setCalendarBlockBottom(y + height);
+    },
+    [],
+  );
+
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-background-dark">
       <View className="flex-1">
       <ScrollView className="flex-1">
         <View className="flex-1 pt-4">
-          <View className="flex-row justify-between items-center mb-6 px-4">
-            <Text className="text-3xl font-bold text-white font-inter-700">
-              Planner
-            </Text>
-          </View>
+          <View
+            onLayout={handleCalendarBlockLayout}
+            style={{ paddingTop: 0 }}
+          >
+            <View className="flex-row justify-between items-center mb-6 px-4">
+              <Text className="text-3xl font-bold text-white font-inter-700">
+                Planner
+              </Text>
+            </View>
 
-          {/* Calendar Component */}
-          <Calendar
-            viewMode={viewMode}
-            onViewModeChange={(mode) => {
-              LayoutAnimation.configureNext(
-                LayoutAnimation.Presets.easeInEaseOut,
-              );
-              setViewMode(mode);
-            }}
-          />
+            {/* Calendar Component */}
+            <Calendar
+              viewMode={viewMode}
+              onViewModeChange={(mode) => {
+                LayoutAnimation.configureNext(
+                  LayoutAnimation.Presets.easeInEaseOut,
+                );
+                setViewMode(mode);
+              }}
+            />
+          </View>
 
           {/* Sessions List */}
           <View className="mt-6 mb-20 px-4">
@@ -141,7 +157,7 @@ export default function PlannerScreen() {
         onPress={handleAddSession}
         position="top-right"
         size="sm"
-        topOffset={240}
+        topOffset={Math.max(80, 16 + calendarBlockBottom - 20)}
       />
       </View>
 

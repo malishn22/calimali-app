@@ -10,6 +10,10 @@ import { CalendarHeader } from "./CalendarHeader";
 import { CalendarMonthView } from "./CalendarMonthView";
 import { CalendarWeekView } from "./CalendarWeekView";
 
+export { CALENDAR_HEADER_HEIGHT } from "./CalendarHeader";
+export { CALENDAR_MONTH_VIEW_HEIGHT } from "./CalendarMonthView";
+export { CALENDAR_WEEK_VIEW_HEIGHT } from "./CalendarWeekView";
+
 interface CalendarProps {
   viewMode: "Week" | "Month";
   onViewModeChange?: (mode: "Week" | "Month") => void;

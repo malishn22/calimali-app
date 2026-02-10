@@ -1,6 +1,7 @@
 import MuscleMapView from "@/components/exercises/MuscleMapView";
 import { Badge } from "@/components/ui/Badge";
-import { SessionExercise } from "@/constants/Types";
+import { getCategoryColor } from "@/constants/Colors";
+import { Exercise, SessionExercise } from "@/constants/Types";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -13,7 +14,10 @@ import Animated, {
 } from "react-native-reanimated";
 
 interface Props {
-  exercise: SessionExercise;
+  /** Fetched exercise used for display (description, category, muscle map). Fallback to sessionExercise when null. */
+  exercise?: Exercise | null;
+  /** Session row (sets, reps, name) for live state. */
+  sessionExercise: SessionExercise;
   exerciseIndex: number;
   totalExercises: number;
   currentSetIndex: number;
@@ -28,6 +32,7 @@ interface Props {
 
 export function ActiveSessionView({
   exercise,
+  sessionExercise,
   exerciseIndex,
   totalExercises,
   currentSetIndex,
@@ -38,6 +43,11 @@ export function ActiveSessionView({
   currentReps,
   stepIndex,
 }: Props) {
+  const description = exercise?.description ?? sessionExercise.description;
+  const muscleGroups = exercise?.muscleGroups ?? sessionExercise.muscleGroups;
+  const categorySlug =
+    exercise?.category?.slug ?? (sessionExercise as { categorySlug?: string }).categorySlug;
+
   const NECK_MUSCLE_GROUPS = [
     "front_neck_flexors",
     "front_neck_rotators",
@@ -67,16 +77,16 @@ export function ActiveSessionView({
   }));
 
   const isNeckExercise = useMemo(() => {
-    if (!exercise?.muscleGroups) return false;
-    return exercise.muscleGroups.some((group) =>
+    if (!muscleGroups?.length) return false;
+    return muscleGroups.some((group) =>
       NECK_MUSCLE_GROUPS.includes(group.muscleDescription)
     );
-  }, [exercise?.muscleGroups]);
+  }, [muscleGroups]);
 
   return (
     <View className="flex-1 items-center justify-start pt-10 px-6">
       {/* Exercise Info */}
-      <View className="items-center mb-12 relative w-full">
+      <View className="items-center mb-4 relative w-full">
         {isSetCompleted && (
           <Animated.View
             style={animatedCheckStyle}
@@ -85,17 +95,24 @@ export function ActiveSessionView({
             <FontAwesome name="check-circle" size={32} color="#22C55E" />
           </Animated.View>
         )}
-        <Badge label="Push" color="#3B82F6" size="md" className="mb-4" />
+        {categorySlug && (
+          <Badge
+            label={categorySlug.toUpperCase()}
+            color={getCategoryColor(categorySlug)}
+            size="md"
+            className="mb-4"
+          />
+        )}
 
         <Text className="text-4xl text-center font-black text-white mb-2 leading-tight">
-          {exercise.name}
+          {exercise?.name ?? sessionExercise.name}
         </Text>
 
-        {exercise.description && (
+        {description ? (
           <Text className="text-zinc-400 text-center text-sm px-4 leading-relaxed mb-4">
-            {exercise.description}
+            {description}
           </Text>
-        )}
+        ) : null}
       </View>
 
       {/* Set Card */}
@@ -119,7 +136,7 @@ export function ActiveSessionView({
       {/* Muscle Map - Body or Neck according to exercise targets */}
       <View className="flex-1 justify-center items-center mb-8">
         <MuscleMapView
-          muscleGroups={exercise.muscleGroups || []}
+          muscleGroups={muscleGroups ?? []}
           displayMode={isNeckExercise ? "neck" : "body"}
           height={300}
         />

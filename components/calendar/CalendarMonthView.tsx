@@ -2,6 +2,9 @@ import React from "react";
 import { View } from "react-native";
 import { MonthGrid } from "./MonthGrid";
 
+/** Height of the month grid (h-[350px]). Used for FAB/overlay positioning. */
+export const CALENDAR_MONTH_VIEW_HEIGHT = 300;
+
 export interface CalendarMonthViewProps {
   year: number;
   month: number;
@@ -18,7 +21,7 @@ export function CalendarMonthView({
   markedDates,
 }: CalendarMonthViewProps) {
   return (
-    <View className="h-[350px]">
+    <View style={{ height: CALENDAR_MONTH_VIEW_HEIGHT }}>
       <MonthGrid
         year={year}
         month={month}

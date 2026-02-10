@@ -45,6 +45,7 @@ export interface SessionExercise {
   is_unilateral?: boolean;
   description?: string;
   muscleGroups?: MuscleWork[];
+  categorySlug?: string;
 }
 
 export interface ScheduledSession {

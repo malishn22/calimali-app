@@ -1,4 +1,6 @@
-import { ScheduledSession, SessionHistory } from "@/constants/Types";
+import { getCategoryColor } from "@/constants/Colors";
+import { Exercise, ScheduledSession, SessionHistory } from "@/constants/Types";
+import { TintedSurface } from "@/components/ui/TintedSurface";
 import { Api } from "@/services/api";
 import {
   calculateSessionXP,
@@ -6,7 +8,7 @@ import {
 } from "@/utilities/Gamification";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Alert } from "react-native";
+import { Alert, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActiveSessionView } from "./ActiveSessionView";
 import EditSetModal from "./EditSetModal";
@@ -45,6 +47,9 @@ export default function LiveSession({
   const [editingStepIndex, setEditingStepIndex] = useState<number | null>(null);
 
   const [exercises, setExercises] = useState<any[]>([]);
+  const [currentExerciseDetails, setCurrentExerciseDetails] =
+    useState<Exercise | null>(null);
+  const exerciseCacheRef = useRef<Record<string, Exercise>>({});
 
   useEffect(() => {
     if (session) {
@@ -107,6 +112,38 @@ export default function LiveSession({
   const currentStep = steps[activeStepIndex];
   const totalSteps = steps.length;
   const progress = totalSteps > 0 ? (activeStepIndex / totalSteps) * 100 : 0;
+
+  useEffect(() => {
+    const exerciseId = currentStep?.exercise?.exerciseId;
+    if (!exerciseId) return;
+
+    const cache = exerciseCacheRef.current;
+    if (cache[exerciseId]) {
+      setCurrentExerciseDetails(cache[exerciseId]);
+    }
+
+    let cancelled = false;
+    Api.getExercise(exerciseId).then((ex) => {
+      if (!cancelled && ex) {
+        cache[exerciseId] = ex;
+        setCurrentExerciseDetails(ex);
+      }
+    });
+
+    const nextStep = steps[activeStepIndex + 1];
+    if (nextStep?.exercise?.exerciseId) {
+      const nextId = nextStep.exercise.exerciseId;
+      if (!cache[nextId]) {
+        Api.getExercise(nextId).then((ex) => {
+          if (ex) cache[nextId] = ex;
+        });
+      }
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentStep?.exercise?.exerciseId, activeStepIndex, steps]);
 
   useEffect(() => {
     if (isSessionStarted) {
@@ -228,11 +265,36 @@ export default function LiveSession({
 
       const xpEarned = calculateSessionXP(totalSets, varietyBonus);
 
-      const newStats = await Api.applyStats(xpEarned, totalRepsInSession);
-      completionModalRef.current?.present(xpEarned, newStats, {
-        baseXP: totalSets * XP_PER_SET,
-        bonusXP: varietyBonus,
-      });
+      const applyResult = await Api.applyStats(xpEarned, totalRepsInSession);
+
+      const presentCompletion = (stats: { id: string; xp: number; level: number; streak_current: number; streak_best: number; streak_start_date: string | null; total_reps: number }) => {
+        completionModalRef.current?.present(xpEarned, stats, {
+          baseXP: totalSets * XP_PER_SET,
+          bonusXP: varietyBonus,
+        });
+      };
+
+      if (applyResult.streakBreakSuggested && applyResult.daysSinceLastActivity != null) {
+        const days = applyResult.daysSinceLastActivity;
+        Alert.alert(
+          "Long break",
+          `You've been away for ${days} days. Keep your streak or start fresh?`,
+          [
+            { text: "Keep streak", style: "cancel", onPress: () => presentCompletion(applyResult.profile) },
+            {
+              text: "Reset",
+              style: "destructive",
+              onPress: async () => {
+                const updatedProfile = await Api.resetStreak();
+                presentCompletion(updatedProfile);
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        presentCompletion(applyResult.profile);
+      }
     } catch (e) {
       console.error("Failed to update stats", e);
       completionModalRef.current?.present(
@@ -404,6 +466,41 @@ export default function LiveSession({
     mainActionIcon = "check";
   }
 
+  const currentId = currentStep?.exercise?.exerciseId;
+  const displayExercise =
+    currentId &&
+    (currentExerciseDetails?.id === currentId
+      ? currentExerciseDetails
+      : exerciseCacheRef.current[currentId] ?? null);
+
+  const categorySlug =
+    displayExercise?.category?.slug?.toUpperCase() ??
+    (currentStep?.exercise as { categorySlug?: string })?.categorySlug?.toUpperCase();
+
+  const mainContent = (
+    <ActiveSessionView
+      exercise={displayExercise ?? undefined}
+      sessionExercise={currentStep.exercise}
+      stepIndex={activeStepIndex}
+      exerciseIndex={currentStep.exerciseIndex}
+      totalExercises={exercises.length}
+      currentSetIndex={
+        currentStep.exercise.is_unilateral
+          ? currentStep.setIndex * 2 + (currentStep.side === "RIGHT" ? 1 : 0)
+          : currentStep.setIndex
+      }
+      totalSets={
+        currentStep.exercise.is_unilateral
+          ? (currentStep.exercise.sets || 1) * 2
+          : currentStep.exercise.sets || 1
+      }
+      isSetCompleted={!!isCurrentSetCompleted}
+      onEditSet={handleEditSet}
+      side={(currentStep as any).side}
+      currentReps={getRepCountForStep(activeStepIndex)}
+    />
+  );
+
   return (
     <SafeAreaView className="flex-1 bg-background-dark">
       <SessionHeader
@@ -418,35 +515,31 @@ export default function LiveSession({
         }}
       />
 
-      <ActiveSessionView
-        exercise={currentStep.exercise}
-        stepIndex={activeStepIndex}
-        exerciseIndex={currentStep.exerciseIndex}
-        totalExercises={exercises.length}
-        currentSetIndex={
-          currentStep.exercise.is_unilateral
-            ? currentStep.setIndex * 2 + (currentStep.side === "RIGHT" ? 1 : 0)
-            : currentStep.setIndex
-        }
-        totalSets={
-          currentStep.exercise.is_unilateral
-            ? (currentStep.exercise.sets || 1) * 2
-            : currentStep.exercise.sets || 1
-        }
-        isSetCompleted={!!isCurrentSetCompleted}
-        onEditSet={handleEditSet}
-        side={(currentStep as any).side}
-        currentReps={getRepCountForStep(activeStepIndex)}
-      />
-
-      <SessionControls
-        onBack={handleBack}
-        onMainAction={handleMainAction}
-        mainActionLabel={mainActionLabel}
-        mainActionIcon={mainActionIcon}
-        mainActionVariant={mainActionVariant}
-        backLabel={""}
-      />
+      <View style={{ flex: 1 }}>
+        {categorySlug ? (
+          <TintedSurface
+            tintColor={getCategoryColor(categorySlug)}
+            variant="gradient"
+            tintAt="bottom"
+            intensity={0.1}
+            style={{ flex: 1 }}
+          >
+            {mainContent}
+          </TintedSurface>
+        ) : (
+          <View style={{ flex: 1 }}>{mainContent}</View>
+        )}
+        <View className="bg-background-dark">
+          <SessionControls
+            onBack={handleBack}
+            onMainAction={handleMainAction}
+            mainActionLabel={mainActionLabel}
+            mainActionIcon={mainActionIcon}
+            mainActionVariant={mainActionVariant}
+            backLabel={""}
+          />
+        </View>
+      </View>
 
       {/* Edit Set Modal */}
       {editingStepIndex !== null && steps[editingStepIndex] && (

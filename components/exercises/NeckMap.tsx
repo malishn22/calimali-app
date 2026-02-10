@@ -54,12 +54,12 @@ export default function NeckMap({ muscleGroups, height = 200 }: NeckMapProps) {
         <View className="flex-row justify-center items-start space-x-4 my-4">
             <View className="items-center">
                 <NeckMapFront muscleStyleMap={muscleStyleMap} width={width} height={height} />
-                <Text className="text-zinc-600 text-[10px] font-bold tracking-[0.2em] uppercase mt-2">Front</Text>
+                <Text className="text-white text-sm font-bold tracking-widest uppercase mt-2">Front</Text>
             </View>
 
             <View className="items-center">
                 <NeckMapBack muscleStyleMap={muscleStyleMap} width={width} height={height} />
-                <Text className="text-zinc-600 text-[10px] font-bold tracking-[0.2em] uppercase mt-2">Back</Text>
+                <Text className="text-white text-sm font-bold tracking-widest uppercase mt-2">Back</Text>
             </View>
         </View>
     );

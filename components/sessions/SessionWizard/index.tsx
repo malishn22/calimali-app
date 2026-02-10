@@ -85,6 +85,7 @@ export default function SessionWizard({
         sets,
         reps,
         is_unilateral: selectedExercise.is_unilateral,
+        categorySlug: selectedExercise.category?.slug,
       };
 
       if (editingIndex !== null) {

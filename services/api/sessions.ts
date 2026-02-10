@@ -21,6 +21,7 @@ export const getPlannedSessions = async (): Promise<ScheduledSession[]> => {
           exerciseId: e.exerciseId,
           name: e.exercise?.name || "Unknown Exercise",
           description: e.exercise?.description,
+          categorySlug: e.exercise?.category?.slug,
           muscleGroups: e.exercise?.exerciseMuscleGroups?.map((mg: any) => ({
             muscleDescription: mg.muscleGroup?.code,
             impact: mg.impact as any,

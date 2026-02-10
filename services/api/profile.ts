@@ -1,6 +1,18 @@
 import { UserProfile } from "@/constants/Types";
 import { API_URL, headers } from "./config";
-import { ApiUserProfile } from "./types";
+import { ApiApplyStatsResponse, ApiUserProfile } from "./types";
+
+function mapApiProfileToUserProfile(data: ApiUserProfile): UserProfile {
+  return {
+    id: "user",
+    level: data.level,
+    xp: data.xp,
+    streak_current: data.streakCurrent,
+    streak_best: data.streakBest,
+    streak_start_date: data.streakStartDate || null,
+    total_reps: data.totalReps,
+  };
+}
 
 export const getUserProfile = async (): Promise<UserProfile> => {
   try {
@@ -45,12 +57,18 @@ export const updateUserProfile = async (data: any) => {
   });
 };
 
+export interface ApplyStatsResult {
+  profile: UserProfile;
+  streakBreakSuggested: boolean;
+  daysSinceLastActivity: number | null;
+}
+
 export const applyStats = async (
   xpGained: number,
   repsGained: number,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _oldProfile?: UserProfile, // Kept for compatibility if we need to optimistically update
-): Promise<UserProfile> => {
+  _oldProfile?: UserProfile,
+): Promise<ApplyStatsResult> => {
   const response = await fetch(`${API_URL}/user-profile/apply-stats`, {
     method: "POST",
     headers,
@@ -58,15 +76,22 @@ export const applyStats = async (
   });
 
   if (!response.ok) throw new Error("Failed to apply stats");
-  const data: ApiUserProfile = await response.json();
+  const data: ApiApplyStatsResponse = await response.json();
 
   return {
-    id: "user",
-    level: data.level,
-    xp: data.xp,
-    streak_current: data.streakCurrent,
-    streak_best: data.streakBest,
-    streak_start_date: data.streakStartDate || null,
-    total_reps: data.totalReps,
+    profile: mapApiProfileToUserProfile(data.profile),
+    streakBreakSuggested: data.streakBreakSuggested ?? false,
+    daysSinceLastActivity: data.daysSinceLastActivity ?? null,
   };
+};
+
+export const resetStreak = async (): Promise<UserProfile> => {
+  const response = await fetch(`${API_URL}/user-profile/reset-streak`, {
+    method: "POST",
+    headers,
+  });
+
+  if (!response.ok) throw new Error("Failed to reset streak");
+  const data: ApiUserProfile = await response.json();
+  return mapApiProfileToUserProfile(data);
 };

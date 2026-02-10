@@ -80,3 +80,10 @@ export interface ApiUserProfile {
   streakStartDate?: string;
   totalReps: number;
 }
+
+/** Response from POST apply-stats; profile is always present, streak flags when gap > 14 days */
+export interface ApiApplyStatsResponse {
+  profile: ApiUserProfile;
+  streakBreakSuggested: boolean;
+  daysSinceLastActivity?: number | null;
+}

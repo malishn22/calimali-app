@@ -26,10 +26,10 @@ export function UnilateralIndicator({
   if (variant === "badge") {
     return (
       <Badge
-        label="Unilateral"
+        label="UNILATERAL"
         color={BLUE}
         variant="filled"
-        size="sm"
+        size="md"
         className={className}
       />
     );

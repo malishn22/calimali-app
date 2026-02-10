@@ -54,12 +54,12 @@ export default function BodyMap({ muscleGroups, height = 400 }: BodyMapProps) {
     <View className="flex-row justify-center items-start space-x-2 my-4">
       <View className="items-center">
         <BodyMapFront muscleStyleMap={muscleStyleMap} width={width} height={height} />
-        <Text className="text-zinc-600 text-[10px] font-bold tracking-[0.2em] uppercase mt-2">Front</Text>
+        <Text className="text-white text-sm font-bold tracking-widest uppercase -mt-2">Front</Text>
       </View>
 
       <View className="items-center">
         <BodyMapBack muscleStyleMap={muscleStyleMap} width={width} height={height} />
-        <Text className="text-zinc-600 text-[10px] font-bold tracking-[0.2em] uppercase mt-2">Back</Text>
+        <Text className="text-white text-sm font-bold tracking-widest uppercase -mt-2">Back</Text>
       </View>
     </View>
   );

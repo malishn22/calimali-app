@@ -2,6 +2,9 @@ import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
+/** Approximate height of header row (py-3 + content). Used for FAB/overlay positioning. */
+export const CALENDAR_HEADER_HEIGHT = 64; // py-3 (24) + ~40 content
+
 const toggleStyle = {
   shadowColor: "#000",
   shadowOffset: { width: 0, height: 2 } as const,

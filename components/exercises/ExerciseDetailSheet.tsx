@@ -1,35 +1,24 @@
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import { Badge } from "@/components/ui/Badge";
+import { TintedSurface } from "@/components/ui/TintedSurface";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
-import { DifficultyColors, getCategoryColor } from "@/constants/Colors";
+import { DifficultyColors, getCategoryColor, getUnitColor } from "@/constants/Colors";
 import { BOTTOM_SHEET_OFFSET } from "@/constants/Layout";
 import { Exercise } from "@/constants/Types";
-import { FontAwesome } from "@expo/vector-icons";
-import React, { useMemo } from "react";
-import MuscleMapView from "./MuscleMapView";
-import {
-  Dimensions,
-  Modal,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  SlideInDown,
-  SlideOutDown,
-} from "react-native-reanimated";
+import MuscleMapView from "./MuscleMapView";
 
 interface ExerciseDetailSheetProps {
   visible: boolean;
   exercise: Exercise | null;
   onClose: () => void;
 }
-
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const SHEET_HEIGHT = SCREEN_HEIGHT * 0.85;
 
 const NECK_MUSCLE_GROUPS = [
   "front_neck_flexors",
@@ -46,6 +35,8 @@ export default function ExerciseDetailSheet({
   onClose,
 }: ExerciseDetailSheetProps) {
   const insets = useSafeAreaInsets();
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const snapPoints = useMemo(() => ["85%"], []);
 
   const isNeckExercise = useMemo(() => {
     if (!exercise?.muscleGroups) return false;
@@ -54,76 +45,63 @@ export default function ExerciseDetailSheet({
     );
   }, [exercise?.muscleGroups]);
 
-  const categorySlug = exercise?.category.slug.toUpperCase() || "OTHER";
+  const categorySlug = exercise?.category?.slug?.toUpperCase() ?? "OTHER";
 
-  if (!visible || !exercise) return null;
+  useEffect(() => {
+    if (visible && exercise) {
+      bottomSheetRef.current?.present();
+    } else {
+      bottomSheetRef.current?.dismiss();
+    }
+  }, [visible, exercise]);
+
+  const handleSheetChanges = useCallback(
+    (index: number) => {
+      if (index === -1) onClose();
+    },
+    [onClose],
+  );
+
+  const renderBackdrop = useCallback(
+    (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.6}
+      />
+    ),
+    [],
+  );
+
+  if (!exercise) return null;
+
+  const categoryTint = getCategoryColor(categorySlug);
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      statusBarTranslucent
-      animationType="none"
-      onRequestClose={onClose}
+    <BottomSheetModal
+      ref={bottomSheetRef}
+      index={0}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      enableDynamicSizing={false}
+      enableContentPanningGesture
+      onChange={handleSheetChanges}
+      backdropComponent={renderBackdrop}
+      backgroundStyle={{ backgroundColor: "#1c1c1e" }}
+      handleIndicatorStyle={{ backgroundColor: "#71717a" }}
+      bottomInset={BOTTOM_SHEET_OFFSET}
     >
-      <Animated.View
-        className="flex-1 bg-black/60 justify-end"
-        entering={FadeIn.duration(200)}
-        exiting={FadeOut.duration(200)}
-      >
-        <Pressable className="flex-1" onPress={onClose} />
-        <Animated.View
-          entering={SlideInDown.duration(500)}
-          exiting={SlideOutDown.duration(200)}
-          style={{
-            height: SHEET_HEIGHT - 24 - BOTTOM_SHEET_OFFSET,
-            borderTopLeftRadius: 32,
-            borderTopRightRadius: 32,
-            backgroundColor: "#1c1c1e",
-            overflow: "hidden",
-            marginBottom: BOTTOM_SHEET_OFFSET,
-          }}
+      <TintedSurface tintColor={categoryTint} variant="gradient" tintAt="bottom" intensity={0.1} style={{ flex: 1 }}>
+        <BottomSheetScrollView
+          style={{ backgroundColor: "transparent" }}
+          contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
+          showsVerticalScrollIndicator
         >
-          {/* Header */}
-          <View className="h-28 w-full items-center justify-center relative overflow-hidden bg-zinc-900">
-            <View className="absolute inset-0 bg-blue-500/10" />
-            <View className="w-64 h-64 bg-blue-500/20 rounded-full blur-3xl absolute -top-10 -right-10" />
-            <View className="w-64 h-64 bg-purple-500/20 rounded-full blur-3xl absolute top-20 -left-10" />
-
-            <View className="w-16 h-16 bg-card-dark rounded-full items-center justify-center border-2 border-zinc-800 shadow-xl">
-              <Text className="text-2xl">
-                {categorySlug === "PUSH"
-                  ? "👊"
-                  : categorySlug === "PULL"
-                    ? "🦾"
-                    : categorySlug === "LEGS"
-                      ? "🦵"
-                      : categorySlug === "CORE"
-                        ? "🔥"
-                        : categorySlug === "NECK"
-                          ? "🧠"
-                          : categorySlug === "MOBILITY"
-                            ? "🤸"
-                            : categorySlug === "STRETCH"
-                              ? "🧘"
-                              : categorySlug === "CARDIO"
-                                ? "⚡"
-                                : "✨"}
-              </Text>
-            </View>
-
-            <Pressable
-              onPress={onClose}
-              className="absolute top-4 right-4 w-10 h-10 bg-black/30 rounded-full items-center justify-center backdrop-blur-md"
-            >
-              <FontAwesome name="close" size={16} color="white" />
-            </Pressable>
-          </View>
-
-          {/* Scrollable Content */}
-          <ScrollView className="flex-1 px-8 pt-6">
-            <View className="items-center mb-8">
-              <Text className="text-3xl font-black text-white text-center mb-2 leading-tight">
+        {/* Content */}
+        <View style={{ paddingHorizontal: 32, paddingTop: 20 }}>
+            <View className="items-center mb-6">
+              <Text className="text-3xl font-black text-white text-center leading-tight mb-3">
                 {exercise.name}
               </Text>
 
@@ -146,37 +124,50 @@ export default function ExerciseDetailSheet({
             </View>
 
             {/* Stats Row */}
-            <View className="flex-row justify-between mb-8 bg-black/20 p-4 rounded-2xl border border-zinc-800/50">
-              <View className="items-center flex-1 border-r border-zinc-800/50">
-                <Text className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-1">
+            <View className="flex-row rounded-2xl overflow-hidden border border-zinc-800/50 bg-zinc-900/60">
+              <View className="flex-1 items-center justify-center py-4 px-3 border-r border-zinc-700/40">
+                <Text className="text-zinc-500 text-[10px] font-semibold uppercase tracking-widest mb-2">
                   Target
                 </Text>
-                <Text className="text-white font-bold text-lg">
-                  {exercise.default_reps > 0 ? exercise.default_reps : "-"}
-                </Text>
-                <Text className="text-zinc-600 text-[10px] lowercase">
-                  {exercise.unit}
-                </Text>
+                <View className="flex-row items-baseline gap-1.5">
+                  <Text className="text-white font-bold text-xl">
+                    {exercise.default_reps > 0 ? exercise.default_reps : "-"}
+                  </Text>
+                  <Text
+                    className="text-sm font-medium"
+                    style={{ color: getUnitColor(exercise.unit) }}
+                  >
+                    {exercise.unit}
+                  </Text>
+                </View>
               </View>
-              <View className="items-center flex-1">
-                <Text className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-1">
+              <View className="flex-1 items-center justify-center py-4 px-3">
+                <Text className="text-zinc-500 text-[10px] font-semibold uppercase tracking-widest mb-2">
                   Equipment
                 </Text>
                 <Text
-                  className="text-white font-bold text-lg text-center"
-                  numberOfLines={1}
+                  className="text-white font-bold text-center text-xl"
+                  numberOfLines={2}
                 >
-                  {exercise.equipment}
+                  {(exercise.equipment ?? "")
+                    .split(" ")
+                    .map(
+                      (w) =>
+                        w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+                    )
+                    .join(" ")}
                 </Text>
               </View>
             </View>
 
             {/* Muscle Map - Body or Neck according to exercise targets */}
             {exercise.muscleGroups && exercise.muscleGroups.length > 0 && (
-              <MuscleMapView
-                muscleGroups={exercise.muscleGroups}
-                displayMode={isNeckExercise ? "neck" : "body"}
-              />
+              <View className={isNeckExercise ? "mt-0" : "-mt-6"}>
+                <MuscleMapView
+                  muscleGroups={exercise.muscleGroups}
+                  displayMode={isNeckExercise ? "neck" : "body"}
+                />
+              </View>
             )}
 
             {/* Instructions */}
@@ -223,11 +214,9 @@ export default function ExerciseDetailSheet({
                 )}
               </View>
             )}
-
-            <View style={{ height: 100 + insets.bottom }} />
-          </ScrollView>
-        </Animated.View>
-      </Animated.View>
-    </Modal>
+        </View>
+        </BottomSheetScrollView>
+      </TintedSurface>
+    </BottomSheetModal>
   );
 }

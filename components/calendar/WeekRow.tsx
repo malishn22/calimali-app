@@ -27,9 +27,9 @@ export const WeekRow = React.memo(
 
     return (
       <View className="px-4" style={{ width: "100%" }}>
-        <View className="flex-row justify-between mb-2">
+        <View className="flex-row justify-between mb-2 h-6">
           {WEEK_DAYS.map((day, index) => (
-            <View key={index} className="flex-1 items-center">
+            <View key={index} className="flex-1 items-center justify-center">
               <Text className="text-zinc-500 text-xs font-inter-500">
                 {day}
               </Text>
