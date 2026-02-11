@@ -1,14 +1,13 @@
-import Colors from "@/constants/Colors";
+import { palette } from "@/constants/Colors";
 import { SessionHistory } from "@/constants/Types";
 import { Feather } from "@expo/vector-icons";
 import {
-  BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { BOTTOM_SHEET_OFFSET } from "@/constants/Layout";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useBottomSheetModal } from "@/hooks/useBottomSheetModal";
+import React from "react";
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -18,59 +17,41 @@ interface SessionDetailSheetProps {
   onClose: () => void;
 }
 
+/** Parsed shape of session.performance_data (JSON). */
+interface SessionPerformanceData {
+  elapsedTime?: number;
+  exercises?: Array<{
+    name: string;
+    reps: number | number[];
+    sets?: number;
+  }>;
+}
+
 export default function SessionDetailSheet({
   visible,
   session,
   onClose,
 }: SessionDetailSheetProps) {
   const insets = useSafeAreaInsets();
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-
-  // Variables
-  const snapPoints = useMemo(() => ["85%"], []);
-
-  // Effects
-  useEffect(() => {
-    if (visible && session) {
-      bottomSheetModalRef.current?.present();
-    } else {
-      bottomSheetModalRef.current?.dismiss();
-    }
-  }, [visible, session]);
-
-  // Callbacks
-  const handleSheetChanges = useCallback(
-    (index: number) => {
-      if (index === -1) {
-        onClose();
-      }
-    },
-    [onClose],
-  );
-
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        opacity={0.7}
-      />
-    ),
-    [],
-  );
+  const {
+    ref: bottomSheetModalRef,
+    snapPoints,
+    handleSheetChanges,
+    renderBackdrop,
+    commonProps,
+  } = useBottomSheetModal(visible, !!session, onClose, { backdropOpacity: 0.7 });
 
   if (!session) return null;
 
   // Parsing Data
-  let parsedData: any = {};
+  let parsedData: SessionPerformanceData = {};
   if (session?.performance_data) {
     try {
       parsedData =
         typeof session.performance_data === "string"
-          ? JSON.parse(session.performance_data)
-          : session.performance_data;
-    } catch (e) {
+          ? (JSON.parse(session.performance_data) as SessionPerformanceData)
+          : (session.performance_data as SessionPerformanceData);
+    } catch {
       parsedData = {};
     }
   }
@@ -97,9 +78,8 @@ export default function SessionDetailSheet({
       enableDynamicSizing={false}
       onChange={handleSheetChanges}
       backdropComponent={renderBackdrop}
-      backgroundStyle={{ backgroundColor: "#1c1c1e" }}
+      {...commonProps}
       handleIndicatorStyle={{ backgroundColor: "#3f3f46" }}
-      bottomInset={BOTTOM_SHEET_OFFSET}
     >
       <BottomSheetView className="flex-1 bg-card-dark">
         {/* Header */}
@@ -121,7 +101,7 @@ export default function SessionDetailSheet({
             <Feather
               name="clock"
               size={14}
-              color={Colors.palette.electricBlue}
+              color={palette.electricBlue}
               style={{ marginBottom: 4 }}
             />
             <Text className="text-white font-bold">{duration}</Text>
@@ -133,7 +113,7 @@ export default function SessionDetailSheet({
             <Feather
               name="layers"
               size={14}
-              color={Colors.palette.emeraldGreen}
+              color={palette.emeraldGreen}
               style={{ marginBottom: 4 }}
             />
             <Text className="text-white font-bold">
@@ -147,7 +127,7 @@ export default function SessionDetailSheet({
 
         {/* Exercises List (Scrollable) */}
         <BottomSheetScrollView contentContainerStyle={{ padding: 24 }}>
-          {parsedData?.exercises?.map((ex: any, idx: number) => (
+          {parsedData?.exercises?.map((ex, idx) => (
             <View key={idx} className="mb-6">
               <Text className="text-lg font-bold text-white mb-3">
                 {ex.name}

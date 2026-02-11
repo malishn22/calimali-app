@@ -1,13 +1,25 @@
 import { SearchBar } from "@/components/ui/SearchBar";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
-import Colors from "@/constants/Colors";
+import { DifficultyColors, getCategoryColor, palette } from "@/constants/Colors";
 import { WizardHeader } from "@/components/ui/WizardHeader";
 import { Exercise } from "@/constants/Types";
 import { Api } from "@/services/api";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Platform, Pressable, Text, View } from "react-native";
 import { WizardScreenWrapper } from "./WizardScreenWrapper";
+
+const ROW_BASE = "#27272a";
+
+const rowShadow = Platform.select({
+  ios: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  android: { elevation: 4 },
+});
 
 interface Props {
   onSelect: (ex: Exercise) => void;
@@ -35,13 +47,13 @@ export function WizardSearchStep({ onSelect }: Props) {
     <WizardScreenWrapper>
       <WizardHeader title="Search Movement" className="mb-4" />
 
-      <View className="mb-4">
+      <View className="mb-5">
         <SearchBar
           value={search}
           onChangeText={setSearch}
           placeholder="Find movement..."
-          inputContainerClassName="bg-zinc-900 border border-zinc-700"
-          className="text-lg"
+          inputContainerClassName="bg-zinc-800/80 border border-zinc-600/50 rounded-2xl"
+          className="text-base"
         />
       </View>
 
@@ -49,31 +61,66 @@ export function WizardSearchStep({ onSelect }: Props) {
         data={filtered}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Pressable
-            className="flex-row justify-between items-center bg-zinc-800 p-5 rounded-2xl mb-3 active:bg-zinc-700"
-            onPress={() => onSelect(item)}
-          >
-            <View className="flex-1 mr-4">
-              <Text className="text-white font-bold text-base mb-1">
-                {item.name}
-              </Text>
-              <View className="flex-row items-center">
-                {item.is_unilateral && (
-                  <UnilateralIndicator variant="inline" size={14} className="mr-1.5" />
-                )}
-                <Text className="text-xs text-zinc-400 font-bold uppercase tracking-wide">
-                  {item.category?.name} • {item.difficulty}
-                </Text>
+        contentContainerStyle={{ paddingBottom: 24 }}
+        renderItem={({ item }) => {
+          const categoryColor = getCategoryColor(item.category?.slug ?? "");
+          const difficultyColor =
+            DifficultyColors[item.difficulty as keyof typeof DifficultyColors] ??
+            palette.stone;
+          return (
+            <Pressable
+              onPress={() => onSelect(item)}
+              style={({ pressed }) => [
+                { transform: [{ scale: pressed ? 0.98 : 1 }] },
+                rowShadow,
+              ]}
+              className="rounded-2xl mb-4 overflow-hidden border border-zinc-700/40"
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 22,
+                  paddingHorizontal: 22,
+                  borderRadius: 16,
+                  backgroundColor: ROW_BASE,
+                }}
+              >
+                <View className="flex-1 mr-4">
+                  <Text className="text-white font-bold text-[17px] leading-tight mb-1.5">
+                    {item.name}
+                  </Text>
+                  <View className="flex-row items-center gap-1.5">
+                    <Text
+                      className="text-xs font-bold uppercase tracking-widest opacity-90"
+                      style={{ color: categoryColor }}
+                    >
+                      {item.category?.name ?? "Unknown"}
+                    </Text>
+                    <View
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: difficultyColor,
+                      }}
+                    />
+                    {item.is_unilateral && (
+                      <UnilateralIndicator variant="inline" size={14} className="ml-2" />
+                    )}
+                  </View>
+                </View>
+                <View className="items-center justify-center">
+                  <FontAwesome
+                    name="chevron-right"
+                    size={14}
+                    color={palette.cloud}
+                  />
+                </View>
               </View>
-            </View>
-            <FontAwesome
-              name="chevron-right"
-              size={12}
-              color={Colors.palette.silver}
-            />
-          </Pressable>
-        )}
+            </Pressable>
+          );
+        }}
       />
     </WizardScreenWrapper>
   );

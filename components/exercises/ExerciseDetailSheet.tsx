@@ -1,15 +1,13 @@
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Badge } from "@/components/ui/Badge";
 import { TintedSurface } from "@/components/ui/TintedSurface";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
 import { DifficultyColors, getCategoryColor, getUnitColor } from "@/constants/Colors";
-import { BOTTOM_SHEET_OFFSET } from "@/constants/Layout";
+import { NECK_MUSCLE_GROUPS } from "@/constants/MuscleMappings";
 import { Exercise } from "@/constants/Types";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useBottomSheetModal } from "@/hooks/useBottomSheetModal";
+import { capitalizeWords } from "@/utilities/stringUtils";
+import React, { useMemo } from "react";
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MuscleMapView from "./MuscleMapView";
@@ -20,14 +18,13 @@ interface ExerciseDetailSheetProps {
   onClose: () => void;
 }
 
-const NECK_MUSCLE_GROUPS = [
-  "front_neck_flexors",
-  "front_neck_rotators",
-  "front_neck_lateral_flexors",
-  "back_neck_extensors",
-  "back_neck_lateral_extensors",
-  "back_neck_rotators",
-];
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <Text className="text-zinc-300 font-bold text-sm uppercase tracking-widest mb-4 border-b border-zinc-600 pb-2">
+      {title}
+    </Text>
+  );
+}
 
 export default function ExerciseDetailSheet({
   visible,
@@ -35,8 +32,13 @@ export default function ExerciseDetailSheet({
   onClose,
 }: ExerciseDetailSheetProps) {
   const insets = useSafeAreaInsets();
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["85%"], []);
+  const {
+    ref: bottomSheetRef,
+    snapPoints,
+    handleSheetChanges,
+    renderBackdrop,
+    commonProps,
+  } = useBottomSheetModal(visible, !!exercise, onClose, { backdropOpacity: 0.6 });
 
   const isNeckExercise = useMemo(() => {
     if (!exercise?.muscleGroups) return false;
@@ -46,33 +48,6 @@ export default function ExerciseDetailSheet({
   }, [exercise?.muscleGroups]);
 
   const categorySlug = exercise?.category?.slug?.toUpperCase() ?? "OTHER";
-
-  useEffect(() => {
-    if (visible && exercise) {
-      bottomSheetRef.current?.present();
-    } else {
-      bottomSheetRef.current?.dismiss();
-    }
-  }, [visible, exercise]);
-
-  const handleSheetChanges = useCallback(
-    (index: number) => {
-      if (index === -1) onClose();
-    },
-    [onClose],
-  );
-
-  const renderBackdrop = useCallback(
-    (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        opacity={0.6}
-      />
-    ),
-    [],
-  );
 
   if (!exercise) return null;
 
@@ -88,9 +63,8 @@ export default function ExerciseDetailSheet({
       enableContentPanningGesture
       onChange={handleSheetChanges}
       backdropComponent={renderBackdrop}
-      backgroundStyle={{ backgroundColor: "#1c1c1e" }}
+      {...commonProps}
       handleIndicatorStyle={{ backgroundColor: "#71717a" }}
-      bottomInset={BOTTOM_SHEET_OFFSET}
     >
       <TintedSurface tintColor={categoryTint} variant="gradient" tintAt="bottom" intensity={0.1} style={{ flex: 1 }}>
         <BottomSheetScrollView
@@ -149,13 +123,7 @@ export default function ExerciseDetailSheet({
                   className="text-white font-bold text-center text-xl"
                   numberOfLines={2}
                 >
-                  {(exercise.equipment ?? "")
-                    .split(" ")
-                    .map(
-                      (w) =>
-                        w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
-                    )
-                    .join(" ")}
+                  {capitalizeWords(exercise.equipment ?? "")}
                 </Text>
               </View>
             </View>
@@ -166,15 +134,14 @@ export default function ExerciseDetailSheet({
                 <MuscleMapView
                   muscleGroups={exercise.muscleGroups}
                   displayMode={isNeckExercise ? "neck" : "body"}
+                  categorySlug={exercise.category?.slug}
                 />
               </View>
             )}
 
             {/* Instructions */}
             <View className="mb-12">
-              <Text className="text-zinc-300 font-bold text-sm uppercase tracking-widest mb-4 border-b border-zinc-800 pb-2">
-                Instructions
-              </Text>
+              <SectionHeader title="Instructions" />
               <Text className="text-zinc-400 leading-6 text-base">
                 {exercise.description ||
                   "No description provided for this exercise."}
@@ -184,10 +151,7 @@ export default function ExerciseDetailSheet({
             {/* Variations / Base Exercise */}
             {(exercise.baseExercise || (exercise.variants && exercise.variants.length > 0)) && (
               <View className="mb-12">
-                <Text className="text-zinc-300 font-bold text-sm uppercase tracking-widest mb-4 border-b border-zinc-800 pb-2">
-                  Variations
-                </Text>
-
+                <SectionHeader title="Variations" />
                 {exercise.baseExercise && (
                   <View className="mb-4">
                     <Text className="text-zinc-500 text-xs font-bold uppercase mb-1">Base Movement</Text>

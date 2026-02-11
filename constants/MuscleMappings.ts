@@ -51,3 +51,8 @@ export const MUSCLE_MAPPING: Record<string, string[]> = {
   back_hamstrings: ["back_hamstrings_left", "back_hamstrings_right"],
   back_calves: ["back_calves_left", "back_calves_right"],
 };
+
+/** Muscle group keys that target the neck (used to choose neck vs body map). */
+export const NECK_MUSCLE_GROUPS = Object.keys(MUSCLE_MAPPING).filter((k) =>
+  k.includes("neck")
+);

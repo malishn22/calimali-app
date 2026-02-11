@@ -1,6 +1,7 @@
 import MuscleMapView from "@/components/exercises/MuscleMapView";
 import { Badge } from "@/components/ui/Badge";
 import { getCategoryColor } from "@/constants/Colors";
+import { NECK_MUSCLE_GROUPS } from "@/constants/MuscleMappings";
 import { Exercise, SessionExercise } from "@/constants/Types";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useMemo } from "react";
@@ -47,15 +48,6 @@ export function ActiveSessionView({
   const muscleGroups = exercise?.muscleGroups ?? sessionExercise.muscleGroups;
   const categorySlug =
     exercise?.category?.slug ?? (sessionExercise as { categorySlug?: string }).categorySlug;
-
-  const NECK_MUSCLE_GROUPS = [
-    "front_neck_flexors",
-    "front_neck_rotators",
-    "front_neck_lateral_flexors",
-    "back_neck_extensors",
-    "back_neck_lateral_extensors",
-    "back_neck_rotators",
-  ];
 
   const checkScale = useSharedValue(1);
 
@@ -139,6 +131,7 @@ export function ActiveSessionView({
           muscleGroups={muscleGroups ?? []}
           displayMode={isNeckExercise ? "neck" : "body"}
           height={300}
+          categorySlug={categorySlug}
         />
       </View>
     </View>

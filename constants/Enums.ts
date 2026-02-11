@@ -33,6 +33,19 @@ export enum ExerciseDifficulty {
   ELITE = "ELITE",
 }
 
+const DIFFICULTY_ORDER: ExerciseDifficulty[] = [
+  ExerciseDifficulty.BEGINNER,
+  ExerciseDifficulty.INTERMEDIATE,
+  ExerciseDifficulty.ADVANCED,
+  ExerciseDifficulty.ELITE,
+];
+
+/** Returns sort order index for difficulty (0 = BEGINNER, 3 = ELITE). Unknown values get 99. */
+export function getDifficultySortOrder(difficulty: string): number {
+  const i = DIFFICULTY_ORDER.indexOf(difficulty as ExerciseDifficulty);
+  return i === -1 ? 99 : i;
+}
+
 export enum ExerciseEquipment {
   NONE = "NONE",
   PULL_UP_BAR = "PULL UP BAR",

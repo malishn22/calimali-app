@@ -39,14 +39,18 @@ const Palette = {
 
   // Extras
   teal: "#14B8A6",
+  cyan: "#06B6D4",
   pink: "#EC4899",
   gold: "#EAB308",
+  lime: "#84CC16", // MOBILITY – yellow-green, distinct from cyan/teal/emerald
   slate: "#94A3B8",
 
   // Semantic (Custom)
   backgroundDark: "#121214",
   cardDark: "#1E1E22",
 };
+
+export const palette = Palette;
 
 const Colors = {
   palette: Palette,
@@ -78,27 +82,64 @@ const Colors = {
   },
 };
 
+/** One distinct color per category – no two categories share a hue family. */
 export const CategoryColors = {
-  // Strength
+  // Strength (keep as-is)
   PUSH: Palette.royalPurple,
   PULL: Palette.electricBlue,
   LEGS: Palette.burntOrange,
   CORE: Palette.crimsonRed,
-  NECK: Palette.slate,
+  NECK: Palette.cyan,
 
   // Movement / recovery
-  MOBILITY: Palette.solarYellow,
-  STRETCH: Palette.teal,
+  MOBILITY: Palette.lime,          // yellow-green, not cyan/teal
+  STRETCH: Palette.emeraldGreen,
 
   // Conditioning / skill
-  CARDIO: Palette.pink,
-  SKILL: Palette.gold,
-  OTHER: Palette.silver,
+  CARDIO: Palette.pink,            // pink, not purple
+  SKILL: Palette.solarYellow,
 };
 
 export const getCategoryColor = (slugOrName: string): string =>
-  CategoryColors[slugOrName?.toUpperCase() as keyof typeof CategoryColors] ??
-  CategoryColors.OTHER;
+  CategoryColors[slugOrName?.toUpperCase() as keyof typeof CategoryColors] ?? Palette.silver;
+
+/** Blend a hex color toward black. amount 0 = no change, 1 = black. */
+function darkenHex(hex: string, amount: number): string {
+  const n = hex.replace("#", "");
+  const r = parseInt(n.slice(0, 2), 16);
+  const g = parseInt(n.slice(2, 4), 16);
+  const b = parseInt(n.slice(4, 6), 16);
+  const blend = (c: number) => Math.round(c * (1 - amount));
+  return `#${blend(r).toString(16).padStart(2, "0")}${blend(g).toString(16).padStart(2, "0")}${blend(b).toString(16).padStart(2, "0")}`;
+}
+
+/** Blend a hex color toward white. amount 0 = no change, 1 = white. */
+function lightenHex(hex: string, amount: number): string {
+  const n = hex.replace("#", "");
+  const r = parseInt(n.slice(0, 2), 16);
+  const g = parseInt(n.slice(2, 4), 16);
+  const b = parseInt(n.slice(4, 6), 16);
+  const blend = (c: number) => Math.round(c + (255 - c) * amount);
+  return `#${blend(r).toString(16).padStart(2, "0")}${blend(g).toString(16).padStart(2, "0")}${blend(b).toString(16).padStart(2, "0")}`;
+}
+
+/** Gradient for filled badge: original color → darker (same hue). */
+export const getFilledBadgeGradientColors = (hex: string): [string, string] => [
+  hex,
+  darkenHex(hex, 0.2),
+];
+
+/** Primary (full), secondary (lighter), stabilizer (lightest) for a category – for muscle impact coloring. */
+export const getCategoryColorVariants = (
+  slugOrName: string
+): { PRIMARY: string; SECONDARY: string; STABILIZER: string } => {
+  const primary = getCategoryColor(slugOrName);
+  return {
+    PRIMARY: primary,
+    SECONDARY: lightenHex(primary, 0.25),
+    STABILIZER: lightenHex(primary, 0.5),
+  };
+};
 
 /** Colors for exercise unit labels (REPS, SECS, etc.) */
 export const UnitColors: Record<string, string> = {

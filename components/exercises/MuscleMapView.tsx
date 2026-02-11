@@ -12,6 +12,8 @@ export interface MuscleMapViewProps {
   displayMode: MuscleMapDisplayMode;
   /** Height for body map (neck uses proportional size) */
   height?: number;
+  /** When set, muscle highlights use the exercise category color (e.g. PUSH, PULL, NECK). */
+  categorySlug?: string;
 }
 
 /**
@@ -23,6 +25,7 @@ export default function MuscleMapView({
   muscleGroups,
   displayMode,
   height = 400,
+  categorySlug,
 }: MuscleMapViewProps) {
   const neckHeight = useMemo(() => Math.round(height * (160 / 300)), [height]);
 
@@ -37,9 +40,9 @@ export default function MuscleMapView({
   return (
     <View className="mb-8">
       {displayMode === "body" ? (
-        <BodyMap muscleGroups={muscleGroups} height={height} />
+        <BodyMap muscleGroups={muscleGroups} height={height} categorySlug={categorySlug} />
       ) : (
-        <NeckMap muscleGroups={muscleGroups} height={neckHeight} />
+        <NeckMap muscleGroups={muscleGroups} height={neckHeight} categorySlug={categorySlug} />
       )}
     </View>
   );

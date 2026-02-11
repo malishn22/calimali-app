@@ -41,7 +41,7 @@ export function UnilateralIndicator({
         className={`flex-row items-center bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 ${className}`}
       >
         <MaterialCommunityIcons
-          name="alpha-u-box"
+          name="swap-horizontal"
           size={14}
           color={BLUE}
           style={{ marginRight: 6 }}
@@ -53,14 +53,22 @@ export function UnilateralIndicator({
     );
   }
 
-  // variant === "inline"
+  // variant === "inline" – dark pill + light icon so it’s visible on any background (e.g. gradient rows)
+  const iconSize = size === 16 ? 12 : 10;
+  const pillSize = size === 16 ? 20 : 18;
   return (
-    <View className={className}>
+    <View
+      className={`rounded-full items-center justify-center ${className}`}
+      style={{
+        width: pillSize,
+        height: pillSize,
+        backgroundColor: BLUE,
+      }}
+    >
       <MaterialCommunityIcons
-        name="alpha-u-box"
-        size={size}
-        color={BLUE}
-        style={{ opacity: 0.8 }}
+        name="swap-horizontal"
+        size={iconSize}
+        color={Colors.palette.cloud}
       />
     </View>
   );

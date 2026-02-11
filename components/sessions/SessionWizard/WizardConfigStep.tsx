@@ -84,7 +84,6 @@ export function WizardConfigStep({
     newReps[index] = Math.max(1, newReps[index] + delta);
 
     // Linked Editing for Unilateral
-    // Linked Editing for Unilateral
     if (exercise.is_unilateral && isLinked) {
       if (index % 2 === 0) {
         // Updated Left -> Update Right (index + 1)
@@ -115,11 +114,11 @@ export function WizardConfigStep({
           </Text>
           <Text
             className="font-bold uppercase tracking-widest text-xs mb-2"
-            style={{ color: getCategoryColor(exercise.category?.name || "") }}
+            style={{ color: getCategoryColor(exercise.category?.slug ?? "") }}
           >
             {exercise.category?.name}
           </Text>
-          {exercise.is_unilateral && <UnilateralIndicator variant="pill" />}
+          {exercise.is_unilateral && <UnilateralIndicator variant="badge" />}
         </View>
 
         <SetRepsArea
@@ -135,16 +134,15 @@ export function WizardConfigStep({
           }
           stepperSize={exercise.is_unilateral ? "sm" : "md"}
         />
-      </WizardScreenWrapper >
+      </WizardScreenWrapper>
 
       {/* Footer using Standard Action Panel */}
-      < BottomActionPanel
+      <BottomActionPanel
         primaryLabel="CONFIRM"
         primaryIcon="check"
-        onPrimaryPress={() => onConfirm(sets, reps)
-        }
+        onPrimaryPress={() => onConfirm(sets, reps)}
         onBack={onBack}
       />
-    </View >
+    </View>
   );
 }

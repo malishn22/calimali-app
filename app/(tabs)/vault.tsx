@@ -3,9 +3,9 @@ import { VaultFilterSheet, VaultSortOrder } from "@/components/vault/VaultFilter
 import { Badge } from "@/components/ui/Badge";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
 import { SearchBar } from "@/components/ui/SearchBar";
-import Colors, { DifficultyColors, getCategoryColor } from "@/constants/Colors";
+import { DifficultyColors, getCategoryColor, palette } from "@/constants/Colors";
 import { Exercise, ExerciseCategoryModel } from "@/constants/Types";
-import { ExerciseDifficulty } from "@/constants/Enums";
+import { getDifficultySortOrder } from "@/constants/Enums";
 import { Api } from "@/services/api";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
@@ -78,17 +78,6 @@ export default function VaultScreen() {
       return matchesFilter && matchesSearch;
     });
 
-    const difficultyRank = (d: string) => {
-      const order = [
-        ExerciseDifficulty.BEGINNER,
-        ExerciseDifficulty.INTERMEDIATE,
-        ExerciseDifficulty.ADVANCED,
-        ExerciseDifficulty.ELITE,
-      ];
-      const i = order.indexOf(d as ExerciseDifficulty);
-      return i === -1 ? 99 : i;
-    };
-
     const sorted = [...filtered];
     switch (sortOrder) {
       case "name_asc":
@@ -99,7 +88,9 @@ export default function VaultScreen() {
         break;
       case "difficulty":
         sorted.sort(
-          (a, b) => difficultyRank(a.difficulty) - difficultyRank(b.difficulty),
+          (a, b) =>
+            getDifficultySortOrder(a.difficulty) -
+            getDifficultySortOrder(b.difficulty),
         );
         break;
       case "category":
@@ -195,7 +186,7 @@ export default function VaultScreen() {
                   ? FadeInRight.delay(index * STAGGER_MS).duration(240)
                   : FadeInRight.duration(240)
               }
-              className="mb-3"
+              className="mb-4"
             >
               <Pressable
                 onPress={() => setSelectedExercise(item)}
@@ -212,7 +203,7 @@ export default function VaultScreen() {
                 </View>
 
                 {/* Right: Badges */}
-                <View className="flex-row items-center gap-3">
+                <View className="flex-row items-center gap-3 flex-shrink-0">
                   {/* Difficulty Dot */}
                   <View className="flex-row items-center gap-1.5">
                     <View
@@ -222,12 +213,12 @@ export default function VaultScreen() {
                         borderRadius: 3,
                         backgroundColor:
                           DifficultyColors[item.difficulty as keyof typeof DifficultyColors] ||
-                          Colors.palette.stone,
+                          palette.stone,
                       }}
                     />
                   </View>
 
-                  {/* Category Pill */}
+                  {/* Category Pill – gradient fill, bright category color */}
                   <Badge
                     label={item.category.name}
                     color={getCategoryColor(item.category.slug)}
