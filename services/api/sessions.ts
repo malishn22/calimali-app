@@ -1,9 +1,15 @@
 import { ScheduledSession, SessionHistory } from "@/constants/Types";
-import { API_URL, headers } from "./config";
+import { API_URL, headers, USE_MOCK } from "./config";
 import { ApiScheduledSession, ApiSession } from "./types";
+import { mockDelay } from "./__mocks__/utils";
+import { mockPlannedSessionStore, mockSessionHistoryStore } from "./__mocks__/sessions.mock";
 
 // Planned Sessions
 export const getPlannedSessions = async (): Promise<ScheduledSession[]> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    return mockPlannedSessionStore.getAll();
+  }
   try {
     const response = await fetch(`${API_URL}/planned-sessions`);
     if (!response.ok) throw new Error("Failed to fetch planned sessions");
@@ -48,6 +54,11 @@ export const getPlannedSessions = async (): Promise<ScheduledSession[]> => {
 };
 
 export const postPlannedSession = async (session: ScheduledSession) => {
+  if (USE_MOCK) {
+    await mockDelay();
+    mockPlannedSessionStore.add({ ...session, id: session.id || crypto.randomUUID() });
+    return;
+  }
   // Parse exercises string if needed, or assume it's already an object if types were strict.
   // Frontend uses stringified JSON for local DB.
   // We need to decode it to send to API.
@@ -102,6 +113,11 @@ export const postPlannedSession = async (session: ScheduledSession) => {
 };
 
 export const deletePlannedSession = async (id: string) => {
+  if (USE_MOCK) {
+    await mockDelay();
+    mockPlannedSessionStore.remove(id);
+    return;
+  }
   const response = await fetch(`${API_URL}/planned-sessions/${id}`, {
     method: "DELETE",
   });
@@ -111,6 +127,12 @@ export const deletePlannedSession = async (id: string) => {
 };
 
 export const updatePlannedSession = async (session: ScheduledSession) => {
+  if (USE_MOCK) {
+    await mockDelay();
+    mockPlannedSessionStore.remove(session.id);
+    mockPlannedSessionStore.add(session);
+    return;
+  }
   // WORKAROUND: Delete and Re-create since PUT is not fully ready/verified on backend
   if (session.id) {
     // We try to delete, but if it fails (e.g. 404), we proceed to post
@@ -125,6 +147,10 @@ export const updatePlannedSession = async (session: ScheduledSession) => {
 
 // Session History
 export const getSessionHistory = async (): Promise<SessionHistory[]> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    return mockSessionHistoryStore.getAll();
+  }
   try {
     const response = await fetch(`${API_URL}/sessions`);
     if (!response.ok) throw new Error("Failed to fetch sessions");
@@ -152,6 +178,19 @@ export const getSessionHistory = async (): Promise<SessionHistory[]> => {
 };
 
 export const postSession = async (data: any) => {
+  if (USE_MOCK) {
+    await mockDelay();
+    const entry: SessionHistory = {
+      id: data.id || crypto.randomUUID(),
+      session_id: data.session_id || "",
+      date: data.date || new Date().toISOString(),
+      performance_data: typeof data.performance_data === "string"
+        ? data.performance_data
+        : JSON.stringify(data.performance_data),
+    };
+    mockSessionHistoryStore.add(entry);
+    return entry;
+  }
   try {
     // FE passes 'data' which matches SessionHistory but might be loose.
     // We need to map it to CreateSessionDto for the backend.

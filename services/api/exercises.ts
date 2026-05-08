@@ -1,8 +1,15 @@
 import { Exercise } from "@/constants/Types";
-import { API_URL, headers } from "./config";
+import { API_URL, headers, USE_MOCK } from "./config";
 import { ApiExercise } from "./types";
+import { mockDelay } from "./__mocks__/utils";
+import { mockExerciseStore } from "./__mocks__/exercises.generated";
+import MOCK_CATEGORIES from "./__mocks__/categories.generated";
 
 export const getExerciseCategories = async (): Promise<any[]> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    return MOCK_CATEGORIES;
+  }
   const response = await fetch(`${API_URL}/exercise-categories`);
   if (!response.ok) {
     const text = await response.text();
@@ -12,6 +19,10 @@ export const getExerciseCategories = async (): Promise<any[]> => {
 };
 
 export const getExercises = async (): Promise<Exercise[]> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    return mockExerciseStore.getAll();
+  }
   // try-catch removed to allow UI to handle errors
   const response = await fetch(`${API_URL}/exercises`);
   if (!response.ok) throw new Error("Failed to fetch exercises");
@@ -38,6 +49,10 @@ export const getExercises = async (): Promise<Exercise[]> => {
 };
 
 export const getExercise = async (id: string): Promise<Exercise | null> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    return mockExerciseStore.getById(id) ?? null;
+  }
   try {
     const response = await fetch(`${API_URL}/exercises/${id}`);
     if (!response.ok) return null;
@@ -76,6 +91,23 @@ export const getExercise = async (id: string): Promise<Exercise | null> => {
 export const postExercise = async (
   exercise: Partial<Exercise>,
 ): Promise<Exercise | null> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    const newExercise: Exercise = {
+      id: crypto.randomUUID(),
+      name: exercise.name || "New Exercise",
+      category: exercise.category || MOCK_CATEGORIES[0],
+      difficulty: exercise.difficulty || ("BEGINNER" as any),
+      description: exercise.description || "",
+      equipment: exercise.equipment || ("FLOOR" as any),
+      default_reps: exercise.default_reps || 10,
+      unit: exercise.unit || ("REPS" as any),
+      is_unilateral: exercise.is_unilateral || false,
+      muscleGroups: exercise.muscleGroups || [],
+    };
+    mockExerciseStore.add(newExercise);
+    return newExercise;
+  }
   try {
     const body = {
       name: exercise.name,
