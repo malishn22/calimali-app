@@ -7,7 +7,6 @@
     "icon": "./assets/images/calimali-icon.png",
     "scheme": "calimaliapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/calimali-icon-splash.png",
       "resizeMode": "contain",
@@ -21,10 +20,8 @@
         "foregroundImage": "./assets/images/calimali-icon-adaptive.png",
         "backgroundColor": "#1E1D23"
       },
-      "edgeToEdgeEnabled": false,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.calimaliapp",
-      "usesCleartextTraffic": true
+      "package": "com.anonymous.calimaliapp"
     },
     "web": {
       "bundler": "metro",
@@ -32,7 +29,17 @@
       "favicon": "./assets/images/calimali-icon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-asset",
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
