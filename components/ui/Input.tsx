@@ -28,7 +28,7 @@ export function Input({
         </Text>
       )}
       <View
-        className={`flex-row items-center bg-card-dark rounded-xl px-4 py-3.5 border border-transparent focus:border-blue-500 ${inputContainerClassName}`}
+        className={`flex-row items-center bg-card-dark rounded-xl px-4 py-2.5 border border-transparent focus:border-blue-500 ${inputContainerClassName}`}
       >
         {icon && (
           <FontAwesome
