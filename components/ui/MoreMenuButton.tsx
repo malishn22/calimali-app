@@ -12,8 +12,17 @@ import {
 import Animated, { Easing, withTiming } from "react-native-reanimated";
 
 export interface MoreMenuItem {
+  /** Stable key for list reconciliation; omit only if labels are guaranteed unique. */
+  id?: string;
   label: string;
   onPress: () => void | Promise<void>;
+}
+
+function menuItemRowKey(item: MoreMenuItem, index: number): string {
+  if (item.id != null && item.id !== "") {
+    return item.id;
+  }
+  return `${item.label}-${index}`;
 }
 
 interface MoreMenuButtonProps {
@@ -161,7 +170,7 @@ export function MoreMenuButton({ menuItems, className = "" }: MoreMenuButtonProp
               <View className="min-w-[160px] rounded-xl border border-zinc-800 bg-zinc-900 py-1 shadow-lg">
                 {menuItems.map((item, index) => (
                   <Pressable
-                    key={item.label}
+                    key={menuItemRowKey(item, index)}
                     onPress={() => runItem(item)}
                     className={`px-5 py-3 active:bg-zinc-800 ${index > 0 ? "border-t border-zinc-800" : ""}`}
                   >

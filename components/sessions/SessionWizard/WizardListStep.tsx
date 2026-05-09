@@ -35,8 +35,8 @@ export function WizardListStep({
           rightAccessory={
             <MoreMenuButton
               menuItems={[
-                { label: "Copy", onPress: onCopyRoutine },
-                { label: "Paste", onPress: onPasteRoutine },
+                { id: "copy-routine", label: "Copy", onPress: onCopyRoutine },
+                { id: "paste-routine", label: "Paste", onPress: onPasteRoutine },
               ]}
             />
           }
