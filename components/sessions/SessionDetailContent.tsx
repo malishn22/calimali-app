@@ -133,7 +133,7 @@ export default function SessionDetailContent({
               ) : (
                 <View className="p-3">
                   <Text className="text-zinc-500 text-xs italic text-center">
-                    {ex.sets} Sets x {ex.reps} Reps
+                    {ex.sets ?? "—"} Sets x {ex.reps} Reps
                   </Text>
                 </View>
               )}
