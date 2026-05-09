@@ -3,7 +3,7 @@ import { SessionHistory } from "@/constants/Types";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { Platform, Pressable, StatusBar, View } from "react-native";
+import { Platform, Pressable, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SessionDetailScreen() {
