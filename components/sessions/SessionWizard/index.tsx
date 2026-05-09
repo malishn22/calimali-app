@@ -4,7 +4,8 @@ import { Api } from "@/services/api";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
-import { Alert, View } from "react-native";
+import { Alert, Modal, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WizardConfigStep } from "./WizardConfigStep";
 import { WizardFinalStep } from "./WizardFinalStep";
@@ -48,6 +49,7 @@ function parseRoutineClipboard(text: string): SessionExercise[] | null {
 }
 
 interface SessionWizardProps {
+  visible: boolean;
   onClose: () => void;
   onSave: () => void;
   selectedDate: Date;
@@ -55,6 +57,7 @@ interface SessionWizardProps {
 }
 
 export default function SessionWizard({
+  visible,
   onClose,
   onSave,
   selectedDate,
@@ -78,16 +81,20 @@ export default function SessionWizard({
   );
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  // Load initial session on mount
+  // Reset or Load on open
   useEffect(() => {
-    if (initialSession) {
-      setTitle(initialSession.title);
-      setFrequency(initialSession.frequency as any);
-      setColor(initialSession.color);
-      setSessionExercises(JSON.parse(initialSession.exercises));
+    if (visible) {
+      if (initialSession) {
+        setTitle(initialSession.title);
+        setFrequency(initialSession.frequency as any);
+        setColor(initialSession.color);
+        setSessionExercises(JSON.parse(initialSession.exercises));
+      } else {
+        resetForm();
+      }
+      setStep("LIST");
     }
-    setStep("LIST");
-  }, []);
+  }, [visible, initialSession]);
 
   const resetForm = () => {
     setTitle("");
@@ -246,67 +253,75 @@ export default function SessionWizard({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background-dark">
-      <View className="flex-1">
-        {step === "LIST" && (
-          <WizardListStep
-            exercises={sessionExercises}
-            onAdd={handleAddExercise}
-            onRemove={handleRemoveExercise}
-            onEdit={handleEditExercise}
-            onReorder={handleReorderExercises}
-            onCopyRoutine={handleCopyRoutine}
-            onPasteRoutine={handlePasteRoutine}
-          />
-        )}
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView className="flex-1 bg-background-dark">
+        <View className="flex-1">
+          {step === "LIST" && (
+            <WizardListStep
+              exercises={sessionExercises}
+              onAdd={handleAddExercise}
+              onRemove={handleRemoveExercise}
+              onEdit={handleEditExercise}
+              onReorder={handleReorderExercises}
+              onCopyRoutine={handleCopyRoutine}
+              onPasteRoutine={handlePasteRoutine}
+            />
+          )}
 
-        {step === "SEARCH" && (
-          <WizardSearchStep onSelect={handleSelectExercise} />
-        )}
+          {step === "SEARCH" && (
+            <WizardSearchStep onSelect={handleSelectExercise} />
+          )}
 
-        {step === "CONFIG" && selectedExercise && (
-          <WizardConfigStep
-            exercise={selectedExercise}
-            initialSets={
-              editingIndex !== null ? sessionExercises[editingIndex].sets : 1
-            }
-            initialReps={
-              editingIndex !== null
-                ? sessionExercises[editingIndex].reps
-                : undefined
-            }
-            onConfirm={handleConfirmExercise}
-            onBack={() => {
-              if (editingIndex !== null) {
-                setStep("LIST");
-                setEditingIndex(null);
-              } else {
-                setStep("SEARCH");
+          {step === "CONFIG" && selectedExercise && (
+            <WizardConfigStep
+              exercise={selectedExercise}
+              initialSets={
+                editingIndex !== null ? sessionExercises[editingIndex].sets : 1
               }
-            }}
-          />
-        )}
+              initialReps={
+                editingIndex !== null
+                  ? sessionExercises[editingIndex].reps
+                  : undefined
+              }
+              onConfirm={handleConfirmExercise}
+              onBack={() => {
+                if (editingIndex !== null) {
+                  setStep("LIST");
+                  setEditingIndex(null);
+                } else {
+                  setStep("SEARCH");
+                }
+              }}
+            />
+          )}
 
-        {step === "FINAL" && (
-          <WizardFinalStep
-            title={title}
-            setTitle={setTitle}
-            color={color}
-            setColor={setColor}
-            frequency={frequency}
-            setFrequency={setFrequency}
-          />
-        )}
-      </View>
+          {step === "FINAL" && (
+            <WizardFinalStep
+              title={title}
+              setTitle={setTitle}
+              color={color}
+              setColor={setColor}
+              frequency={frequency}
+              setFrequency={setFrequency}
+            />
+          )}
+        </View>
 
-      {/* Unified Footer */}
-      <WizardFooter
-        step={step}
-        onBack={handleBack}
-        onNext={handleNext}
-        onSave={handleSaveSession}
-        canGoNext={sessionExercises.length > 0}
-      />
-    </SafeAreaView>
+        {/* Unified Footer */}
+        <WizardFooter
+          step={step}
+          onBack={handleBack}
+          onNext={handleNext}
+          onSave={handleSaveSession}
+          canGoNext={sessionExercises.length > 0}
+        />
+      </SafeAreaView>
+      </GestureHandlerRootView>
+    </Modal>
   );
 }

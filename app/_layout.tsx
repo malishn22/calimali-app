@@ -31,7 +31,6 @@ import {
   ReanimatedLogLevel,
 } from "react-native-reanimated"; // Import configureReanimatedLogger
 import "../global.css";
-
 //import { PerformanceStats } from "@/components/dev/PerformanceStats";
 
 // Disable Strict Mode for Reanimated to avoid warnings
@@ -108,20 +107,6 @@ function RootLayoutNav() {
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen
                   name="live-session"
-                  options={{
-                    headerShown: false,
-                    animation: "slide_from_right",
-                  }}
-                />
-                <Stack.Screen
-                  name="session-detail"
-                  options={{
-                    headerShown: false,
-                    animation: "slide_from_right",
-                  }}
-                />
-                <Stack.Screen
-                  name="session-wizard"
                   options={{
                     headerShown: false,
                     animation: "slide_from_right",
