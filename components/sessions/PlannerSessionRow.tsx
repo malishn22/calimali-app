@@ -40,9 +40,11 @@ export function PlannerSessionRow({
         </View>
       </View>
       {!isCompleted && (
-        <Pressable onPress={() => onDelete(session.id)}>
-          <FontAwesome name="trash" size={16} color="#3F3F46" />
-        </Pressable>
+        <View className="flex-row items-center bg-transparent">
+          <Pressable onPress={() => onDelete(session.id)}>
+            <FontAwesome name="trash" size={16} color="#3F3F46" />
+          </Pressable>
+        </View>
       )}
     </Pressable>
   );

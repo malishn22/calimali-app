@@ -1,6 +1,8 @@
 import { WizardFooter } from "@/components/sessions/SessionWizard/WizardFooter";
 import { Exercise, ScheduledSession, SessionExercise } from "@/constants/Types";
 import { Api } from "@/services/api";
+import * as Clipboard from "expo-clipboard";
+import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import { Alert, Modal, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,6 +11,41 @@ import { WizardFinalStep } from "./WizardFinalStep";
 import { WizardListStep } from "./WizardListStep";
 import { WizardSearchStep } from "./WizardSearchStep";
 import { WizardStep } from "./types";
+
+const ROUTINE_CLIPBOARD_VERSION = 1;
+
+function isSessionExerciseRecord(value: unknown): value is SessionExercise {
+  if (typeof value !== "object" || value === null) return false;
+  const o = value as Record<string, unknown>;
+  const reps = o.reps;
+  const repsOk =
+    typeof reps === "number" ||
+    (Array.isArray(reps) && reps.every((r) => typeof r === "number"));
+  return (
+    typeof o.exerciseId === "string" &&
+    typeof o.name === "string" &&
+    typeof o.sets === "number" &&
+    repsOk
+  );
+}
+
+function parseRoutineClipboard(text: string): SessionExercise[] | null {
+  try {
+    const data = JSON.parse(text) as unknown;
+    if (typeof data !== "object" || data === null) return null;
+    const rec = data as Record<string, unknown>;
+    if (rec.calimaliRoutine !== ROUTINE_CLIPBOARD_VERSION) return null;
+    if (!Array.isArray(rec.exercises)) return null;
+    const out: SessionExercise[] = [];
+    for (const item of rec.exercises) {
+      if (!isSessionExerciseRecord(item)) return null;
+      out.push(item);
+    }
+    return out;
+  } catch {
+    return null;
+  }
+}
 
 interface SessionWizardProps {
   visible: boolean;
@@ -122,6 +159,33 @@ export default function SessionWizard({
     }
   };
 
+  const handleCopyRoutine = async () => {
+    const payload = JSON.stringify({
+      calimaliRoutine: ROUTINE_CLIPBOARD_VERSION,
+      exercises: sessionExercises,
+    });
+    await Clipboard.setStringAsync(payload);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handlePasteRoutine = async () => {
+    const text = await Clipboard.getStringAsync();
+    if (!text?.trim()) {
+      Alert.alert("Paste failed", "Clipboard is empty or does not contain a copied routine.");
+      return;
+    }
+    const parsed = parseRoutineClipboard(text);
+    if (!parsed) {
+      Alert.alert(
+        "Paste failed",
+        "Clipboard does not contain a valid Calimali routine. Copy a routine from Plan Routine first.",
+      );
+      return;
+    }
+    setSessionExercises((prev) => [...parsed, ...prev]);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
   const handleSaveSession = async () => {
     if (sessionExercises.length === 0) {
       Alert.alert("Empty Session", "Please add at least one exercise.");
@@ -133,7 +197,7 @@ export default function SessionWizard({
 
     try {
       const exerciseJson = JSON.stringify(sessionExercises);
-      if (initialSession) {
+      if (initialSession?.id) {
         await Api.updatePlannedSession({
           id: initialSession.id,
           title: finalTitle,
@@ -197,6 +261,8 @@ export default function SessionWizard({
               onAdd={handleAddExercise}
               onRemove={handleRemoveExercise}
               onEdit={handleEditExercise}
+              onCopyRoutine={handleCopyRoutine}
+              onPasteRoutine={handlePasteRoutine}
             />
           )}
 

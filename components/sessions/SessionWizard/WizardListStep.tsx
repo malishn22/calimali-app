@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/Button";
+import { MoreMenuButton } from "@/components/ui/MoreMenuButton";
 import { SideActionButton } from "@/components/ui/SideActionButton";
 import Colors from "@/constants/Colors";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
@@ -13,13 +14,33 @@ interface Props {
   onAdd: () => void;
   onRemove: (index: number) => void;
   onEdit: (index: number) => void;
+  onCopyRoutine: () => void | Promise<void>;
+  onPasteRoutine: () => void | Promise<void>;
 }
 
-export function WizardListStep({ exercises, onAdd, onRemove, onEdit }: Props) {
+export function WizardListStep({
+  exercises,
+  onAdd,
+  onRemove,
+  onEdit,
+  onCopyRoutine,
+  onPasteRoutine,
+}: Props) {
   return (
     <View className="flex-1">
       <WizardScreenWrapper className="flex-1">
-        <WizardHeader title="Plan Routine" className="mb-4" />
+        <WizardHeader
+          title="Plan Routine"
+          className="mb-4"
+          rightAccessory={
+            <MoreMenuButton
+              menuItems={[
+                { id: "copy-routine", label: "Copy", onPress: onCopyRoutine },
+                { id: "paste-routine", label: "Paste", onPress: onPasteRoutine },
+              ]}
+            />
+          }
+        />
 
         {/* List */}
         <FlatList
