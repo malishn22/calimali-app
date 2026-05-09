@@ -28,6 +28,8 @@ function menuItemRowKey(item: MoreMenuItem, index: number): string {
 interface MoreMenuButtonProps {
   menuItems: MoreMenuItem[];
   className?: string;
+  /** Called when a menu item's onPress throws or rejects; defaults to console.error. */
+  onMenuActionError?: (error: unknown) => void;
 }
 
 const DURATION_IN = 120;
@@ -67,7 +69,11 @@ const scaleOut = () => {
   };
 };
 
-export function MoreMenuButton({ menuItems, className = "" }: MoreMenuButtonProps) {
+export function MoreMenuButton({
+  menuItems,
+  className = "",
+  onMenuActionError,
+}: MoreMenuButtonProps) {
   const triggerRef = useRef<View>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -119,7 +125,15 @@ export function MoreMenuButton({ menuItems, className = "" }: MoreMenuButtonProp
   const runItem = async (item: MoreMenuItem) => {
     setShowPanel(false);
     scheduleModalClose();
-    await Promise.resolve(item.onPress());
+    try {
+      await Promise.resolve(item.onPress());
+    } catch (error) {
+      if (onMenuActionError) {
+        onMenuActionError(error);
+      } else {
+        console.error("[MoreMenuButton] menu action failed:", error);
+      }
+    }
   };
 
   const windowWidth = Dimensions.get("window").width;
