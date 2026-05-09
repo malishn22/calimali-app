@@ -2,11 +2,11 @@ import { SearchBar } from "@/components/ui/SearchBar";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
 import { DifficultyColors, getCategoryColor, palette } from "@/constants/Colors";
 import { WizardHeader } from "@/components/ui/WizardHeader";
-import { Exercise } from "@/constants/Types";
+import { Exercise, ExerciseCategoryModel } from "@/constants/Types";
 import { Api } from "@/services/api";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { FlatList, Platform, Pressable, Text, View } from "react-native";
+import { FlatList, Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { WizardScreenWrapper } from "./WizardScreenWrapper";
 
 const ROW_BASE = "#27272a";
@@ -28,33 +28,79 @@ interface Props {
 export function WizardSearchStep({ onSelect }: Props) {
   const [search, setSearch] = useState("");
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [categories, setCategories] = useState<ExerciseCategoryModel[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState("all");
 
   useEffect(() => {
     load();
   }, []);
 
   const load = async () => {
-    const data = await Api.getExercises();
-    data.sort((a, b) => a.name.localeCompare(b.name));
-    setExercises(data);
+    const [exData, catData] = await Promise.all([
+      Api.getExercises(),
+      Api.getExerciseCategories(),
+    ]);
+    exData.sort((a, b) => a.name.localeCompare(b.name));
+    setExercises(exData);
+    setCategories(catData);
   };
 
-  const filtered = exercises.filter((ex) =>
-    ex.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = exercises.filter((ex) => {
+    const matchesCategory =
+      selectedFilter === "all" ||
+      ex.category?.slug?.toLowerCase() === selectedFilter.toLowerCase();
+    const matchesSearch = ex.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <WizardScreenWrapper>
       <WizardHeader title="Search Movement" className="mb-4" />
 
-      <View className="mb-5">
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Find movement..."
-          inputContainerClassName="bg-zinc-800/80 border border-zinc-600/50 rounded-2xl"
-          className="text-base"
-        />
+      <SearchBar
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Find movement..."
+        inputContainerClassName="bg-zinc-800/80 border border-zinc-600/50 rounded-2xl"
+        className="text-base"
+      />
+
+      {/* Category filter chips */}
+      <View className="flex-row mb-4 h-10">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8 }}
+        >
+          <Pressable
+            onPress={() => setSelectedFilter("all")}
+            className={`px-5 py-2 rounded-2xl justify-center ${selectedFilter === "all" ? "bg-white" : "bg-card-dark"}`}
+          >
+            <Text
+              className={`font-bold text-xs ${selectedFilter === "all" ? "text-black" : "text-zinc-500"}`}
+            >
+              All
+            </Text>
+          </Pressable>
+          {categories.map((cat) => {
+            const isSelected = selectedFilter === cat.slug;
+            return (
+              <Pressable
+                key={cat.id}
+                onPress={() => setSelectedFilter(cat.slug)}
+                className={`px-5 py-2 rounded-2xl justify-center ${isSelected ? "bg-white" : "bg-card-dark"}`}
+              >
+                <Text
+                  className={`font-bold text-xs ${isSelected ? "text-black" : "text-zinc-500"}`}
+                >
+                  {cat.name}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
       </View>
 
       <FlatList
