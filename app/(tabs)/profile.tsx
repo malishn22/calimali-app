@@ -5,7 +5,7 @@ import { Api } from "@/services/api";
 import { getLevelRank, getLevelRequirement } from "@/utilities/Gamification";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import {
   Alert,
@@ -18,15 +18,23 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import SessionDetailSheet from "@/components/sessions/SessionDetailSheet";
+
+// ... imports remain ...
 
 export default function ProfileScreen() {
-  const router = useRouter();
   const { refreshCalendar } = useCache();
   const [activeTab, setActiveTab] = useState<"OVERVIEW" | "HISTORY">(
     "OVERVIEW",
   );
   const [history, setHistory] = useState<SessionHistory[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  // Sheet State
+  const [selectedSession, setSelectedSession] = useState<SessionHistory | null>(
+    null,
+  );
+  const [detailVisible, setDetailVisible] = useState(false);
 
   // Cache timestamp to avoid excessive API calls
   const lastFetchTime = useRef<number>(0);
@@ -97,10 +105,8 @@ export default function ProfileScreen() {
               key={item.id || idx}
               className="bg-card-dark rounded-2xl p-4 mb-3 flex-row justify-between items-center active:bg-zinc-800"
               onPress={() => {
-                router.push({
-                  pathname: "/session-detail",
-                  params: { session: JSON.stringify(item) },
-                });
+                setSelectedSession(item);
+                setDetailVisible(true);
               }}
             >
               <View className="flex-row items-center gap-3">
@@ -357,6 +363,12 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
 
+      {/* Detail Sheet */}
+      <SessionDetailSheet
+        visible={detailVisible}
+        session={selectedSession}
+        onClose={() => setDetailVisible(false)}
+      />
     </SafeAreaView>
   );
 }

@@ -1,11 +1,12 @@
 import { Calendar } from "@/components/calendar/Calendar";
 import { SideActionButton } from "@/components/ui/SideActionButton";
 import { PlannerSessionRow as SessionCard } from "@/components/sessions/PlannerSessionRow";
+import SessionWizard from "@/components/sessions/SessionWizard";
 import { ScheduledSession } from "@/constants/Types";
 import { useCalendarContext } from "@/context/CalendarContext";
 import { Api } from "@/services/api";
 import { isSessionActiveOnDate } from "@/utilities/SessionUtils";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   Alert,
@@ -18,7 +19,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PlannerScreen() {
-  const router = useRouter();
   const [viewMode, setViewMode] = useState<"Week" | "Month">("Week");
 
   // Use Context for Data
@@ -52,6 +52,12 @@ export default function PlannerScreen() {
     return ids;
   }, [selectedDate, sessionHistory]);
 
+  // Wizard State (Props-based control as per original)
+  const [wizardVisible, setWizardVisible] = useState(false);
+  const [editingSession, setEditingSession] = useState<ScheduledSession | null>(
+    null,
+  );
+
   const handleDeleteSession = async (id: string) => {
     try {
       await Api.deletePlannedSession(id);
@@ -65,13 +71,8 @@ export default function PlannerScreen() {
   };
 
   const handleEditSession = (session: ScheduledSession) => {
-    router.push({
-      pathname: "/session-wizard",
-      params: {
-        selectedDate: selectedDate.toISOString(),
-        initialSession: JSON.stringify(session),
-      },
-    });
+    setEditingSession(session);
+    setWizardVisible(true);
   };
 
   // Filter sessions for selected date
@@ -82,10 +83,8 @@ export default function PlannerScreen() {
   });
 
   const handleAddSession = () => {
-    router.push({
-      pathname: "/session-wizard",
-      params: { selectedDate: selectedDate.toISOString() },
-    });
+    setEditingSession(null);
+    setWizardVisible(true);
   };
 
   // FAB position from measured layout so it sits just below the calendar
@@ -162,6 +161,19 @@ export default function PlannerScreen() {
       />
       </View>
 
+      <SessionWizard
+        visible={wizardVisible}
+        onClose={() => {
+          setWizardVisible(false);
+          setEditingSession(null);
+        }}
+        onSave={() => {
+          refreshSessions();
+          setEditingSession(null);
+        }}
+        selectedDate={selectedDate}
+        initialSession={editingSession}
+      />
     </SafeAreaView>
   );
 }
