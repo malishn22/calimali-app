@@ -7,6 +7,7 @@
     "icon": "./assets/images/calimali-icon.png",
     "scheme": "calimaliapp",
     "userInterfaceStyle": "automatic",
+    "backgroundColor": "#121214",
     "splash": {
       "image": "./assets/images/calimali-icon-splash.png",
       "resizeMode": "contain",
