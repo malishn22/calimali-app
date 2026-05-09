@@ -23,8 +23,7 @@ export default function LiveSessionScreen() {
   };
 
   const handleComplete = (data: SessionHistory) => {
-    const { InteractionManager } = require("react-native");
-    InteractionManager.runAfterInteractions(() => {
+    requestIdleCallback(() => {
       router.replace("/");
     });
   };
