@@ -1,4 +1,5 @@
 import { ScheduledSession, SessionHistory } from "@/constants/Types";
+import * as Crypto from "expo-crypto";
 import { API_URL, headers, USE_MOCK } from "./config";
 import { ApiScheduledSession, ApiSession } from "./types";
 import { mockDelay } from "./__mocks__/utils";
@@ -56,7 +57,7 @@ export const getPlannedSessions = async (): Promise<ScheduledSession[]> => {
 export const postPlannedSession = async (session: ScheduledSession) => {
   if (USE_MOCK) {
     await mockDelay();
-    mockPlannedSessionStore.add({ ...session, id: session.id || crypto.randomUUID() });
+    mockPlannedSessionStore.add({ ...session, id: session.id || Crypto.randomUUID() });
     return;
   }
   // Parse exercises string if needed, or assume it's already an object if types were strict.
@@ -181,7 +182,7 @@ export const postSession = async (data: any) => {
   if (USE_MOCK) {
     await mockDelay();
     const entry: SessionHistory = {
-      id: data.id || crypto.randomUUID(),
+      id: data.id || Crypto.randomUUID(),
       session_id: data.session_id || "",
       date: data.date || new Date().toISOString(),
       performance_data: typeof data.performance_data === "string"

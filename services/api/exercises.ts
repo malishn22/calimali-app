@@ -1,4 +1,5 @@
 import { Exercise } from "@/constants/Types";
+import * as Crypto from "expo-crypto";
 import { API_URL, headers, USE_MOCK } from "./config";
 import { ApiExercise } from "./types";
 import { mockDelay } from "./__mocks__/utils";
@@ -94,7 +95,7 @@ export const postExercise = async (
   if (USE_MOCK) {
     await mockDelay();
     const newExercise: Exercise = {
-      id: crypto.randomUUID(),
+      id: Crypto.randomUUID(),
       name: exercise.name || "New Exercise",
       category: exercise.category || MOCK_CATEGORIES[0],
       difficulty: exercise.difficulty || ("BEGINNER" as any),
