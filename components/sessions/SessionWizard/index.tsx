@@ -5,6 +5,7 @@ import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import { Alert, Modal, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WizardConfigStep } from "./WizardConfigStep";
 import { WizardFinalStep } from "./WizardFinalStep";
@@ -141,6 +142,10 @@ export default function SessionWizard({
     }
   };
 
+  const handleReorderExercises = (reordered: SessionExercise[]) => {
+    setSessionExercises(reordered);
+  };
+
   const handleRemoveExercise = (index: number) => {
     const updated = [...sessionExercises];
     updated.splice(index, 1);
@@ -253,6 +258,7 @@ export default function SessionWizard({
       animationType="slide"
       presentationStyle="pageSheet"
     >
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView className="flex-1 bg-background-dark">
         <View className="flex-1">
           {step === "LIST" && (
@@ -261,6 +267,7 @@ export default function SessionWizard({
               onAdd={handleAddExercise}
               onRemove={handleRemoveExercise}
               onEdit={handleEditExercise}
+              onReorder={handleReorderExercises}
               onCopyRoutine={handleCopyRoutine}
               onPasteRoutine={handlePasteRoutine}
             />
@@ -314,6 +321,7 @@ export default function SessionWizard({
           canGoNext={sessionExercises.length > 0}
         />
       </SafeAreaView>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
