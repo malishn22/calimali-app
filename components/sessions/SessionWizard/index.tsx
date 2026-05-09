@@ -182,7 +182,7 @@ export default function SessionWizard({
       );
       return;
     }
-    setSessionExercises([...parsed, ...sessionExercises]);
+    setSessionExercises((prev) => [...parsed, ...prev]);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
