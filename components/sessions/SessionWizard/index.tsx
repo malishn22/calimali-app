@@ -12,7 +12,7 @@ import { WizardListStep } from "./WizardListStep";
 import { WizardSearchStep } from "./WizardSearchStep";
 import { WizardStep } from "./types";
 
-const ROUTINE_CLIPBOARD_VERSION = 1;
+export const ROUTINE_CLIPBOARD_VERSION = 1;
 
 function isSessionExerciseRecord(value: unknown): value is SessionExercise {
   if (typeof value !== "object" || value === null) return false;
@@ -29,7 +29,7 @@ function isSessionExerciseRecord(value: unknown): value is SessionExercise {
   );
 }
 
-function parseRoutineClipboard(text: string): SessionExercise[] | null {
+export function parseRoutineClipboard(text: string): SessionExercise[] | null {
   try {
     const data = JSON.parse(text) as unknown;
     if (typeof data !== "object" || data === null) return null;

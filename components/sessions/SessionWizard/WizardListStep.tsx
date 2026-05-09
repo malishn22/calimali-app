@@ -5,8 +5,10 @@ import Colors from "@/constants/Colors";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
 import { WizardHeader } from "@/components/ui/WizardHeader";
 import { SessionExercise } from "@/constants/Types";
+import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
-import React from "react";
+import React, { useState } from "react";
+import { parseRoutineClipboard } from "./index";
 import { Text, TouchableOpacity, View } from "react-native";
 import DraggableFlatList, {
   RenderItemParams,
@@ -33,6 +35,13 @@ export function WizardListStep({
   onCopyRoutine,
   onPasteRoutine,
 }: Props) {
+  const [pasteDisabled, setPasteDisabled] = useState(true);
+
+  const checkClipboard = async () => {
+    const text = await Clipboard.getStringAsync();
+    setPasteDisabled(!text?.trim() || !parseRoutineClipboard(text));
+  };
+
   const renderItem = ({
     item,
     drag,
@@ -100,9 +109,10 @@ export function WizardListStep({
           className="mb-4"
           rightAccessory={
             <MoreMenuButton
+              onOpen={checkClipboard}
               menuItems={[
                 { id: "copy-routine", label: "Copy", onPress: onCopyRoutine },
-                { id: "paste-routine", label: "Paste", onPress: onPasteRoutine },
+                { id: "paste-routine", label: "Paste", onPress: onPasteRoutine, disabled: pasteDisabled },
               ]}
             />
           }

@@ -16,6 +16,7 @@ export interface MoreMenuItem {
   id?: string;
   label: string;
   onPress: () => void | Promise<void>;
+  disabled?: boolean;
 }
 
 function menuItemRowKey(item: MoreMenuItem, index: number): string {
@@ -30,6 +31,8 @@ interface MoreMenuButtonProps {
   className?: string;
   /** Called when a menu item's onPress throws or rejects; defaults to console.error. */
   onMenuActionError?: (error: unknown) => void;
+  /** Called when the menu is opened, before the panel is shown. */
+  onOpen?: () => void;
 }
 
 const DURATION_IN = 120;
@@ -73,6 +76,7 @@ export function MoreMenuButton({
   menuItems,
   className = "",
   onMenuActionError,
+  onOpen,
 }: MoreMenuButtonProps) {
   const triggerRef = useRef<View>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -110,6 +114,7 @@ export function MoreMenuButton({
 
   const openMenu = () => {
     clearCloseTimer();
+    onOpen?.();
     triggerRef.current?.measureInWindow((x, y, width, height) => {
       setAnchor({ x, y, width, height });
       setModalOpen(true);
@@ -185,10 +190,11 @@ export function MoreMenuButton({
                 {menuItems.map((item, index) => (
                   <Pressable
                     key={menuItemRowKey(item, index)}
-                    onPress={() => runItem(item)}
-                    className={`px-5 py-3 active:bg-zinc-800 ${index > 0 ? "border-t border-zinc-800" : ""}`}
+                    onPress={() => !item.disabled && runItem(item)}
+                    disabled={item.disabled}
+                    className={`px-5 py-3 ${item.disabled ? "" : "active:bg-zinc-800"} ${index > 0 ? "border-t border-zinc-800" : ""}`}
                   >
-                    <Text className="text-base font-semibold text-white">{item.label}</Text>
+                    <Text className={`text-base font-semibold ${item.disabled ? "text-zinc-600" : "text-white"}`}>{item.label}</Text>
                   </Pressable>
                 ))}
               </View>
