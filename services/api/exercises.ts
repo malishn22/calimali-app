@@ -36,9 +36,9 @@ export const getExercises = async (): Promise<Exercise[]> => {
     difficulty: e.difficulty as any,
     description: e.description || "",
     equipment: e.equipment as any,
-    default_reps: e.defaultReps,
+    defaultReps: e.defaultReps,
     unit: e.unit as any,
-    is_unilateral: e.isUnilateral,
+    isUnilateral: e.isUnilateral,
     muscleGroups: e.exerciseMuscleGroups
       ? e.exerciseMuscleGroups.map((g) => ({
           muscleDescription: g.code,
@@ -67,9 +67,9 @@ export const getExercise = async (id: string): Promise<Exercise | null> => {
         difficulty: apiEx.difficulty as any,
         description: apiEx.description || "",
         equipment: apiEx.equipment as any,
-        default_reps: apiEx.defaultReps,
+        defaultReps: apiEx.defaultReps,
         unit: apiEx.unit as any,
-        is_unilateral: apiEx.isUnilateral,
+        isUnilateral: apiEx.isUnilateral,
         muscleGroups: apiEx.exerciseMuscleGroups
           ? apiEx.exerciseMuscleGroups.map((g) => ({
               muscleDescription: g.code,
@@ -101,9 +101,9 @@ export const postExercise = async (
       difficulty: exercise.difficulty || ("BEGINNER" as any),
       description: exercise.description || "",
       equipment: exercise.equipment || ("FLOOR" as any),
-      default_reps: exercise.default_reps || 10,
+      defaultReps: exercise.defaultReps || 10,
       unit: exercise.unit || ("REPS" as any),
-      is_unilateral: exercise.is_unilateral || false,
+      isUnilateral: exercise.isUnilateral || false,
       muscleGroups: exercise.muscleGroups || [],
     };
     mockExerciseStore.add(newExercise);
@@ -117,9 +117,9 @@ export const postExercise = async (
       difficulty: exercise.difficulty,
       description: exercise.description,
       equipment: exercise.equipment,
-      defaultReps: exercise.default_reps,
+      defaultReps: exercise.defaultReps,
       unit: exercise.unit,
-      isUnilateral: exercise.is_unilateral,
+      isUnilateral: exercise.isUnilateral,
       isDefault: false,
       baseExerciseId: exercise.baseExerciseId, 
       exerciseMuscleGroups: exercise.muscleGroups
@@ -147,9 +147,9 @@ export const postExercise = async (
       difficulty: e.difficulty as any,
       description: e.description || "",
       equipment: e.equipment as any,
-      default_reps: e.defaultReps,
+      defaultReps: e.defaultReps,
       unit: e.unit as any,
-      is_unilateral: e.isUnilateral,
+      isUnilateral: e.isUnilateral,
       muscleGroups: e.exerciseMuscleGroups
         ? e.exerciseMuscleGroups.map((g) => ({
             muscleDescription: g.code,

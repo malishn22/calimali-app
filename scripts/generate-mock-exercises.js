@@ -89,9 +89,9 @@ const exercises = allSeedExercises.map((ex) => {
     difficulty: ex.difficulty,
     description: ex.description || "",
     equipment: ex.equipment,
-    default_reps: ex.defaultReps,
+    defaultReps: ex.defaultReps,
     unit: ex.unit,
-    is_unilateral: ex.isUnilateral,
+    isUnilateral: ex.isUnilateral,
     muscleGroups: (ex.muscles || []).map((m) => ({
       muscleDescription: m.muscleCode,
       impact: m.impact,
@@ -114,9 +114,9 @@ function serializeExercise(ex) {
   lines.push(`    difficulty: ${JSON.stringify(ex.difficulty)} as ExerciseDifficulty,`);
   lines.push(`    description: ${JSON.stringify(ex.description)},`);
   lines.push(`    equipment: ${JSON.stringify(ex.equipment)} as ExerciseEquipment,`);
-  lines.push(`    default_reps: ${ex.default_reps},`);
+  lines.push(`    defaultReps: ${ex.defaultReps},`);
   lines.push(`    unit: ${JSON.stringify(ex.unit)} as ExerciseUnit,`);
-  lines.push(`    is_unilateral: ${ex.is_unilateral},`);
+  lines.push(`    isUnilateral: ${ex.isUnilateral},`);
   lines.push(`    muscleGroups: [`);
   for (const mg of ex.muscleGroups) {
     lines.push(`      { muscleDescription: "${mg.muscleDescription}", impact: ${mg.impact} as ExerciseImpact, effect: "${mg.effect}" as ExerciseEffect },`);

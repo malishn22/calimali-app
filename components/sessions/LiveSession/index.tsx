@@ -74,7 +74,7 @@ export default function LiveSession({
 
     exercises.forEach((ex: any, exIndex: number) => {
       for (let i = 0; i < ex.sets; i++) {
-        if (ex.is_unilateral) {
+        if (ex.isUnilateral) {
           // UNILATERAL: Two steps per set (Left, Right)
           // Rep Index mapping: Left = setIndex * 2, Right = setIndex * 2 + 1
           _steps.push({
@@ -235,13 +235,13 @@ export default function LiveSession({
           Api.getUserProfile(),
           Api.getSessionHistory(),
         ]);
-        if (profile.streak_current >= 1 && history.length > 0) {
+        if (profile.streakCurrent >= 1 && history.length > 0) {
           const lastSession = history[0];
           const parsed = (() => {
             try {
-              return typeof lastSession.performance_data === "string"
-                ? JSON.parse(lastSession.performance_data)
-                : lastSession.performance_data;
+              return typeof lastSession.performanceData === "string"
+                ? JSON.parse(lastSession.performanceData)
+                : lastSession.performanceData;
             } catch {
               return { exercises: [] };
             }
@@ -267,7 +267,7 @@ export default function LiveSession({
 
       const applyResult = await Api.applyStats(xpEarned, totalRepsInSession);
 
-      const presentCompletion = (stats: { id: string; xp: number; level: number; streak_current: number; streak_best: number; streak_start_date: string | null; total_reps: number }) => {
+      const presentCompletion = (stats: { id: string; xp: number; level: number; streakCurrent: number; streakBest: number; streakStartDate: string | null; totalReps: number }) => {
         completionModalRef.current?.present(xpEarned, stats, {
           baseXP: totalSets * XP_PER_SET,
           bonusXP: varietyBonus,
@@ -303,10 +303,10 @@ export default function LiveSession({
           id: "user",
           xp: 0,
           level: 1,
-          streak_current: 0,
-          streak_best: 0,
-          streak_start_date: new Date().toISOString(),
-          total_reps: 0,
+          streakCurrent: 0,
+          streakBest: 0,
+          streakStartDate: new Date().toISOString(),
+          totalReps: 0,
         },
         { baseXP: steps.length * XP_PER_SET },
       );
@@ -317,9 +317,9 @@ export default function LiveSession({
     if (!session) return;
     const historyData: SessionHistory = {
       id: Date.now().toString(),
-      session_id: session.id,
+      sessionId: session.id,
       date: new Date().toISOString(),
-      performance_data: JSON.stringify({
+      performanceData: JSON.stringify({
         elapsedTime,
         exercises, // Saving original exercise structure
         completedSets, // Maps correctly to indices
@@ -380,7 +380,7 @@ export default function LiveSession({
     updatedRepsArray[targetRepIndex] = newReps;
 
     // LINKED EDITING Logic for Unilateral
-    if (exercise.is_unilateral) {
+    if (exercise.isUnilateral) {
       // If "side" is present, we know which one we edited.
       // Left is even (0, 2..), Right is odd (1, 3..)
       // We want to update the PAIR.
@@ -485,12 +485,12 @@ export default function LiveSession({
       exerciseIndex={currentStep.exerciseIndex}
       totalExercises={exercises.length}
       currentSetIndex={
-        currentStep.exercise.is_unilateral
+        currentStep.exercise.isUnilateral
           ? currentStep.setIndex * 2 + (currentStep.side === "RIGHT" ? 1 : 0)
           : currentStep.setIndex
       }
       totalSets={
-        currentStep.exercise.is_unilateral
+        currentStep.exercise.isUnilateral
           ? (currentStep.exercise.sets || 1) * 2
           : currentStep.exercise.sets || 1
       }

@@ -86,7 +86,7 @@ node scripts/generate-mock-exercises.js
 This reads from the backend's `CalimaliAPI/seed/` directory and writes to the `__mocks__/` directory.
 
 ## Known Quirks
-- Uses snake_case for model fields (e.g. `default_reps`, `is_unilateral`), API returns camelCase (mapped in `services/api/*.ts`; API-side shapes now derive from generated types)
+- Domain models and the API are both camelCase; `services/api/*.ts` maps API DTOs to domain types (API-side shapes derive from generated types)
 - `ScheduledSession.exercises` and `SessionHistory.performance_data` are JSON-stringified fields
 - `updatePlannedSession` is a delete+re-create workaround (no PUT endpoint on backend)
 - Cleartext HTTP — no TLS; requires `usesCleartextTraffic: true` in `app.json`

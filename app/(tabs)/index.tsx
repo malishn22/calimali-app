@@ -48,7 +48,7 @@ export default function DashboardScreen() {
         hDate.getMonth() === today.getMonth() &&
         hDate.getFullYear() === today.getFullYear()
       ) {
-        completedIds.add(h.session_id);
+        completedIds.add(h.sessionId);
       }
     });
 
@@ -105,10 +105,10 @@ export default function DashboardScreen() {
             <FontAwesome
               name="fire"
               size={20}
-              color={userProfile?.streak_current ? "#FF4500" : "#71717a"}
+              color={userProfile?.streakCurrent ? "#FF4500" : "#71717a"}
             />
             <Text className="text-xl font-bold ml-2 text-white">
-              {userProfile?.streak_current || 0}
+              {userProfile?.streakCurrent || 0}
             </Text>
           </View>
         </View>

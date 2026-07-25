@@ -24,12 +24,12 @@ export default function SessionDetailContent({
   const insets = useSafeAreaInsets();
 
   let parsedData: SessionPerformanceData = {};
-  if (session?.performance_data) {
+  if (session?.performanceData) {
     try {
       parsedData =
-        typeof session.performance_data === "string"
-          ? (JSON.parse(session.performance_data) as SessionPerformanceData)
-          : (session.performance_data as SessionPerformanceData);
+        typeof session.performanceData === "string"
+          ? (JSON.parse(session.performanceData) as SessionPerformanceData)
+          : (session.performanceData as SessionPerformanceData);
     } catch {
       parsedData = {};
     }

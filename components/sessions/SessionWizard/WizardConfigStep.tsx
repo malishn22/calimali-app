@@ -25,7 +25,7 @@ export function WizardConfigStep({
 }: Props) {
   // Initialize reps array
   const getInitialReps = (): number[] => {
-    const defaultVal = exercise.default_reps || 10;
+    const defaultVal = exercise.defaultReps || 10;
     let baseReps: number[] = [];
 
     if (Array.isArray(initialReps)) {
@@ -45,7 +45,7 @@ export function WizardConfigStep({
     }
 
     // Ensure even length for Unilateral
-    if (exercise.is_unilateral && baseReps.length % 2 !== 0) {
+    if (exercise.isUnilateral && baseReps.length % 2 !== 0) {
       baseReps.push(baseReps[baseReps.length - 1] || defaultVal);
     }
 
@@ -57,9 +57,9 @@ export function WizardConfigStep({
 
   const handleAddSet = () => {
     const lastRep =
-      reps.length > 0 ? reps[reps.length - 1] : exercise.default_reps || 10;
+      reps.length > 0 ? reps[reps.length - 1] : exercise.defaultReps || 10;
 
-    if (exercise.is_unilateral) {
+    if (exercise.isUnilateral) {
       // Add Pair
       setReps([...reps, lastRep, lastRep]);
     } else {
@@ -68,7 +68,7 @@ export function WizardConfigStep({
   };
 
   const handleRemoveSet = () => {
-    if (exercise.is_unilateral) {
+    if (exercise.isUnilateral) {
       if (reps.length > 2) {
         setReps(reps.slice(0, -2));
       }
@@ -84,7 +84,7 @@ export function WizardConfigStep({
     newReps[index] = Math.max(1, newReps[index] + delta);
 
     // Linked Editing for Unilateral
-    if (exercise.is_unilateral && isLinked) {
+    if (exercise.isUnilateral && isLinked) {
       if (index % 2 === 0) {
         // Updated Left -> Update Right (index + 1)
         if (index + 1 < newReps.length) {
@@ -101,7 +101,7 @@ export function WizardConfigStep({
     setReps(newReps);
   };
 
-  const sets = exercise.is_unilateral ? reps.length / 2 : reps.length;
+  const sets = exercise.isUnilateral ? reps.length / 2 : reps.length;
 
   return (
     <View className="flex-1">
@@ -118,11 +118,11 @@ export function WizardConfigStep({
           >
             {exercise.category?.name}
           </Text>
-          {exercise.is_unilateral && <UnilateralIndicator variant="badge" />}
+          {exercise.isUnilateral && <UnilateralIndicator variant="badge" />}
         </View>
 
         <SetRepsArea
-          mode={exercise.is_unilateral ? "unilateral" : "default"}
+          mode={exercise.isUnilateral ? "unilateral" : "default"}
           reps={reps}
           unit={exercise.unit || "REPS"}
           onAddSet={handleAddSet}
@@ -130,9 +130,9 @@ export function WizardConfigStep({
           onUpdateRep={updateRep}
           isLinked={isLinked}
           onToggleLinked={
-            exercise.is_unilateral ? () => setIsLinked(!isLinked) : undefined
+            exercise.isUnilateral ? () => setIsLinked(!isLinked) : undefined
           }
-          stepperSize={exercise.is_unilateral ? "sm" : "md"}
+          stepperSize={exercise.isUnilateral ? "sm" : "md"}
         />
       </WizardScreenWrapper>
 

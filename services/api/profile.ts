@@ -9,10 +9,10 @@ function mapApiProfileToUserProfile(data: ApiUserProfile): UserProfile {
     id: "user",
     level: data.level,
     xp: data.xp,
-    streak_current: data.streakCurrent,
-    streak_best: data.streakBest,
-    streak_start_date: data.streakStartDate || null,
-    total_reps: data.totalReps,
+    streakCurrent: data.streakCurrent,
+    streakBest: data.streakBest,
+    streakStartDate: data.streakStartDate || null,
+    totalReps: data.totalReps,
   };
 }
 
@@ -25,26 +25,17 @@ export const getUserProfile = async (): Promise<UserProfile> => {
     const response = await fetch(`${API_URL}/user-profile`);
     if (!response.ok) throw new Error("Failed to fetch profile");
     const data: ApiUserProfile = await response.json();
-
-    return {
-      id: "user",
-      level: data.level,
-      xp: data.xp,
-      streak_current: data.streakCurrent,
-      streak_best: data.streakBest,
-      streak_start_date: data.streakStartDate || null,
-      total_reps: data.totalReps,
-    };
+    return mapApiProfileToUserProfile(data);
   } catch (error) {
     // console.warn("getUserProfile failed, returning default.");
     return {
       id: "user",
       level: 1,
       xp: 0,
-      streak_current: 0,
-      streak_best: 0,
-      streak_start_date: null,
-      total_reps: 0,
+      streakCurrent: 0,
+      streakBest: 0,
+      streakStartDate: null,
+      totalReps: 0,
     };
   }
 };
@@ -61,9 +52,9 @@ export const updateUserProfile = async (data: any) => {
     body: JSON.stringify({
       level: data.level,
       xp: data.xp,
-      streakCurrent: data.streak_current,
-      streakBest: data.streak_best,
-      totalReps: data.total_reps,
+      streakCurrent: data.streakCurrent,
+      streakBest: data.streakBest,
+      totalReps: data.totalReps,
     }),
   });
 };

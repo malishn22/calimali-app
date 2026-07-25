@@ -69,7 +69,7 @@ export function WizardListStep({
                 {item.name}
               </Text>
               <View className="flex-row items-center">
-                {item.is_unilateral && (
+                {item.isUnilateral && (
                   <UnilateralIndicator variant="inline" size={14} className="mr-1.5" />
                 )}
                 <Text className="text-blue-500 text-xs font-bold tracking-widest">

@@ -30,9 +30,9 @@ export interface Exercise {
   difficulty: ExerciseDifficulty;
   description: string;
   equipment: ExerciseEquipment;
-  default_reps: number;
+  defaultReps: number;
   unit: ExerciseUnit;
-  is_unilateral: boolean;
+  isUnilateral: boolean;
   muscleGroups: MuscleWork[];
 }
 
@@ -42,7 +42,7 @@ export interface SessionExercise {
   sets: number;
   reps: number | number[];
   weight?: number;
-  is_unilateral?: boolean;
+  isUnilateral?: boolean;
   description?: string;
   muscleGroups?: MuscleWork[];
   categorySlug?: string;
@@ -59,17 +59,17 @@ export interface ScheduledSession {
 
 export interface SessionHistory {
   id: string;
-  session_id: string;
+  sessionId: string;
   date: string;
-  performance_data: string; // JSON of what happened
+  performanceData: string; // JSON of what happened
 }
 
 export interface UserProfile {
   id: string;
   level: number;
   xp: number;
-  streak_current: number;
-  streak_best: number;
-  streak_start_date: string | null;
-  total_reps: number;
+  streakCurrent: number;
+  streakBest: number;
+  streakStartDate: string | null;
+  totalReps: number;
 }

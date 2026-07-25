@@ -91,7 +91,7 @@ export default function ExerciseDetailSheet({
                     "#52525B"
                   }
                 />
-                {exercise.is_unilateral && (
+                {exercise.isUnilateral && (
                   <UnilateralIndicator variant="badge" />
                 )}
               </View>
@@ -105,7 +105,7 @@ export default function ExerciseDetailSheet({
                 </Text>
                 <View className="flex-row items-baseline gap-1.5">
                   <Text className="text-white font-bold text-xl">
-                    {exercise.default_reps > 0 ? exercise.default_reps : "-"}
+                    {exercise.defaultReps > 0 ? exercise.defaultReps : "-"}
                   </Text>
                   <Text
                     className="text-sm font-medium"

@@ -151,7 +151,7 @@ export function WizardSearchStep({ onSelect }: Props) {
                         backgroundColor: difficultyColor,
                       }}
                     />
-                    {item.is_unilateral && (
+                    {item.isUnilateral && (
                       <UnilateralIndicator variant="inline" size={14} className="ml-2" />
                     )}
                   </View>

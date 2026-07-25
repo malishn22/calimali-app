@@ -82,7 +82,7 @@ export default function ProfileScreen() {
           });
           let perf = { elapsedTime: 0, exercises: [] };
           try {
-            perf = JSON.parse(item.performance_data);
+            perf = JSON.parse(item.performanceData);
           } catch (e) { }
 
           const duration =
@@ -205,7 +205,7 @@ export default function ProfileScreen() {
             style={{ marginBottom: 12 }}
           />
           <Text className="text-2xl font-bold text-white mb-1">
-            {profile?.total_reps || 0}
+            {profile?.totalReps || 0}
           </Text>
           <Text className="text-[10px] font-bold text-zinc-400 tracking-wider">
             TOTAL REPS
@@ -220,7 +220,7 @@ export default function ProfileScreen() {
             style={{ marginBottom: 12 }}
           />
           <Text className="text-2xl font-bold text-white mb-1">
-            {profile?.streak_current || 0}{" "}
+            {profile?.streakCurrent || 0}{" "}
             <Text className="text-xs font-semibold text-zinc-400">DAYS</Text>
           </Text>
           <Text className="text-[10px] font-bold text-zinc-400 tracking-wider">
@@ -236,7 +236,7 @@ export default function ProfileScreen() {
             style={{ marginBottom: 12 }}
           />
           <Text className="text-2xl font-bold text-white mb-1">
-            {profile?.streak_best || 0}{" "}
+            {profile?.streakBest || 0}{" "}
             <Text className="text-xs font-semibold text-zinc-400">DAYS</Text>
           </Text>
           <Text className="text-[10px] font-bold text-zinc-400 tracking-wider">
@@ -248,10 +248,10 @@ export default function ProfileScreen() {
       <View className="bg-card-dark rounded-3xl p-6 w-full mb-6 flex-row justify-between items-center">
         <View>
           <Text className="text-2xl font-bold text-white mb-1">
-            {profile?.streak_current &&
-              profile.streak_current > 0 &&
-              profile.streak_start_date
-              ? new Date(profile.streak_start_date).toLocaleDateString()
+            {profile?.streakCurrent &&
+              profile.streakCurrent > 0 &&
+              profile.streakStartDate
+              ? new Date(profile.streakStartDate).toLocaleDateString()
               : "-"}
           </Text>
           <Text className="text-[10px] font-bold text-zinc-400 tracking-wider">

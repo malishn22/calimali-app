@@ -26,12 +26,12 @@ export default function PlannerScreen() {
     useCalendarContext();
 
   // Session history to determine which sessions are completed on selected date
-  const [sessionHistory, setSessionHistory] = useState<{ session_id: string; date: string }[]>([]);
+  const [sessionHistory, setSessionHistory] = useState<{ sessionId: string; date: string }[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       Api.getSessionHistory().then((history) => {
-        setSessionHistory(history.map((h) => ({ session_id: h.session_id, date: h.date })));
+        setSessionHistory(history.map((h) => ({ sessionId: h.sessionId, date: h.date })));
       });
     }, []),
   );
@@ -46,7 +46,7 @@ export default function PlannerScreen() {
         hDate.getMonth() === d.getMonth() &&
         hDate.getFullYear() === d.getFullYear()
       ) {
-        ids.add(h.session_id);
+        ids.add(h.sessionId);
       }
     });
     return ids;

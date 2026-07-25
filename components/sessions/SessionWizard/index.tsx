@@ -115,7 +115,7 @@ export default function SessionWizard({
         name: selectedExercise.name,
         sets,
         reps,
-        is_unilateral: selectedExercise.is_unilateral,
+        isUnilateral: selectedExercise.isUnilateral,
         categorySlug: selectedExercise.category?.slug,
       };
 

@@ -197,7 +197,7 @@ export default function VaultScreen() {
                   <Text className="text-sm font-bold text-white" numberOfLines={1}>
                     {item.name}
                   </Text>
-                  {item.is_unilateral && (
+                  {item.isUnilateral && (
                     <UnilateralIndicator variant="inline" size={16} className="ml-1.5" />
                   )}
                 </View>

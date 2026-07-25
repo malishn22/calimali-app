@@ -34,7 +34,7 @@ export const getPlannedSessions = async (): Promise<ScheduledSession[]> => {
             impact: mg.impact as any,
             effect: mg.effect as any,
           })),
-          is_unilateral: e.exercise?.isUnilateral,
+          isUnilateral: e.exercise?.isUnilateral,
           sets:
             e.sets && e.sets.length > 0
               ? e.exercise?.isUnilateral
@@ -159,9 +159,9 @@ export const getSessionHistory = async (): Promise<SessionHistory[]> => {
 
     return data.map((s) => ({
       id: s.id,
-      session_id: s.plannedSessionId || "",
+      sessionId: s.plannedSessionId || "",
       date: s.performedAt,
-      performance_data: JSON.stringify({
+      performanceData: JSON.stringify({
         // Reconstruct expected frontend object for History
         elapsedTime: s.durationSeconds || 0,
         exercises: s.sessionExercises.map((se) => ({
@@ -183,11 +183,11 @@ export const postSession = async (data: any) => {
     await mockDelay();
     const entry: SessionHistory = {
       id: data.id || Crypto.randomUUID(),
-      session_id: data.session_id || "",
+      sessionId: data.sessionId || "",
       date: data.date || new Date().toISOString(),
-      performance_data: typeof data.performance_data === "string"
-        ? data.performance_data
-        : JSON.stringify(data.performance_data),
+      performanceData: typeof data.performanceData === "string"
+        ? data.performanceData
+        : JSON.stringify(data.performanceData),
     };
     mockSessionHistoryStore.add(entry);
     return entry;
@@ -197,26 +197,26 @@ export const postSession = async (data: any) => {
     // We need to map it to CreateSessionDto for the backend.
     // Expected FE data structure when saving:
     // {
-    //   session_id: string (planned session id or null),
+    //   sessionId: string (planned session id or null),
     //   date: string (ISO),
-    //   performance_data: string (JSON string of exercises) OR object?
+    //   performanceData: string (JSON string of exercises) OR object?
     // }
     // The `LiveSession/index.tsx` calls `saveSessionHistory` (now postSession) with:
     // {
     //    id: uuid(),
-    //    session_id: activeSessionId,
+    //    sessionId: activeSessionId,
     //    date: new Date().toISOString(),
-    //    performance_data: JSON.stringify(results)
+    //    performanceData: JSON.stringify(results)
     // }
 
-    // So we need to PARSE performance_data string.
+    // So we need to PARSE performanceData string.
     const parsedData =
-      typeof data.performance_data === "string"
-        ? JSON.parse(data.performance_data)
-        : data.performance_data;
+      typeof data.performanceData === "string"
+        ? JSON.parse(data.performanceData)
+        : data.performanceData;
 
     const body = {
-      plannedSessionId: data.session_id || null, // Might need UUID validation? string empty vs null
+      plannedSessionId: data.sessionId || null, // Might need UUID validation? string empty vs null
       titleSnapshot: "Workout", // Default title if not provided
       performedAt: data.date,
       durationSeconds: parsedData.elapsedTime || 0, // Get actual duration from parsed data
@@ -232,10 +232,10 @@ export const postSession = async (data: any) => {
           // LiveSession structure: `completedSets` map, `exercises` array with `reps` array.
           // Reconstructing `postSession` logic is complex.
           // Let's rely on `LiveSession` sending us the right data?
-          // No, `LiveSession` sends `performance_data` which contains the raw state.
+          // No, `LiveSession` sends `performanceData` which contains the raw state.
           // I need to parse that state here.
           // See `LiveSession/index.tsx` `handleSaveData`:
-          // performance_data: { elapsedTime, exercises, completedSets }
+          // performanceData: { elapsedTime, exercises, completedSets }
 
           // Let's parse it:
           return {

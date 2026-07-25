@@ -11,10 +11,10 @@ const INITIAL_PROFILE: UserProfile = {
   id: "user",
   level: 5,
   xp: 320,
-  streak_current: 3,
-  streak_best: 7,
-  streak_start_date: daysAgo(3),
-  total_reps: 854,
+  streakCurrent: 3,
+  streakBest: 7,
+  streakStartDate: daysAgo(3),
+  totalReps: 854,
 };
 
 let profile: UserProfile = { ...INITIAL_PROFILE };
@@ -30,16 +30,16 @@ export const mockProfile = {
     profile = {
       ...profile,
       xp: profile.xp + xpGained,
-      total_reps: profile.total_reps + repsGained,
-      streak_current: profile.streak_current + 1,
+      totalReps: profile.totalReps + repsGained,
+      streakCurrent: profile.streakCurrent + 1,
     };
     // Simple level-up: every 200 XP
     while (profile.xp >= profile.level * 200) {
       profile.xp -= profile.level * 200;
       profile.level += 1;
     }
-    if (profile.streak_current > profile.streak_best) {
-      profile.streak_best = profile.streak_current;
+    if (profile.streakCurrent > profile.streakBest) {
+      profile.streakBest = profile.streakCurrent;
     }
     return {
       profile: { ...profile },
@@ -49,7 +49,7 @@ export const mockProfile = {
   },
 
   resetStreak: (): UserProfile => {
-    profile = { ...profile, streak_current: 0, streak_start_date: null };
+    profile = { ...profile, streakCurrent: 0, streakStartDate: null };
     return { ...profile };
   },
 
