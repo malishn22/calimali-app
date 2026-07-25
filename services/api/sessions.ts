@@ -1,11 +1,11 @@
 import { ScheduledSession, SessionHistory } from "@/constants/Types";
-import { API_URL, headers } from "./config";
+import { apiFetch } from "./config";
 import { ApiScheduledSession, ApiSession } from "./types";
 
 // Planned Sessions
 export const getPlannedSessions = async (): Promise<ScheduledSession[]> => {
   try {
-    const response = await fetch(`${API_URL}/planned-sessions`);
+    const response = await apiFetch("/planned-sessions");
     if (!response.ok) throw new Error("Failed to fetch planned sessions");
     const data: ApiScheduledSession[] = await response.json();
 
@@ -89,9 +89,8 @@ export const postPlannedSession = async (session: ScheduledSession) => {
     })),
   };
 
-  const response = await fetch(`${API_URL}/planned-sessions`, {
+  const response = await apiFetch("/planned-sessions", {
     method: "POST",
-    headers,
     body: JSON.stringify(body),
   });
 
@@ -102,7 +101,7 @@ export const postPlannedSession = async (session: ScheduledSession) => {
 };
 
 export const deletePlannedSession = async (id: string) => {
-  const response = await fetch(`${API_URL}/planned-sessions/${id}`, {
+  const response = await apiFetch(`/planned-sessions/${id}`, {
     method: "DELETE",
   });
   if (!response.ok) {
@@ -126,7 +125,7 @@ export const updatePlannedSession = async (session: ScheduledSession) => {
 // Session History
 export const getSessionHistory = async (): Promise<SessionHistory[]> => {
   try {
-    const response = await fetch(`${API_URL}/sessions`);
+    const response = await apiFetch("/sessions");
     if (!response.ok) throw new Error("Failed to fetch sessions");
     const data: ApiSession[] = await response.json();
 
@@ -211,9 +210,8 @@ export const postSession = async (data: any) => {
     // Fix plannedSessionId being empty string
     if (body.plannedSessionId === "") body.plannedSessionId = null;
 
-    const response = await fetch(`${API_URL}/sessions`, {
+    const response = await apiFetch("/sessions", {
       method: "POST",
-      headers,
       body: JSON.stringify(body),
     });
     if (!response.ok) {

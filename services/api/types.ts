@@ -94,3 +94,11 @@ export type ApiApplyStatsResponse = Clean<
   profile: ApiUserProfile;
   daysSinceLastActivity?: number | null;
 };
+
+export type ApiLoginRequest = Clean<
+  Pick<Schemas["LoginRequest"], "username" | "password">
+>;
+
+export type ApiLoginResponse = Clean<
+  Pick<Schemas["LoginResponse"], "token" | "expiresAt">
+>;

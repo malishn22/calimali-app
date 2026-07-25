@@ -38,8 +38,9 @@ export function CalendarContextWrapper({
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   if (!calendarData) {
-    // Should typically not happen if CacheProvider does its job, but for safety:
-    return null;
+    // Unauthenticated / pre-load: render children (e.g. the login screen) without
+    // the calendar context. Authed screens only mount once calendarData exists.
+    return <>{children}</>;
   }
 
   return (

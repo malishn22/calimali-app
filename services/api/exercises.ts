@@ -1,9 +1,9 @@
 import { Exercise } from "@/constants/Types";
-import { API_URL, headers } from "./config";
+import { apiFetch } from "./config";
 import { ApiExercise } from "./types";
 
 export const getExerciseCategories = async (): Promise<any[]> => {
-  const response = await fetch(`${API_URL}/exercise-categories`);
+  const response = await apiFetch("/exercise-categories");
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Fetch Failed (${response.status}): ${text.substring(0, 100)}`);
@@ -13,7 +13,7 @@ export const getExerciseCategories = async (): Promise<any[]> => {
 
 export const getExercises = async (): Promise<Exercise[]> => {
   // try-catch removed to allow UI to handle errors
-  const response = await fetch(`${API_URL}/exercises`);
+  const response = await apiFetch("/exercises");
   if (!response.ok) throw new Error("Failed to fetch exercises");
   const data: ApiExercise[] = await response.json();
 
@@ -39,7 +39,7 @@ export const getExercises = async (): Promise<Exercise[]> => {
 
 export const getExercise = async (id: string): Promise<Exercise | null> => {
   try {
-    const response = await fetch(`${API_URL}/exercises/${id}`);
+    const response = await apiFetch(`/exercises/${id}`);
     if (!response.ok) return null;
     const e: ApiExercise = await response.json();
 
@@ -98,9 +98,8 @@ export const postExercise = async (
         : [],
     };
 
-    const response = await fetch(`${API_URL}/exercises`, {
+    const response = await apiFetch("/exercises", {
       method: "POST",
-      headers,
       body: JSON.stringify(body),
     });
 

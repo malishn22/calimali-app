@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/AuthContext";
 import {
   CalendarData,
   CalendarLoader,
@@ -22,12 +23,21 @@ export function useCache() {
 }
 
 export function CacheProvider({ children }: { children: React.ReactNode }) {
+  const { token } = useAuth();
   const [isReady, setIsReady] = useState(false);
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
 
+  // Only load authenticated data once we have a token. On sign-out, reset so a
+  // later sign-in re-initializes from scratch.
   useEffect(() => {
-    initializeSystem();
-  }, []);
+    if (token) {
+      initializeSystem();
+    } else {
+      setIsReady(false);
+      setCalendarData(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const initializeSystem = async () => {
     try {
@@ -49,7 +59,9 @@ export function CacheProvider({ children }: { children: React.ReactNode }) {
     setCalendarData(calData);
   };
 
-  if (!isReady) {
+  // Only block on the loader when authenticated and still initializing. When
+  // there's no token, render children so the login screen can show.
+  if (token && !isReady) {
     // Basic Loading Screen - can be replaced with Splash Screen logic
     return (
       <View className="flex-1 items-center justify-center bg-background-dark">
