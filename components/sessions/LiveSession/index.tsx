@@ -38,7 +38,7 @@ export default function LiveSession({
     {},
   );
   const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const completedDataRef = useRef<SessionHistory | null>(null);
   const completionModalRef = useRef<SessionCompletionHandle>(null);
 

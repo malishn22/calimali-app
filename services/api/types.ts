@@ -1,45 +1,53 @@
-// --- API Types (matching Backend DTOs) ---
+// --- API Types (derived from the backend OpenAPI contract) ---
+//
+// These types are DERIVED from services/api/generated.ts (generated from the
+// backend Swagger spec via `npm run gen:api`). The backend is the single source
+// of truth: `Pick` below enforces that every field the app relies on still
+// exists on the backend DTO, so a rename/removal on the backend surfaces as a
+// TypeScript error here (and in CI) instead of a silent runtime break.
+//
+// `Clean` strips the null/undefined that Swashbuckle adds to most fields (C#
+// reference types serialize as nullable) so the app-facing shapes stay ergonomic
+// and the existing service mappers keep type-checking.
 
-export interface ApiCategory {
-  id: number;
-  slug: string;
-  name: string;
-  orderIndex: number;
-}
+import type { components } from "./generated";
 
-export interface ApiExercise {
-  id: string;
-  name: string;
+type Schemas = components["schemas"];
+
+type Clean<T> = { [K in keyof T]-?: NonNullable<T[K]> };
+
+export type ApiCategory = Clean<
+  Pick<Schemas["ExerciseCategoryDto"], "id" | "slug" | "name" | "orderIndex">
+>;
+
+export type ApiMuscleGroup = Clean<
+  Pick<Schemas["ExerciseMuscleGroupDto"], "code" | "impact" | "effect">
+>;
+
+export type ApiExercise = Clean<
+  Pick<
+    Schemas["ExerciseDto"],
+    "id" | "name" | "difficulty" | "equipment" | "defaultReps" | "unit" | "isUnilateral"
+  >
+> & {
   category: ApiCategory;
+  description?: string;
   baseExerciseId?: string;
   baseExercise?: ApiExercise;
   variants?: ApiExercise[];
-  difficulty: string;
-  description?: string;
-  equipment: string;
-  defaultReps: number;
-  unit: string;
-  isUnilateral: boolean;
-  exerciseMuscleGroups: {
-      code: string;
-    impact: number;
-    effect: string;
-  }[];
-}
+  exerciseMuscleGroups: ApiMuscleGroup[];
+};
 
-export interface ApiScheduledSession {
-  id: string;
-  title: string;
-  startDate: string; // YYYY-MM-DD
-  frequency: string;
-  color: string;
+export type ApiScheduledSession = Clean<
+  Pick<Schemas["PlannedSession"], "id" | "title" | "frequency" | "color">
+> & {
+  startDate: string; // YYYY-MM-DD (DateOnly serialized)
   exercises: {
     exerciseId: string;
     orderIndex: number;
     targetSets?: number;
     targetReps?: number;
     notes?: string;
-    // New
     sets?: {
       setIndex: number;
       targetReps?: number;
@@ -48,13 +56,12 @@ export interface ApiScheduledSession {
     }[];
     exercise: ApiExercise;
   }[];
-}
+};
 
-export interface ApiSession {
-  id: string;
+export type ApiSession = Clean<
+  Pick<Schemas["Session"], "id" | "titleSnapshot" | "performedAt">
+> & {
   plannedSessionId?: string;
-  titleSnapshot: string;
-  performedAt: string; // ISO
   durationSeconds?: number;
   notes?: string;
   sessionExercises: {
@@ -69,21 +76,21 @@ export interface ApiSession {
       seconds?: number;
     }[];
   }[];
-}
+};
 
-export interface ApiUserProfile {
-  id: string;
-  level: number;
-  xp: number;
-  streakCurrent: number;
-  streakBest: number;
+export type ApiUserProfile = Clean<
+  Pick<
+    Schemas["UserProfile"],
+    "id" | "level" | "xp" | "streakCurrent" | "streakBest" | "totalReps"
+  >
+> & {
   streakStartDate?: string;
-  totalReps: number;
-}
+};
 
 /** Response from POST apply-stats; profile is always present, streak flags when gap > 14 days */
-export interface ApiApplyStatsResponse {
+export type ApiApplyStatsResponse = Clean<
+  Pick<Schemas["ApplyStatsResponseDto"], "streakBreakSuggested">
+> & {
   profile: ApiUserProfile;
-  streakBreakSuggested: boolean;
   daysSinceLastActivity?: number | null;
-}
+};

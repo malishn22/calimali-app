@@ -1,4 +1,4 @@
-import { API_URL, headers, USE_MOCK } from "./config";
+import { ADMIN_RESET_TOKEN, API_URL, headers, USE_MOCK } from "./config";
 import * as Exercises from "./exercises";
 import * as Profile from "./profile";
 import * as Sessions from "./sessions";
@@ -22,7 +22,9 @@ export const Api = {
     }
     const response = await fetch(`${API_URL}/system/reset`, {
       method: "POST",
-      headers,
+      headers: ADMIN_RESET_TOKEN
+        ? { ...headers, "X-Admin-Token": ADMIN_RESET_TOKEN }
+        : headers,
     });
     if (!response.ok) throw new Error("Failed to reset data");
   },

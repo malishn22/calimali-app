@@ -4,8 +4,8 @@
 Calimali is a calisthenics fitness tracking mobile app. This repo is the **frontend** (Expo / React Native + TypeScript). The backend lives in a sibling repo.
 
 ## Tech Stack
-- Language / Runtime: TypeScript / React Native 0.81
-- Framework: Expo ~54, Expo Router ~6 (file-based routing)
+- Language / Runtime: TypeScript / React Native 0.83 (Node >= 20, pinned via `.nvmrc`)
+- Framework: Expo ~55, Expo Router ~55 (file-based routing)
 - Styling: TailwindCSS 3 + NativeWind 4
 - Key libs: react-native-reanimated, @gorhom/bottom-sheet
 - State: React Context (CacheContext, CalendarContext)
@@ -18,14 +18,28 @@ Calimali is a calisthenics fitness tracking mobile app. This repo is the **front
 - For mock mode (no backend): set `EXPO_PUBLIC_USE_MOCK=true` in `.env`
 
 ### Release build
-- Built as an APK for Android — see `docs/RELEASE.md`
-- Not deployed via CI
+- Built as an APK for Android — see `docs/RELEASE.md`; build profiles in `eas.json`
+- CI: `.github/workflows/app-ci.yml` runs `npm ci` + `npm run typecheck` on PRs/`main`
+
+### Scripts
+- `npm run typecheck` — `tsc --noEmit` (also the CI gate; catches API contract drift)
+- `npm run gen:api` — regenerate `services/api/generated.ts` from the backend `openapi.json`
+- `npm run gen:mocks` — regenerate mock exercise data from backend seed JSON
+
+## API Types (generated from backend OpenAPI)
+- `services/api/generated.ts` is generated from the backend `openapi.json` (single
+  source of truth). The `Api*` types in `services/api/types.ts` are derived from it
+  via `Pick`, so a backend field rename/removal breaks `typecheck` here.
+- Regenerate with `npm run gen:api`. The spec path comes from `CALIMALI_OPENAPI`
+  in `.env` (auto-loaded by `npm run`); the mock generator uses `CALIMALI_SEED_DIR`
+  the same way. See `.env.example`.
 
 ## Environment Variables
 | Variable | Description | Secret? |
 |----------|-------------|---------|
-| `EXPO_PUBLIC_API_URL` | Backend API base URL | No |
+| `EXPO_PUBLIC_API_URL` | Backend API base URL (inlined at build time) | No |
 | `EXPO_PUBLIC_USE_MOCK` | Set to `true` to use mock data instead of real API | No |
+| `EXPO_PUBLIC_ADMIN_RESET_TOKEN` | Optional; sent as `X-Admin-Token` on `POST /system/reset` when the backend requires it | No (inlined) |
 
 ## Key File Paths
 | Purpose | Path |
@@ -72,7 +86,7 @@ node scripts/generate-mock-exercises.js
 This reads from the backend's `CalimaliAPI/seed/` directory and writes to the `__mocks__/` directory.
 
 ## Known Quirks
-- Uses snake_case for model fields (e.g. `default_reps`, `is_unilateral`), API returns camelCase
+- Uses snake_case for model fields (e.g. `default_reps`, `is_unilateral`), API returns camelCase (mapped in `services/api/*.ts`; API-side shapes now derive from generated types)
 - `ScheduledSession.exercises` and `SessionHistory.performance_data` are JSON-stringified fields
 - `updatePlannedSession` is a delete+re-create workaround (no PUT endpoint on backend)
 - Cleartext HTTP — no TLS; requires `usesCleartextTraffic: true` in `app.json`

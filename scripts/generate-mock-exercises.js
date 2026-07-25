@@ -3,6 +3,8 @@
  *
  * Usage: node calimali-app/scripts/generate-mock-exercises.js
  *
+ * The backend seed directory path comes from the required CALIMALI_SEED_DIR env var.
+ *
  * Outputs:
  *   services/api/__mocks__/exercises.generated.ts
  *   services/api/__mocks__/categories.generated.ts
@@ -12,10 +14,13 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-const SEED_DIR = path.resolve(
-  __dirname,
-  "../../calimali-backend/CalimaliAPI/seed",
-);
+// The seed directory is configuration — its full path comes from the environment.
+if (!process.env.CALIMALI_SEED_DIR) {
+  console.error("CALIMALI_SEED_DIR is not set.");
+  process.exit(1);
+}
+
+const SEED_DIR = path.resolve(process.env.CALIMALI_SEED_DIR);
 const OUT_DIR = path.resolve(
   __dirname,
   "../services/api/__mocks__",
