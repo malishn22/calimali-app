@@ -22,8 +22,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
 import { useEffect } from "react";
-import { Platform, Text, View, useColorScheme } from "react-native";
-import { USE_MOCK } from "@/services/api/config";
+import { Platform, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import {
@@ -128,25 +127,6 @@ function RootLayoutNav() {
                   }}
                 />
               </Stack>
-              {USE_MOCK && (
-                <View
-                  style={{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    zIndex: 9999,
-                    backgroundColor: "#DC2626",
-                    paddingHorizontal: 6,
-                    paddingVertical: 2,
-                    borderRadius: 4,
-                    opacity: 0.85,
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontSize: 10, fontWeight: "700" }}>
-                    MOCK
-                  </Text>
-                </View>
-              )}
               {/* Dev Only: Performance Overlay */}
               {/* {__DEV__ && <PerformanceStats />} */}
             </ThemeProvider>

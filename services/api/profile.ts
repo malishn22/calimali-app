@@ -1,8 +1,6 @@
 import { UserProfile } from "@/constants/Types";
-import { API_URL, headers, USE_MOCK } from "./config";
+import { API_URL, headers } from "./config";
 import { ApiApplyStatsResponse, ApiUserProfile } from "./types";
-import { mockDelay } from "./__mocks__/utils";
-import { mockProfile } from "./__mocks__/profile.mock";
 
 function mapApiProfileToUserProfile(data: ApiUserProfile): UserProfile {
   return {
@@ -17,10 +15,6 @@ function mapApiProfileToUserProfile(data: ApiUserProfile): UserProfile {
 }
 
 export const getUserProfile = async (): Promise<UserProfile> => {
-  if (USE_MOCK) {
-    await mockDelay();
-    return mockProfile.get();
-  }
   try {
     const response = await fetch(`${API_URL}/user-profile`);
     if (!response.ok) throw new Error("Failed to fetch profile");
@@ -41,11 +35,6 @@ export const getUserProfile = async (): Promise<UserProfile> => {
 };
 
 export const updateUserProfile = async (data: any) => {
-  if (USE_MOCK) {
-    await mockDelay();
-    mockProfile.update(data);
-    return;
-  }
   await fetch(`${API_URL}/user-profile`, {
     method: "PUT",
     headers,
@@ -71,10 +60,6 @@ export const applyStats = async (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _oldProfile?: UserProfile,
 ): Promise<ApplyStatsResult> => {
-  if (USE_MOCK) {
-    await mockDelay();
-    return mockProfile.applyStats(xpGained, repsGained);
-  }
   const response = await fetch(`${API_URL}/user-profile/apply-stats`, {
     method: "POST",
     headers,
@@ -92,10 +77,6 @@ export const applyStats = async (
 };
 
 export const resetStreak = async (): Promise<UserProfile> => {
-  if (USE_MOCK) {
-    await mockDelay();
-    return mockProfile.resetStreak();
-  }
   const response = await fetch(`${API_URL}/user-profile/reset-streak`, {
     method: "POST",
     headers,
