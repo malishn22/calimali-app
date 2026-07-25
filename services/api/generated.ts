@@ -106,6 +106,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["LoginRequest"];
+                    "text/json": components["schemas"]["LoginRequest"];
+                    "application/*+json": components["schemas"]["LoginRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LoginResponse"];
+                        "application/json": components["schemas"]["LoginResponse"];
+                        "text/json": components["schemas"]["LoginResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/body-weight": {
         parameters: {
             query?: never;
@@ -1069,6 +1123,15 @@ export interface components {
             /** Format: int32 */
             share?: number | null;
         };
+        LoginRequest: {
+            username: string;
+            password: string;
+        };
+        LoginResponse: {
+            token?: string | null;
+            /** Format: date-time */
+            expiresAt?: string;
+        };
         MuscleGroup: {
             /** Format: int32 */
             id?: number;
@@ -1124,6 +1187,16 @@ export interface components {
             targetSeconds?: number | null;
             /** Format: int32 */
             restSeconds?: number | null;
+        };
+        ProblemDetails: {
+            type?: string | null;
+            title?: string | null;
+            /** Format: int32 */
+            status?: number | null;
+            detail?: string | null;
+            instance?: string | null;
+        } & {
+            [key: string]: unknown;
         };
         Session: {
             /** Format: uuid */

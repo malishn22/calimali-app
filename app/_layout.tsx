@@ -1,3 +1,4 @@
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { CacheProvider } from "@/context/CacheContext";
 import { CalendarContextWrapper } from "@/context/CalendarContext";
 
@@ -97,42 +98,55 @@ function RootLayoutNav() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
-        <CacheProvider>
-          <CalendarContextWrapper>
-            <ThemeProvider
-              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-            >
-              <StatusBar style="light" />
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="live-session"
-                  options={{
-                    headerShown: false,
-                    animation: "slide_from_right",
-                  }}
-                />
-                <Stack.Screen
-                  name="session-detail"
-                  options={{
-                    headerShown: false,
-                    animation: "slide_from_right",
-                  }}
-                />
-                <Stack.Screen
-                  name="session-wizard"
-                  options={{
-                    headerShown: false,
-                    animation: "slide_from_right",
-                  }}
-                />
-              </Stack>
-              {/* Dev Only: Performance Overlay */}
-              {/* {__DEV__ && <PerformanceStats />} */}
-            </ThemeProvider>
-          </CalendarContextWrapper>
-        </CacheProvider>
+        <AuthProvider>
+          <CacheProvider>
+            <CalendarContextWrapper>
+              <ThemeProvider
+                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+              >
+                <StatusBar style="light" />
+                <RootStack />
+                {/* Dev Only: Performance Overlay */}
+                {/* {__DEV__ && <PerformanceStats />} */}
+              </ThemeProvider>
+            </CalendarContextWrapper>
+          </CacheProvider>
+        </AuthProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
+  );
+}
+
+// Gates the app: authed users get the tabs/session routes, everyone else the
+// login screen. <Stack.Protected> auto-navigates when `token` flips.
+function RootStack() {
+  const { token, isRestoring } = useAuth();
+
+  // Keep the splash until the persisted token has been read.
+  if (isRestoring) {
+    return null;
+  }
+
+  return (
+    <Stack>
+      <Stack.Protected guard={!!token}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="live-session"
+          options={{ headerShown: false, animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="session-detail"
+          options={{ headerShown: false, animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="session-wizard"
+          options={{ headerShown: false, animation: "slide_from_right" }}
+        />
+      </Stack.Protected>
+      <Stack.Protected guard={!token}>
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+      </Stack.Protected>
+    </Stack>
   );
 }

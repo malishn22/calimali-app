@@ -1,5 +1,6 @@
 import Colors from "@/constants/Colors";
 import { SessionHistory, UserProfile } from "@/constants/Types";
+import { useAuth } from "@/context/AuthContext";
 import { useCache } from "@/context/CacheContext";
 import { Api } from "@/services/api";
 import { getLevelRank, getLevelRequirement } from "@/utilities/Gamification";
@@ -22,6 +23,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function ProfileScreen() {
   const router = useRouter();
   const { refreshCalendar } = useCache();
+  const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<"OVERVIEW" | "HISTORY">(
     "OVERVIEW",
   );
@@ -352,7 +354,24 @@ export default function ProfileScreen() {
               <Text className="text-red-400 font-bold text-xs">RESET DATA</Text>
             </Pressable>
 
-
+            <Pressable
+              className="flex-1 border border-zinc-700 rounded-xl p-3 items-center active:bg-zinc-800 flex-row justify-center gap-2"
+              onPress={() => {
+                Alert.alert("Log out", "Sign out of Calimali?", [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Log out",
+                    style: "destructive",
+                    onPress: () => {
+                      void signOut();
+                    },
+                  },
+                ]);
+              }}
+            >
+              <Feather name="log-out" size={14} color={Colors.palette.silver} />
+              <Text className="text-zinc-300 font-bold text-xs">LOG OUT</Text>
+            </Pressable>
           </View>
         </View>
       </ScrollView>

@@ -1,5 +1,5 @@
 import { UserProfile } from "@/constants/Types";
-import { API_URL, headers } from "./config";
+import { apiFetch } from "./config";
 import { ApiApplyStatsResponse, ApiUserProfile } from "./types";
 
 function mapApiProfileToUserProfile(data: ApiUserProfile): UserProfile {
@@ -16,7 +16,7 @@ function mapApiProfileToUserProfile(data: ApiUserProfile): UserProfile {
 
 export const getUserProfile = async (): Promise<UserProfile> => {
   try {
-    const response = await fetch(`${API_URL}/user-profile`);
+    const response = await apiFetch("/user-profile");
     if (!response.ok) throw new Error("Failed to fetch profile");
     const data: ApiUserProfile = await response.json();
     return mapApiProfileToUserProfile(data);
@@ -35,9 +35,8 @@ export const getUserProfile = async (): Promise<UserProfile> => {
 };
 
 export const updateUserProfile = async (data: any) => {
-  await fetch(`${API_URL}/user-profile`, {
+  await apiFetch("/user-profile", {
     method: "PUT",
-    headers,
     body: JSON.stringify({
       level: data.level,
       xp: data.xp,
@@ -60,9 +59,8 @@ export const applyStats = async (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _oldProfile?: UserProfile,
 ): Promise<ApplyStatsResult> => {
-  const response = await fetch(`${API_URL}/user-profile/apply-stats`, {
+  const response = await apiFetch("/user-profile/apply-stats", {
     method: "POST",
-    headers,
     body: JSON.stringify({ xpGained, repsGained }),
   });
 
@@ -77,9 +75,8 @@ export const applyStats = async (
 };
 
 export const resetStreak = async (): Promise<UserProfile> => {
-  const response = await fetch(`${API_URL}/user-profile/reset-streak`, {
+  const response = await apiFetch("/user-profile/reset-streak", {
     method: "POST",
-    headers,
   });
 
   if (!response.ok) throw new Error("Failed to reset streak");

@@ -1,4 +1,4 @@
-import { ADMIN_RESET_TOKEN, API_URL, headers } from "./config";
+import { ADMIN_RESET_TOKEN, apiFetch } from "./config";
 import * as Exercises from "./exercises";
 import * as Profile from "./profile";
 import * as Sessions from "./sessions";
@@ -8,16 +8,15 @@ export const Api = {
   ...Sessions,
   ...Profile,
   async resetUserData(): Promise<void> {
-    const response = await fetch(`${API_URL}/system/reset`, {
+    const response = await apiFetch("/system/reset", {
       method: "POST",
-      headers: ADMIN_RESET_TOKEN
-        ? { ...headers, "X-Admin-Token": ADMIN_RESET_TOKEN }
-        : headers,
+      headers: ADMIN_RESET_TOKEN ? { "X-Admin-Token": ADMIN_RESET_TOKEN } : undefined,
     });
     if (!response.ok) throw new Error("Failed to reset data");
   },
-
 };
+
+export * from "./auth";
 
 export * from "./exercises";
 export * from "./profile";
