@@ -44,7 +44,7 @@ export class CalendarLoader {
       if (activeSessions.length > 0) {
         markedDates[dateStr] = {
           dots: activeSessions.map((s) => ({
-            color: s.color || Colors.palette.blue500,
+            color: s.color || Colors.palette.electricBlue,
             key: s.id,
           })),
         };
