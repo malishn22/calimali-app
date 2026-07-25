@@ -49,3 +49,6 @@ yarn-error.*
 # Local data
 db_exports/
 docs/
+
+# Dev launcher backend log (scripts/dev.sh)
+.dev-backend.log

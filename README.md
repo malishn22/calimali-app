@@ -10,6 +10,27 @@ Mobile client for Calimali — a calisthenics fitness tracking app. Browse exerc
 
 ## Quick Start
 
+### One command (backend + app)
+
+From **Git Bash**, this starts the backend API (background, bound to `0.0.0.0:5035`
+so your phone can reach it) and the Expo dev server (foreground), then stops the
+backend when you Ctrl+C:
+
+```bash
+./scripts/dev.sh
+```
+
+Open **Expo Go on your phone** and scan the QR. Requirements:
+- Phone and PC on the **same Wi-Fi**.
+- `EXPO_PUBLIC_API_URL=http://<PC-LAN-IP>:5035` in `.env` (the script prints your
+  LAN IP candidates; `localhost`/`10.0.2.2` won't work from a physical phone).
+- If the app can't reach the API, allow inbound TCP `:5035` in the PC firewall (or
+  run `npx expo start --tunnel`).
+
+Backend logs stream to `.dev-backend.log`.
+
+### Manual
+
 ```bash
 npm install
 ```
@@ -19,7 +40,7 @@ Create `.env` from the example and fill in your values:
 cp .env.example .env
 ```
 
-Start the dev server:
+Start the dev server (backend must be running separately):
 ```bash
 npx expo start
 ```
