@@ -7,7 +7,10 @@ import { Pressable, Text, View } from "react-native";
 interface PlannerSessionRowProps {
   entry: ScheduledEntry;
   isCompleted?: boolean;
+  /** Opens the routine behind this row for editing. */
   onPress: () => void;
+  /** Opens this placement's recurrence for editing. */
+  onLongPress?: () => void;
   /** Removes the calendar placement only — the routine itself is kept. */
   onRemove: () => void;
 }
@@ -16,6 +19,7 @@ export function PlannerSessionRow({
   entry,
   isCompleted = false,
   onPress,
+  onLongPress,
   onRemove,
 }: PlannerSessionRowProps) {
   const { routine, plannedSession } = entry;
@@ -24,6 +28,7 @@ export function PlannerSessionRow({
   return (
     <Pressable
       onPress={isCompleted ? undefined : onPress}
+      onLongPress={isCompleted ? undefined : onLongPress}
       disabled={isCompleted}
       className={`flex-row justify-between items-center bg-card-dark rounded-2xl p-4 mb-3 border ${isCompleted ? "border-green-500/50 opacity-90" : "border-zinc-800"}`}
     >

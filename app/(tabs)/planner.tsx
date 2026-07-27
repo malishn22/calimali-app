@@ -17,6 +17,8 @@ export default function PlannerScreen() {
   const router = useRouter();
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  /** Set when the picker is reopened to change an existing placement's recurrence. */
+  const [editingEntry, setEditingEntry] = useState<ScheduledEntry | null>(null);
 
   // Use Context for Data
   const { selectedDate, entries, routines, refreshSessions } =
@@ -91,22 +93,41 @@ export default function PlannerScreen() {
     );
   };
 
-  const handleStartSession = (entry: ScheduledEntry) => {
+  // The Planner is where you arrange training; the Dashboard is where you do it. Tapping
+  // a row edits the routine behind it — starting a workout lives on the Dashboard card.
+  const handleEditRoutine = (entry: ScheduledEntry) => {
     router.push({
-      pathname: "/live-session",
-      params: { routine: JSON.stringify(entry.routine) },
+      pathname: "/routine-editor",
+      params: { routineId: entry.routine.id },
     });
+  };
+
+  const handleEditSchedule = (entry: ScheduledEntry) => {
+    setEditingEntry(entry);
+    setPickerOpen(true);
+  };
+
+  const closePicker = () => {
+    setPickerOpen(false);
+    setEditingEntry(null);
   };
 
   const handleAssign = async (plan: Omit<PlannedSession, "id">) => {
     try {
-      await Api.createPlannedSession(plan);
+      if (editingEntry) {
+        await Api.updatePlannedSession({
+          ...plan,
+          id: editingEntry.plannedSession.id,
+        });
+      } else {
+        await Api.createPlannedSession(plan);
+      }
       await refreshSessions();
-      setPickerOpen(false);
+      closePicker();
     } catch (e) {
       Alert.alert(
-        "Could not add",
-        e instanceof Error ? e.message : "Failed to add to calendar.",
+        editingEntry ? "Could not save" : "Could not add",
+        e instanceof Error ? e.message : "Failed to update the calendar.",
       );
     }
   };
@@ -147,7 +168,8 @@ export default function PlannerScreen() {
                       isCompleted={completedRoutineIdsForSelectedDate.has(
                         entry.routine.id,
                       )}
-                      onPress={() => handleStartSession(entry)}
+                      onPress={() => handleEditRoutine(entry)}
+                      onLongPress={() => handleEditSchedule(entry)}
                       onRemove={() => handleRemoveFromSchedule(entry)}
                     />
                   ))
@@ -161,7 +183,12 @@ export default function PlannerScreen() {
           </View>
         </ScrollView>
 
-        <SideActionButton onPress={() => setPickerOpen(true)} />
+        <SideActionButton
+          onPress={() => {
+            setEditingEntry(null);
+            setPickerOpen(true);
+          }}
+        />
       </View>
 
       <CalendarPanel
@@ -174,10 +201,11 @@ export default function PlannerScreen() {
         date={selectedDate}
         routines={routines}
         assignedRoutineIds={assignedRoutineIds}
+        editing={editingEntry}
         onAssign={handleAssign}
-        onClose={() => setPickerOpen(false)}
+        onClose={closePicker}
         onCreateRoutine={() => {
-          setPickerOpen(false);
+          closePicker();
           router.push("/(tabs)/routines");
         }}
       />

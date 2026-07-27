@@ -4,7 +4,7 @@ import { SessionButton } from "@/components/ui/SessionButton";
 import Colors from "@/constants/Colors";
 import { RecurrenceType } from "@/constants/Enums";
 import { BOTTOM_BAR_ACTION_HEIGHT } from "@/constants/Layout";
-import { PlannedSession, Routine } from "@/constants/Types";
+import { PlannedSession, Routine, ScheduledEntry } from "@/constants/Types";
 import { useBottomSheetModal } from "@/hooks/useBottomSheetModal";
 import { toDateOnly } from "@/utilities/recurrence";
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
@@ -21,6 +21,11 @@ interface Props {
   routines: Routine[];
   /** Routine ids already scheduled on this day, shown as unavailable. */
   assignedRoutineIds?: Set<string>;
+  /**
+   * An existing placement to edit instead of creating a new one. The sheet opens straight
+   * at the recurrence step with that routine fixed and its current rule filled in.
+   */
+  editing?: ScheduledEntry | null;
   onAssign: (plan: Omit<PlannedSession, "id">) => Promise<void> | void;
   onClose: () => void;
   /** Invoked from the empty state to send the user to the Routines tab. */
@@ -45,11 +50,13 @@ export function RoutinePickerSheet({
   date,
   routines,
   assignedRoutineIds,
+  editing,
   onAssign,
   onClose,
   onCreateRoutine,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const isEditing = !!editing;
   const [selected, setSelected] = useState<Routine | null>(null);
   const [saving, setSaving] = useState(false);
   const [recurrence, setRecurrence] = useState<RecurrenceValue>({
@@ -66,29 +73,40 @@ export function RoutinePickerSheet({
     commonProps,
   } = useBottomSheetModal(visible, true, onClose, { snapPoints: ["70%"] });
 
-  // Reset to phase one whenever the sheet is reopened, and seed the weekday chips with
-  // the day the user tapped.
+  // On open: editing jumps to phase two with the existing rule loaded; otherwise reset to
+  // phase one and seed the weekday chips with the day the user tapped.
   useEffect(() => {
-    if (visible) {
+    if (!visible) return;
+    setSaving(false);
+    if (editing) {
+      const plan = editing.plannedSession;
+      setSelected(editing.routine);
+      setRecurrence({
+        recurrenceType: plan.recurrenceType,
+        daysOfWeek: plan.daysOfWeek.length ? plan.daysOfWeek : [date.getDay()],
+        intervalDays: plan.intervalDays ?? 2,
+      });
+    } else {
       setSelected(null);
-      setSaving(false);
       setRecurrence({
         recurrenceType: RecurrenceType.ONCE,
         daysOfWeek: [date.getDay()],
         intervalDays: 2,
       });
     }
-  }, [visible, date]);
+  }, [visible, date, editing]);
 
-  // Android back should step back to the routine list, not dismiss the whole sheet.
+  // Android back steps back to the routine list — except when editing, where the routine
+  // is fixed and there is no phase one to return to, so it closes instead.
   useEffect(() => {
     if (!visible || !selected) return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      setSelected(null);
+      if (isEditing) onClose();
+      else setSelected(null);
       return true;
     });
     return () => sub.remove();
-  }, [visible, selected]);
+  }, [visible, selected, isEditing, onClose]);
 
   const handleConfirm = useCallback(async () => {
     if (!selected || saving) return;
@@ -96,8 +114,11 @@ export function RoutinePickerSheet({
     try {
       await onAssign({
         routineId: selected.id,
-        startDate: toDateOnly(date),
-        endDate: null,
+        // Editing keeps the original anchor. startDate is what occursOn counts intervals
+        // from, so replacing it with whichever day the row was long-pressed on would
+        // silently re-phase an "every N days" schedule onto different dates.
+        startDate: editing ? editing.plannedSession.startDate : toDateOnly(date),
+        endDate: editing ? editing.plannedSession.endDate ?? null : null,
         recurrenceType: recurrence.recurrenceType,
         daysOfWeek:
           recurrence.recurrenceType === RecurrenceType.WEEKLY
@@ -111,7 +132,7 @@ export function RoutinePickerSheet({
     } finally {
       setSaving(false);
     }
-  }, [selected, saving, onAssign, date, recurrence]);
+  }, [selected, saving, onAssign, date, recurrence, editing]);
 
   const canConfirm =
     !!selected &&
@@ -141,7 +162,7 @@ export function RoutinePickerSheet({
             (as everywhere else in the app), so nothing crowds the title. */}
         <View className="items-center mb-6">
           <Text className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase mb-1">
-            {selected ? "SCHEDULE" : "ADD TO"}
+            {isEditing ? "EDIT SCHEDULE" : selected ? "SCHEDULE" : "ADD TO"}
           </Text>
           <Text
             className="text-2xl font-black text-white text-center leading-tight"
@@ -224,7 +245,8 @@ export function RoutinePickerSheet({
               <Button
                 variant="secondary"
                 size="sm"
-                onPress={() => setSelected(null)}
+                // Editing has no routine list behind it, so back closes the sheet.
+                onPress={isEditing ? onClose : () => setSelected(null)}
                 className="bg-zinc-800 w-24 rounded-xl items-center justify-center"
                 style={{
                   height: BOTTOM_BAR_ACTION_HEIGHT,
@@ -241,7 +263,13 @@ export function RoutinePickerSheet({
                 variant="completed"
                 size="compact"
                 className="flex-1"
-                title={saving ? "ADDING…" : "ADD TO CALENDAR"}
+                title={
+                  saving
+                    ? "SAVING…"
+                    : isEditing
+                      ? "SAVE SCHEDULE"
+                      : "ADD TO CALENDAR"
+                }
                 icon="check"
                 disabled={!canConfirm}
                 onPress={handleConfirm}
