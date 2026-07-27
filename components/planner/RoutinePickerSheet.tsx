@@ -1,5 +1,9 @@
 import { RecurrenceStep, RecurrenceValue } from "@/components/planner/RecurrenceStep";
+import { Button } from "@/components/ui/Button";
+import { SessionButton } from "@/components/ui/SessionButton";
+import Colors from "@/constants/Colors";
 import { RecurrenceType } from "@/constants/Enums";
+import { BOTTOM_BAR_ACTION_HEIGHT } from "@/constants/Layout";
 import { PlannedSession, Routine } from "@/constants/Types";
 import { useBottomSheetModal } from "@/hooks/useBottomSheetModal";
 import { toDateOnly } from "@/utilities/recurrence";
@@ -133,21 +137,18 @@ export function RoutinePickerSheet({
           paddingBottom: insets.bottom + 24,
         }}
       >
-        {/* Header */}
-        <View className="flex-row items-center mb-6">
-          {selected && (
-            <Pressable onPress={() => setSelected(null)} hitSlop={12} className="mr-3">
-              <FontAwesome name="chevron-left" size={16} color="#A1A1AA" />
-            </Pressable>
-          )}
-          <View className="flex-1">
-            <Text className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase mb-1">
-              {selected ? "SCHEDULE" : "ADD TO"}
-            </Text>
-            <Text className="text-white text-xl font-bold" numberOfLines={1}>
-              {selected ? selected.name : formatDay(date)}
-            </Text>
-          </View>
+        {/* Centred sheet header, matching ExerciseDetailSheet. Back lives in the footer
+            (as everywhere else in the app), so nothing crowds the title. */}
+        <View className="items-center mb-6">
+          <Text className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase mb-1">
+            {selected ? "SCHEDULE" : "ADD TO"}
+          </Text>
+          <Text
+            className="text-2xl font-black text-white text-center leading-tight"
+            numberOfLines={2}
+          >
+            {selected ? selected.name : formatDay(date)}
+          </Text>
         </View>
 
         {!selected ? (
@@ -160,14 +161,12 @@ export function RoutinePickerSheet({
                 <Text className="text-zinc-600 text-center text-xs px-4 mb-6">
                   Build a routine first — then you can add it to any day.
                 </Text>
-                <Pressable
+                <Button
+                  variant="primary"
+                  size="md"
+                  title="GO TO ROUTINES"
                   onPress={onCreateRoutine}
-                  className="bg-white rounded-xl px-6 py-3"
-                >
-                  <Text className="text-black font-bold text-sm">
-                    Go to Routines
-                  </Text>
-                </Pressable>
+                />
               </View>
             ) : (
               <View className="gap-3">
@@ -218,21 +217,36 @@ export function RoutinePickerSheet({
           <Animated.View entering={FadeIn.duration(150)}>
             <RecurrenceStep value={recurrence} onChange={setRecurrence} />
 
-            <Pressable
-              onPress={handleConfirm}
-              disabled={!canConfirm}
-              className={`mt-8 rounded-xl py-4 items-center ${
-                canConfirm ? "bg-white" : "bg-zinc-800"
-              }`}
-            >
-              <Text
-                className={`font-bold text-sm ${
-                  canConfirm ? "text-black" : "text-zinc-500"
-                }`}
+            {/* Same pair as BottomActionPanel — a zinc back button beside the primary
+                action — composed by hand rather than reusing that component, whose
+                insets.bottom padding would double up against the sheet's own. */}
+            <View className="flex-row items-center gap-4 mt-8">
+              <Button
+                variant="secondary"
+                size="sm"
+                onPress={() => setSelected(null)}
+                className="bg-zinc-800 w-24 rounded-xl items-center justify-center"
+                style={{
+                  height: BOTTOM_BAR_ACTION_HEIGHT,
+                  minHeight: BOTTOM_BAR_ACTION_HEIGHT,
+                }}
               >
-                {saving ? "ADDING…" : "ADD TO CALENDAR"}
-              </Text>
-            </Pressable>
+                <FontAwesome
+                  name="chevron-left"
+                  size={16}
+                  color={Colors.palette.silver}
+                />
+              </Button>
+              <SessionButton
+                variant="completed"
+                size="compact"
+                className="flex-1"
+                title={saving ? "ADDING…" : "ADD TO CALENDAR"}
+                icon="check"
+                disabled={!canConfirm}
+                onPress={handleConfirm}
+              />
+            </View>
           </Animated.View>
         )}
       </BottomSheetScrollView>

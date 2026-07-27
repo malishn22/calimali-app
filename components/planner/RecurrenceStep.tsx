@@ -1,7 +1,9 @@
+import { Chip } from "@/components/ui/Chip";
+import { Stepper } from "@/components/ui/Stepper";
 import { RecurrenceType } from "@/constants/Enums";
 import { DAY_INITIALS, WEEK_ORDER } from "@/utilities/recurrence";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 const MIN_INTERVAL = 2;
 const MAX_INTERVAL = 14;
@@ -24,6 +26,19 @@ const MODES = [
   { label: "Every N days", value: RecurrenceType.INTERVAL },
 ];
 
+/**
+ * Shortcuts for the common weekday sets. The labels deliberately match the ones
+ * `formatRecurrence` prints on Planner rows, so what you pick here is what you read back.
+ */
+const DAY_PRESETS: { label: string; days: number[] }[] = [
+  { label: "Every day", days: [0, 1, 2, 3, 4, 5, 6] },
+  { label: "Weekdays", days: [1, 2, 3, 4, 5] },
+  { label: "Weekends", days: [0, 6] },
+];
+
+const sameDays = (a: number[], b: number[]) =>
+  a.length === b.length && a.every((d) => b.includes(d));
+
 export function RecurrenceStep({ value, onChange }: Props) {
   const toggleDay = (day: number) => {
     const days = value.daysOfWeek.includes(day)
@@ -40,8 +55,6 @@ export function RecurrenceStep({ value, onChange }: Props) {
     onChange({ ...value, intervalDays: next });
   };
 
-  const allSelected = value.daysOfWeek.length === 7;
-
   return (
     <View>
       <Text className="text-zinc-400 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">
@@ -49,109 +62,84 @@ export function RecurrenceStep({ value, onChange }: Props) {
       </Text>
 
       <View className="flex-row gap-2 mb-6">
-        {MODES.map((mode) => {
-          const selected = value.recurrenceType === mode.value;
-          return (
-            <Pressable
-              key={mode.value}
-              onPress={() => onChange({ ...value, recurrenceType: mode.value })}
-              className={`flex-1 py-3 rounded-xl border items-center justify-center ${
-                selected ? "bg-white border-white" : "bg-zinc-900 border-zinc-700"
-              }`}
-            >
-              <Text
-                className={`text-xs font-bold ${
-                  selected ? "text-black" : "text-zinc-400"
-                }`}
-              >
-                {mode.label}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {MODES.map((mode) => (
+          <Chip
+            key={mode.value}
+            label={mode.label}
+            selected={value.recurrenceType === mode.value}
+            onPress={() => onChange({ ...value, recurrenceType: mode.value })}
+            size="sm"
+            className="flex-1"
+          />
+        ))}
       </View>
 
       {value.recurrenceType === RecurrenceType.WEEKLY && (
         <View className="mb-2">
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase pl-1">
-              ON THESE DAYS
-            </Text>
-            <Pressable
-              onPress={() =>
-                onChange({
-                  ...value,
-                  daysOfWeek: allSelected ? [] : [...WEEK_ORDER],
-                })
-              }
-            >
-              <Text className="text-zinc-400 text-xs font-bold">
-                {allSelected ? "Clear" : "Every day"}
-              </Text>
-            </Pressable>
-          </View>
+          <Text className="text-zinc-400 text-[10px] font-bold tracking-widest uppercase pl-1 mb-3">
+            ON THESE DAYS
+          </Text>
 
           {/* Rendered Monday-first to match the calendar, while the values written are
               getDay() indices (Sunday = 0) to match the wire format. */}
           <View className="flex-row justify-between">
-            {WEEK_ORDER.map((day, i) => {
-              const selected = value.daysOfWeek.includes(day);
+            {WEEK_ORDER.map((day, i) => (
+              <Chip
+                key={`${day}-${i}`}
+                shape="circle"
+                label={DAY_INITIALS[day]}
+                selected={value.daysOfWeek.includes(day)}
+                onPress={() => toggleDay(day)}
+              />
+            ))}
+          </View>
+
+          {/* Shortcuts for the common sets. Each one lights up while it matches the
+              current selection, so the row doubles as a readout of what's picked;
+              tapping the lit one clears the days again. */}
+          <View className="flex-row gap-2 mt-4">
+            {DAY_PRESETS.map((preset) => {
+              const active = sameDays(value.daysOfWeek, preset.days);
               return (
-                <Pressable
-                  key={`${day}-${i}`}
-                  onPress={() => toggleDay(day)}
-                  className={`w-10 h-10 rounded-full items-center justify-center border ${
-                    selected
-                      ? "bg-white border-white"
-                      : "bg-zinc-900 border-zinc-700"
-                  }`}
-                >
-                  <Text
-                    className={`text-sm font-bold ${
-                      selected ? "text-black" : "text-zinc-400"
-                    }`}
-                  >
-                    {DAY_INITIALS[day]}
-                  </Text>
-                </Pressable>
+                <Chip
+                  key={preset.label}
+                  label={preset.label}
+                  selected={active}
+                  onPress={() =>
+                    onChange({
+                      ...value,
+                      daysOfWeek: active ? [] : [...preset.days],
+                    })
+                  }
+                  size="sm"
+                />
               );
             })}
           </View>
 
           {value.daysOfWeek.length === 0 && (
             <Text className="text-amber-500/80 text-xs mt-3 pl-1">
-              Pick at least one day, or it will never appear.
+              Pick at least one day.
             </Text>
           )}
         </View>
       )}
 
       {value.recurrenceType === RecurrenceType.INTERVAL && (
-        <View className="flex-row items-center justify-between bg-zinc-900 border border-zinc-700 rounded-xl px-5 py-4">
-          <Text className="text-white text-base">
-            Every{" "}
-            <Text className="font-bold">{value.intervalDays}</Text> days
-          </Text>
-          <View className="flex-row gap-3">
-            <Pressable
-              onPress={() => setInterval(-1)}
-              disabled={value.intervalDays <= MIN_INTERVAL}
-              className={`w-9 h-9 rounded-full items-center justify-center border border-zinc-700 ${
-                value.intervalDays <= MIN_INTERVAL ? "opacity-40" : ""
-              }`}
-            >
-              <Text className="text-white text-lg font-bold">−</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setInterval(1)}
-              disabled={value.intervalDays >= MAX_INTERVAL}
-              className={`w-9 h-9 rounded-full items-center justify-center border border-zinc-700 ${
-                value.intervalDays >= MAX_INTERVAL ? "opacity-40" : ""
-              }`}
-            >
-              <Text className="text-white text-lg font-bold">+</Text>
-            </Pressable>
-          </View>
+        <View className="flex-row items-center justify-between bg-card-dark border border-zinc-800 rounded-2xl px-5 py-3">
+          <Text className="text-white text-base">Days between</Text>
+          {/* The shared stepper the routine editor uses for sets/reps — brings the
+              minus/plus icons, haptics and clamping for free. Its own chrome is stripped
+              because this row is already a bordered card (same as SetRepsRow). */}
+          <Stepper
+            value={value.intervalDays}
+            onIncrement={() => setInterval(1)}
+            onDecrement={() => setInterval(-1)}
+            min={MIN_INTERVAL}
+            max={MAX_INTERVAL}
+            size="sm"
+            containerClassName="bg-transparent border-0 p-0"
+          />
         </View>
       )}
 
