@@ -1,25 +1,20 @@
 import { Calendar } from "@/components/calendar/Calendar";
+import { CalendarPanel } from "@/components/calendar/CalendarPanel";
 import { SideActionButton } from "@/components/ui/SideActionButton";
 import { PlannerSessionRow as SessionCard } from "@/components/sessions/PlannerSessionRow";
+import { FAB_CONTENT_CLEARANCE } from "@/constants/Layout";
 import { ScheduledSession } from "@/constants/Types";
 import { useCalendarContext } from "@/context/CalendarContext";
 import { Api } from "@/services/api";
 import { isSessionActiveOnDate } from "@/utilities/SessionUtils";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
-import {
-  Alert,
-  LayoutAnimation,
-  LayoutChangeEvent,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PlannerScreen() {
   const router = useRouter();
-  const [viewMode, setViewMode] = useState<"Week" | "Month">("Week");
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Use Context for Data
   const { selectedDate, setSelectedDate, sessions, refreshSessions } =
@@ -76,10 +71,14 @@ export default function PlannerScreen() {
 
   // Filter sessions for selected date
   // Fast because `sessions` is cached
-  const selectedDateSessions = sessions.filter((session) => {
+  const selectedDateSessions = useMemo(
     // Use shared helper for accurate frequency check
-    return isSessionActiveOnDate(session, selectedDate);
-  });
+    () =>
+      sessions.filter((session) =>
+        isSessionActiveOnDate(session, selectedDate),
+      ),
+    [sessions, selectedDate],
+  );
 
   const handleAddSession = () => {
     router.push({
@@ -88,25 +87,12 @@ export default function PlannerScreen() {
     });
   };
 
-  // FAB position from measured layout so it sits just below the calendar
-  const [calendarBlockBottom, setCalendarBlockBottom] = useState(280);
-  const handleCalendarBlockLayout = useCallback(
-    (e: LayoutChangeEvent) => {
-      const { y, height } = e.nativeEvent.layout;
-      setCalendarBlockBottom(y + height);
-    },
-    [],
-  );
-
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-background-dark">
       <View className="flex-1">
       <ScrollView className="flex-1">
         <View className="flex-1 pt-4">
-          <View
-            onLayout={handleCalendarBlockLayout}
-            style={{ paddingTop: 0 }}
-          >
+          <View>
             <View className="flex-row justify-between items-center mb-6 px-4">
               <Text className="text-3xl font-bold text-white font-inter-700">
                 Planner
@@ -114,19 +100,14 @@ export default function PlannerScreen() {
             </View>
 
             {/* Calendar Component */}
-            <Calendar
-              viewMode={viewMode}
-              onViewModeChange={(mode) => {
-                LayoutAnimation.configureNext(
-                  LayoutAnimation.Presets.easeInEaseOut,
-                );
-                setViewMode(mode);
-              }}
-            />
+            <Calendar onOpenCalendar={() => setCalendarOpen(true)} />
           </View>
 
           {/* Sessions List */}
-          <View className="mt-6 mb-20 px-4">
+          <View
+            className="mt-6 px-4"
+            style={{ marginBottom: FAB_CONTENT_CLEARANCE }}
+          >
             <View className="mb-4">
               <Text className="text-stone-400 text-xs font-bold tracking-widest uppercase">
                 SESSIONS
@@ -154,14 +135,13 @@ export default function PlannerScreen() {
         </View>
       </ScrollView>
 
-      <SideActionButton
-        onPress={handleAddSession}
-        position="top-right"
-        size="sm"
-        topOffset={Math.max(80, 16 + calendarBlockBottom - 20)}
-      />
+      <SideActionButton onPress={handleAddSession} />
       </View>
 
+      <CalendarPanel
+        visible={calendarOpen}
+        onClose={() => setCalendarOpen(false)}
+      />
     </SafeAreaView>
   );
 }

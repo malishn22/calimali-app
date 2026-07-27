@@ -4,7 +4,11 @@ import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/Colors";
-import { TAB_BAR_BOTTOM_GAP, TAB_BAR_HEIGHT } from "@/constants/Layout";
+import {
+  BOTTOM_BAR_PADDING_TOP,
+  TAB_BAR_BOTTOM_GAP,
+  TAB_BAR_HEIGHT,
+} from "@/constants/Layout";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 function TabBarIcon(props: {
@@ -33,7 +37,7 @@ export default function TabLayout() {
           // Inset-aware so the bar clears the Android nav buttons / iOS home
           // indicator with a small gap, instead of overlapping them.
           height: TAB_BAR_HEIGHT + insets.bottom,
-          paddingTop: 10,
+          paddingTop: BOTTOM_BAR_PADDING_TOP,
           paddingBottom: insets.bottom + TAB_BAR_BOTTOM_GAP,
         },
       }}

@@ -14,9 +14,10 @@ const toggleStyle = {
 };
 
 export interface CalendarHeaderProps {
-  viewMode: "Week" | "Month";
-  displayMonthLabel?: string;
-  onViewModeChange?: (mode: "Week" | "Month") => void;
+  /** Date range of the visible week, e.g. "Feb 3 – Feb 9". */
+  weekLabel?: string;
+  /** Opens the month picker sheet. */
+  onOpenCalendar?: () => void;
   onPrevPress: () => void;
   onNextPress: () => void;
   onTodayPress: () => void;
@@ -24,9 +25,8 @@ export interface CalendarHeaderProps {
 }
 
 export function CalendarHeader({
-  viewMode,
-  displayMonthLabel,
-  onViewModeChange,
+  weekLabel,
+  onOpenCalendar,
   onPrevPress,
   onNextPress,
   onTodayPress,
@@ -34,25 +34,21 @@ export function CalendarHeader({
 }: CalendarHeaderProps) {
   return (
     <View className="flex-row items-center px-4 py-3 justify-between">
-      {viewMode === "Month" && displayMonthLabel ? (
+      {weekLabel ? (
         <Text className="text-zinc-400 text-sm font-inter-500 capitalize">
-          {displayMonthLabel}
+          {weekLabel}
         </Text>
       ) : (
         <View />
       )}
       <View className="flex-row items-center gap-2">
-        {onViewModeChange && (
+        {onOpenCalendar && (
           <Pressable
-            onPress={() => onViewModeChange(viewMode === "Week" ? "Month" : "Week")}
+            onPress={onOpenCalendar}
             className="w-10 h-10 items-center justify-center rounded-xl border-2 border-zinc-600 bg-zinc-800 active:bg-zinc-700"
             style={toggleStyle}
           >
-            <FontAwesome
-              name={viewMode === "Week" ? "calendar" : "list"}
-              size={18}
-              color="#fff"
-            />
+            <FontAwesome name="calendar" size={18} color="#fff" />
           </Pressable>
         )}
         <Pressable

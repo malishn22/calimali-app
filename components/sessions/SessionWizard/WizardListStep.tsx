@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/Button";
 import { MoreMenuButton } from "@/components/ui/MoreMenuButton";
 import { SideActionButton } from "@/components/ui/SideActionButton";
 import Colors from "@/constants/Colors";
+import { FAB_CONTENT_CLEARANCE } from "@/constants/Layout";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
 import { WizardHeader } from "@/components/ui/WizardHeader";
 import { SessionExercise } from "@/constants/Types";
@@ -127,7 +128,10 @@ export function WizardListStep({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
           }
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 80 }}
+          contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: FAB_CONTENT_CLEARANCE,
+        }}
           ListEmptyComponent={
             <View className="items-center justify-center flex-1 mt-20">
               <Text className="text-zinc-400 font-bold tracking-widest text-xs uppercase">
@@ -138,7 +142,7 @@ export function WizardListStep({
         />
       </WizardScreenWrapper>
 
-      <SideActionButton onPress={onAdd} bottomOffset={96} />
+      <SideActionButton onPress={onAdd} />
     </View>
   );
 }

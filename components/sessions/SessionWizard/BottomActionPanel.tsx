@@ -1,9 +1,15 @@
 import { Button } from "@/components/ui/Button";
 import { SessionButton } from "@/components/ui/SessionButton";
 import Colors from "@/constants/Colors";
+import {
+  BOTTOM_BAR_ACTION_GAP,
+  BOTTOM_BAR_ACTION_HEIGHT,
+  BOTTOM_BAR_ACTION_PADDING_TOP,
+} from "@/constants/Layout";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props =
   | {
@@ -12,6 +18,7 @@ type Props =
     onPrimaryPress?: never;
     primaryLabel?: never;
     primaryIcon?: never;
+    primaryIconPosition?: never;
     primaryVariant?: never;
     backLabel?: never;
     onSecondaryPress?: never;
@@ -22,6 +29,7 @@ type Props =
     onPrimaryPress: () => void;
     primaryLabel: string;
     primaryIcon?: any;
+    primaryIconPosition?: "left" | "right";
     primaryVariant?: "primary" | "completed" | "destructive" | "start";
     backLabel?: string;
     onSecondaryPress?: () => void;
@@ -31,18 +39,36 @@ export function BottomActionPanel({
   onPrimaryPress,
   primaryLabel,
   primaryIcon,
+  primaryIconPosition = "left",
   primaryVariant = "primary",
   onBack,
   backLabel,
   fullWidthBack = false,
 }: Props) {
+  const insets = useSafeAreaInsets();
+
+  // Action-bar band: BOTTOM_ACTION_BAR_HEIGHT + insets.bottom. Taller than the tab
+  // bar on purpose — filled buttons need a real tap target and real nav-bar clearance.
+  const barStyle = {
+    paddingTop: BOTTOM_BAR_ACTION_PADDING_TOP,
+    paddingBottom: insets.bottom + BOTTOM_BAR_ACTION_GAP,
+  };
+  // minHeight too: Button's size classes carry a `min-h-*`, and in RN a larger
+  // minHeight silently wins over height — which is what made this bar too tall.
+  const actionHeight = {
+    height: BOTTOM_BAR_ACTION_HEIGHT,
+    minHeight: BOTTOM_BAR_ACTION_HEIGHT,
+  };
+
   if (fullWidthBack) {
     return (
-      <View className="px-6 pb-6 pt-4 border-t border-zinc-800">
+      <View className="px-6 border-t border-zinc-800" style={barStyle}>
         <Button
           variant="secondary"
+          size="sm"
           onPress={onBack}
-          className="bg-zinc-800 w-full h-14 rounded-2xl items-center justify-center"
+          className="bg-zinc-800 w-full rounded-xl items-center justify-center"
+          style={actionHeight}
         >
           <FontAwesome
             name="chevron-left"
@@ -55,11 +81,16 @@ export function BottomActionPanel({
   }
 
   return (
-    <View className="px-6 pb-6 pt-4 border-t border-zinc-800 flex-row items-center gap-4">
+    <View
+      className="px-6 border-t border-zinc-800 flex-row items-center gap-4"
+      style={barStyle}
+    >
       <Button
         variant="secondary"
+        size="sm"
         onPress={onBack}
-        className="bg-zinc-800 w-24 h-14 rounded-2xl items-center justify-center"
+        className="bg-zinc-800 w-24 rounded-xl items-center justify-center"
+        style={actionHeight}
       >
         <FontAwesome
           name={!backLabel ? "chevron-left" : undefined}
@@ -74,7 +105,9 @@ export function BottomActionPanel({
         variant={primaryVariant}
         title={primaryLabel!}
         icon={primaryIcon}
+        iconPosition={primaryIconPosition}
         onPress={onPrimaryPress!}
+        size="compact"
         className="flex-1" // SessionButton enforces height, we enforce flex
       />
     </View>

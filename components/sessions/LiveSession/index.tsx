@@ -502,7 +502,11 @@ export default function LiveSession({
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background-dark">
+    // No "bottom" edge: BottomActionPanel (via SessionControls) applies insets.bottom.
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      className="flex-1 bg-background-dark"
+    >
       <SessionHeader
         title={session.title}
         elapsedTime={elapsedTime}

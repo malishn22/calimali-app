@@ -17,18 +17,29 @@ export interface MonthGridProps {
   onDayPress: (dateId: string) => void;
   markedDates?: Record<string, { dots?: { color: string }[] }>;
   hideLabel?: boolean;
+  /** Tighter rows/padding for the month picker popover. */
+  compact?: boolean;
 }
 
 export const MonthGrid = React.memo(
-  ({ year, month, selectedDateId, onDayPress, markedDates, hideLabel }: MonthGridProps) => {
+  ({
+    year,
+    month,
+    selectedDateId,
+    onDayPress,
+    markedDates,
+    hideLabel,
+    compact,
+  }: MonthGridProps) => {
     const weeks = React.useMemo(
       () => getMonthWeeks(year, month),
       [year, month],
     );
     const todayId = toDateId(new Date());
+    const rowSpacing = compact ? "mb-1" : "mb-2";
 
     return (
-      <View className="px-4" style={{ width: "100%" }}>
+      <View className={compact ? "px-2" : "px-4"} style={{ width: "100%" }}>
         {!hideLabel && (
           <View className="h-[30px] justify-center items-center mb-2">
             <Text className="text-white font-bold text-lg capitalize font-inter-700">
@@ -37,7 +48,11 @@ export const MonthGrid = React.memo(
           </View>
         )}
 
-        <View className="flex-row justify-between mb-2 h-6">
+        <View
+          className={`flex-row justify-between ${rowSpacing} ${
+            compact ? "h-5" : "h-6"
+          }`}
+        >
           {WEEK_DAYS.map((day, index) => (
             <View key={index} className="flex-1 items-center justify-center">
               <Text className="text-zinc-500 text-xs font-inter-500">
@@ -49,10 +64,16 @@ export const MonthGrid = React.memo(
 
         <View>
           {weeks.map((week, weekIndex) => (
-            <View key={weekIndex} className="flex-row justify-between mb-2">
+            <View
+              key={weekIndex}
+              className={`flex-row justify-between ${rowSpacing}`}
+            >
               {week.map((cell: DayCell) =>
               cell.isDifferentMonth ? (
-                <View key={cell.id} className="flex-1 h-[50px]" />
+                <View
+                  key={cell.id}
+                  className={`flex-1 ${compact ? "h-[38px]" : "h-[50px]"}`}
+                />
               ) : (
                 <CalendarDay
                   key={cell.id}
@@ -62,6 +83,7 @@ export const MonthGrid = React.memo(
                   isSelected={cell.id === selectedDateId}
                   isToday={cell.id === todayId}
                   markedDates={markedDates}
+                  compact={compact}
                 />
               ),
             )}

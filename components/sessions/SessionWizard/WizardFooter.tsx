@@ -34,6 +34,7 @@ export function WizardFooter({
     return (
       <BottomActionPanel
         primaryLabel="SAVE"
+        primaryIcon="check"
         onPrimaryPress={onSave}
         primaryVariant="completed" // Using 'completed' for green style (was bg-green-600)
         onBack={onBack}
@@ -45,6 +46,8 @@ export function WizardFooter({
   return (
     <BottomActionPanel
       primaryLabel="NEXT"
+      primaryIcon="arrow-right"
+      primaryIconPosition="right" // forward action — arrow trails the label
       onPrimaryPress={onNext}
       onBack={onBack}
     />

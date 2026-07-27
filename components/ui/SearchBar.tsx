@@ -22,6 +22,7 @@ export function SearchBar({
   containerClassName = "",
   inputContainerClassName = "",
   className = "",
+  style,
   ...props
 }: SearchBarProps) {
   return (
@@ -31,8 +32,17 @@ export function SearchBar({
       value={value}
       onChangeText={onChangeText}
       containerClassName={containerClassName}
-      inputContainerClassName={inputContainerClassName}
+      // Drop Input's py-2.5 and set a compact height; trailing classes win.
+      // h-10 (40px) matches the vault's category filter pills, which stretch to
+      // fill their h-10 row. Keep it literal — NativeWind only picks up static classes.
+      inputContainerClassName={`py-0 h-14 ${inputContainerClassName}`}
       className={className}
+      // Zero the TextInput's own padding so it doesn't inflate the box, and drop
+      // Android's extra font padding so the text sits centred in the 44px field.
+      style={[
+        { paddingVertical: 0, includeFontPadding: false, height: "100%" },
+        style,
+      ]}
       {...props}
     />
   );

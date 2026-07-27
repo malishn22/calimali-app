@@ -3,6 +3,7 @@
  * Fixed h-16, session styling. For general UI, use Button instead.
  */
 import Colors from "@/constants/Colors";
+import { BOTTOM_BAR_ACTION_HEIGHT } from "@/constants/Layout";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, ViewStyle } from "react-native";
@@ -20,9 +21,13 @@ interface SessionButtonProps {
   title: string;
   variant?: "primary" | "secondary" | "destructive" | "completed" | "start";
   icon?: keyof typeof FontAwesome.glyphMap;
+  /** Side the icon sits on (default "left"). Use "right" for forward actions. */
+  iconPosition?: "left" | "right";
   disabled?: boolean;
   className?: string;
   style?: ViewStyle;
+  /** "compact" fits the shared bottom-bar band (BOTTOM_BAR_ACTION_HEIGHT). */
+  size?: "md" | "compact";
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -32,10 +37,13 @@ export function SessionButton({
   title,
   variant = "primary",
   icon,
+  iconPosition = "left",
   disabled,
   className = "",
   style,
+  size = "md",
 }: SessionButtonProps) {
+  const isCompact = size === "compact";
   // Animation State
   const interaction = useSharedValue(0);
 
@@ -108,28 +116,42 @@ export function SessionButton({
       onPress={disabled ? undefined : onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      className={`h-16 rounded-2xl flex-row items-center justify-center shadow-black/40 ${bgClass} ${className}`}
+      className={`${
+        isCompact ? "rounded-xl" : "h-16 rounded-2xl"
+      } flex-row items-center justify-center shadow-black/40 ${bgClass} ${className}`}
       style={[
         {
           shadowOffset: { width: 0, height: 4 }, // Fixed offset
         },
+        // Height via style (not className) so it can't lose to NativeWind class ordering.
+        isCompact ? { height: BOTTOM_BAR_ACTION_HEIGHT } : null,
         style,
         animatedStyle,
       ]}
     >
-      {icon && (
+      {icon && iconPosition === "left" && (
         <FontAwesome
           name={icon}
-          size={20}
+          size={isCompact ? 18 : 20}
           color={iconColor}
-          style={{ marginRight: 10 }}
+          style={{ marginRight: isCompact ? 8 : 10 }}
         />
       )}
       <Text
-        className={`font-extrabold text-lg uppercase tracking-wider ${textClass}`}
+        className={`font-extrabold uppercase tracking-wider ${
+          isCompact ? "text-base" : "text-lg"
+        } ${textClass}`}
       >
         {title}
       </Text>
+      {icon && iconPosition === "right" && (
+        <FontAwesome
+          name={icon}
+          size={isCompact ? 18 : 20}
+          color={iconColor}
+          style={{ marginLeft: isCompact ? 8 : 10 }}
+        />
+      )}
     </AnimatedPressable>
   );
 }

@@ -9,6 +9,8 @@ export interface CalendarDayProps {
   isToday: boolean;
   isDifferentMonth?: boolean;
   markedDates?: Record<string, { dots?: { color: string }[] }>;
+  /** Tighter cell for the month picker popover. */
+  compact?: boolean;
 }
 
 export const CalendarDay = React.memo(
@@ -20,6 +22,7 @@ export const CalendarDay = React.memo(
     isToday,
     isDifferentMonth = false,
     markedDates,
+    compact = false,
   }: CalendarDayProps) => {
     const marking = markedDates?.[dateId];
     const dots = marking?.dots || [];
@@ -28,10 +31,14 @@ export const CalendarDay = React.memo(
       <TouchableOpacity
         onPress={() => onPress(dateId)}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        className="items-center justify-start h-[50px] flex-1"
+        className={`items-center justify-start flex-1 ${
+          compact ? "h-[38px]" : "h-[50px]"
+        }`}
       >
         <View
-          className={`w-8 h-8 items-center justify-center mb-0.5 ${
+          className={`${
+            compact ? "w-7 h-7" : "w-8 h-8"
+          } items-center justify-center mb-0.5 ${
             isSelected ? "bg-blue-500 rounded-full" : ""
           }`}
         >

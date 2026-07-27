@@ -246,7 +246,11 @@ export default function SessionWizard({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background-dark">
+    // No "bottom" edge: BottomActionPanel applies insets.bottom itself.
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      className="flex-1 bg-background-dark"
+    >
       <View className="flex-1">
         {step === "LIST" && (
           <WizardListStep
