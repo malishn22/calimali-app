@@ -170,8 +170,8 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    from?: components["schemas"]["DateOnly"];
-                    to?: components["schemas"]["DateOnly"];
+                    from?: string;
+                    to?: string;
                 };
                 header?: never;
                 path?: never;
@@ -555,7 +555,187 @@ export interface paths {
                 };
             };
         };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdatePlannedSessionDto"];
+                    "text/json": components["schemas"]["UpdatePlannedSessionDto"];
+                    "application/*+json": components["schemas"]["UpdatePlannedSessionDto"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PlannedSession"];
+                        "application/json": components["schemas"]["PlannedSession"];
+                        "text/json": components["schemas"]["PlannedSession"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/routines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["Routine"][];
+                        "application/json": components["schemas"]["Routine"][];
+                        "text/json": components["schemas"]["Routine"][];
+                    };
+                };
+            };
+        };
         put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateRoutineDto"];
+                    "text/json": components["schemas"]["CreateRoutineDto"];
+                    "application/*+json": components["schemas"]["CreateRoutineDto"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["Routine"];
+                        "application/json": components["schemas"]["Routine"];
+                        "text/json": components["schemas"]["Routine"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/routines/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["Routine"];
+                        "application/json": components["schemas"]["Routine"];
+                        "text/json": components["schemas"]["Routine"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateRoutineDto"];
+                    "text/json": components["schemas"]["UpdateRoutineDto"];
+                    "application/*+json": components["schemas"]["UpdateRoutineDto"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["Routine"];
+                        "application/json": components["schemas"]["Routine"];
+                        "text/json": components["schemas"]["Routine"];
+                    };
+                };
+            };
+        };
         post?: never;
         delete: {
             parameters: {
@@ -915,7 +1095,8 @@ export interface components {
         BodyWeightEntry: {
             /** Format: uuid */
             id?: string;
-            measuredAt?: components["schemas"]["DateOnly"];
+            /** Format: date */
+            measuredAt?: string;
             /** Format: double */
             weightKg?: number;
             notes?: string | null;
@@ -936,7 +1117,8 @@ export interface components {
             source?: string | null;
         };
         CreateBodyWeightDto: {
-            measuredAt: components["schemas"]["DateOnly"];
+            /** Format: date */
+            measuredAt: string;
             /** Format: double */
             weightKg: number;
             notes?: string | null;
@@ -959,13 +1141,24 @@ export interface components {
             muscleGroups?: components["schemas"]["ExerciseMuscleGroupDto"][] | null;
         };
         CreatePlannedSessionDto: {
-            title: string;
-            startDate?: components["schemas"]["DateOnly"];
-            frequency: string;
-            color: string;
-            exercises?: components["schemas"]["CreatePlannedSessionExerciseDto"][] | null;
+            /** Format: uuid */
+            routineId?: string;
+            /** Format: date */
+            startDate?: string;
+            /** Format: date */
+            endDate?: string | null;
+            recurrenceType: string;
+            /** Format: int32 */
+            daysOfWeek?: number;
+            /** Format: int32 */
+            intervalDays?: number | null;
         };
-        CreatePlannedSessionExerciseDto: {
+        CreateRoutineDto: {
+            name: string;
+            color: string;
+            exercises?: components["schemas"]["CreateRoutineExerciseDto"][] | null;
+        };
+        CreateRoutineExerciseDto: {
             /** Format: uuid */
             exerciseId?: string;
             /** Format: int32 */
@@ -975,9 +1168,9 @@ export interface components {
             /** Format: int32 */
             targetReps?: number | null;
             notes?: string | null;
-            sets?: components["schemas"]["CreatePlannedSessionExerciseSetDto"][] | null;
+            sets?: components["schemas"]["CreateRoutineExerciseSetDto"][] | null;
         };
-        CreatePlannedSessionExerciseSetDto: {
+        CreateRoutineExerciseSetDto: {
             /** Format: int32 */
             setIndex?: number;
             /** Format: int32 */
@@ -989,7 +1182,7 @@ export interface components {
         };
         CreateSessionDto: {
             /** Format: uuid */
-            plannedSessionId?: string | null;
+            routineId?: string | null;
             titleSnapshot: string;
             /** Format: date-time */
             performedAt?: string;
@@ -1017,24 +1210,6 @@ export interface components {
             /** Format: int32 */
             seconds?: number | null;
         };
-        DateOnly: {
-            /** Format: int32 */
-            year?: number;
-            /** Format: int32 */
-            month?: number;
-            /** Format: int32 */
-            day?: number;
-            dayOfWeek?: components["schemas"]["DayOfWeek"];
-            /** Format: int32 */
-            readonly dayOfYear?: number;
-            /** Format: int32 */
-            readonly dayNumber?: number;
-        };
-        /**
-         * Format: int32
-         * @enum {integer}
-         */
-        DayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6;
         Exercise: {
             /** Format: uuid */
             id?: string;
@@ -1145,48 +1320,22 @@ export interface components {
         PlannedSession: {
             /** Format: uuid */
             id?: string;
-            title: string;
-            startDate?: components["schemas"]["DateOnly"];
-            frequency: string;
-            color: string;
+            /** Format: uuid */
+            routineId?: string;
+            routine?: components["schemas"]["Routine"];
+            /** Format: date */
+            startDate?: string;
+            /** Format: date */
+            endDate?: string | null;
+            recurrenceType: string;
+            /** Format: int32 */
+            daysOfWeek?: number;
+            /** Format: int32 */
+            intervalDays?: number | null;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
-            exercises?: components["schemas"]["PlannedSessionExercise"][] | null;
-        };
-        PlannedSessionExercise: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            plannedSessionId?: string;
-            plannedSession?: components["schemas"]["PlannedSession"];
-            /** Format: uuid */
-            exerciseId?: string;
-            exercise?: components["schemas"]["Exercise"];
-            /** Format: int32 */
-            orderIndex?: number;
-            /** Format: int32 */
-            targetSets?: number | null;
-            /** Format: int32 */
-            targetReps?: number | null;
-            notes?: string | null;
-            sets?: components["schemas"]["PlannedSessionExerciseSet"][] | null;
-        };
-        PlannedSessionExerciseSet: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            plannedSessionExerciseId: string;
-            plannedSessionExercise?: components["schemas"]["PlannedSessionExercise"];
-            /** Format: int32 */
-            setIndex?: number;
-            /** Format: int32 */
-            targetReps?: number | null;
-            /** Format: int32 */
-            targetSeconds?: number | null;
-            /** Format: int32 */
-            restSeconds?: number | null;
         };
         ProblemDetails: {
             type?: string | null;
@@ -1198,12 +1347,56 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        Routine: {
+            /** Format: uuid */
+            id?: string;
+            name: string;
+            color: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            exercises?: components["schemas"]["RoutineExercise"][] | null;
+        };
+        RoutineExercise: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            routineId?: string;
+            routine?: components["schemas"]["Routine"];
+            /** Format: uuid */
+            exerciseId?: string;
+            exercise?: components["schemas"]["Exercise"];
+            /** Format: int32 */
+            orderIndex?: number;
+            /** Format: int32 */
+            targetSets?: number | null;
+            /** Format: int32 */
+            targetReps?: number | null;
+            notes?: string | null;
+            sets?: components["schemas"]["RoutineExerciseSet"][] | null;
+        };
+        RoutineExerciseSet: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            routineExerciseId: string;
+            routineExercise?: components["schemas"]["RoutineExercise"];
+            /** Format: int32 */
+            setIndex?: number;
+            /** Format: int32 */
+            targetReps?: number | null;
+            /** Format: int32 */
+            targetSeconds?: number | null;
+            /** Format: int32 */
+            restSeconds?: number | null;
+        };
         Session: {
             /** Format: uuid */
             id?: string;
             /** Format: uuid */
-            plannedSessionId?: string | null;
-            plannedSession?: components["schemas"]["PlannedSession"];
+            routineId?: string | null;
+            routine?: components["schemas"]["Routine"];
             titleSnapshot: string;
             /** Format: date-time */
             performedAt?: string;
@@ -1247,6 +1440,24 @@ export interface components {
             seconds?: number | null;
             /** Format: date-time */
             createdAt?: string;
+        };
+        UpdatePlannedSessionDto: {
+            /** Format: uuid */
+            routineId?: string;
+            /** Format: date */
+            startDate?: string;
+            /** Format: date */
+            endDate?: string | null;
+            recurrenceType: string;
+            /** Format: int32 */
+            daysOfWeek?: number;
+            /** Format: int32 */
+            intervalDays?: number | null;
+        };
+        UpdateRoutineDto: {
+            name: string;
+            color: string;
+            exercises?: components["schemas"]["CreateRoutineExerciseDto"][] | null;
         };
         UpdateUserProfileDto: {
             /** Format: int32 */

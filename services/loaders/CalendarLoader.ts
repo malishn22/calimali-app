@@ -1,51 +1,64 @@
 import Colors from "@/constants/Colors";
-import { ScheduledSession } from "@/constants/Types";
-import { isSessionActiveOnDate } from "@/utilities/SessionUtils";
+import { PlannedSession, Routine, ScheduledEntry } from "@/constants/Types";
+import { occursOn, toDateOnly } from "@/utilities/recurrence";
 import { Api } from "../api";
 
 export interface CalendarData {
-  sessions: ScheduledSession[];
+  /** Every saved routine, for the picker sheet and the Routines tab. */
+  routines: Routine[];
+  /** Every calendar placement. */
+  plannedSessions: PlannedSession[];
+  /** Placements already resolved against their routine, ready to render. */
+  entries: ScheduledEntry[];
   markedDates: Record<string, any>;
 }
 
 export class CalendarLoader {
   static async load(): Promise<CalendarData> {
-    // 1. Fetch Sessions from DB
-    const sessions = await Api.getPlannedSessions();
+    // Routines and placements are fetched separately and joined here rather than having
+    // the API nest the routine inside every placement: the routine list is needed on its
+    // own anyway, and nesting would repeat a full routine payload per recurring schedule.
+    const [routines, plannedSessions] = await Promise.all([
+      Api.getRoutines(),
+      Api.getPlannedSessions(),
+    ]);
 
-    // 2. Pre-calculate markedDates (Dots)
-    // We will generate markers for a range: 6 months back, 12 months forward
+    const routinesById = new Map(routines.map((r) => [r.id, r]));
+
+    // A placement whose routine is missing (deleted mid-flight) is dropped rather than
+    // rendered as a blank row.
+    const entries: ScheduledEntry[] = plannedSessions.flatMap((plannedSession) => {
+      const routine = routinesById.get(plannedSession.routineId);
+      return routine ? [{ plannedSession, routine }] : [];
+    });
+
+    // Pre-calculate markedDates (dots) for 6 months back to 12 months forward.
     const markedDates: Record<string, any> = {};
 
     const TODAY = new Date();
+    // setDate(1) first: on the 31st, shifting the month before clamping the day
+    // overflows into the following month (Aug 31 minus 6 lands in March, not February).
     const START_DATE = new Date(TODAY);
+    START_DATE.setDate(1);
     START_DATE.setMonth(START_DATE.getMonth() - 6);
-    START_DATE.setDate(1); // Start of that month
 
     const END_DATE = new Date(TODAY);
-    END_DATE.setMonth(END_DATE.getMonth() + 12);
-    END_DATE.setDate(0); // End of that month
+    END_DATE.setDate(1);
+    END_DATE.setMonth(END_DATE.getMonth() + 13);
+    END_DATE.setDate(0); // last day of the previous month
 
-    // Helper loop
     const currentDate = new Date(START_DATE);
 
-    // Performance: Optimize if too slow (it shouldn't be for ~550 days * N sessions)
     while (currentDate <= END_DATE) {
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-      const day = String(currentDate.getDate()).padStart(2, "0");
-      const dateStr = `${year}-${month}-${day}`;
-
-      // Check each session
-      const activeSessions = sessions.filter((s) =>
-        isSessionActiveOnDate(s, currentDate),
+      const active = entries.filter((e) =>
+        occursOn(e.plannedSession, currentDate),
       );
 
-      if (activeSessions.length > 0) {
-        markedDates[dateStr] = {
-          dots: activeSessions.map((s) => ({
-            color: s.color || Colors.palette.electricBlue,
-            key: s.id,
+      if (active.length > 0) {
+        markedDates[toDateOnly(currentDate)] = {
+          dots: active.map((e) => ({
+            color: e.routine.color || Colors.palette.electricBlue,
+            key: e.plannedSession.id,
           })),
         };
       }
@@ -53,9 +66,6 @@ export class CalendarLoader {
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    return {
-      sessions,
-      markedDates,
-    };
+    return { routines, plannedSessions, entries, markedDates };
   }
 }

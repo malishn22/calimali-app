@@ -67,14 +67,36 @@ if [[ -z "$ADB" ]]; then
 fi
 [[ -n "$ADB" ]] || { err "adb not found — install the Android SDK platform-tools (ships with Android Studio)."; exit 1; }
 
+# Every adb call goes through this. The adb server can wedge (a sleeping USB port, a
+# cable replug, a stale server from an earlier session) and then *every* client blocks
+# forever with no output — which looks exactly like the script hanging for no reason.
+# Bounding each call turns that into a clear error instead. Exit code 124 = timed out.
+adb_run() { timeout "$1" "$ADB" "${@:2}"; }
+
+# Nudge a wedged server back to life once, rather than making the user diagnose it.
+if ! adb_run 10 start-server >/dev/null 2>&1; then
+  warn "adb server is not responding — restarting it."
+  timeout 10 "$ADB" kill-server >/dev/null 2>&1 || true
+  # kill-server itself can hang against a wedged server; take the process out directly.
+  if command -v taskkill >/dev/null 2>&1; then
+    taskkill //F //IM adb.exe >/dev/null 2>&1 || true
+  fi
+  sleep 1
+  adb_run 15 start-server >/dev/null 2>&1 \
+    || { err "adb is still unresponsive after a restart. Unplug and replug the phone, then retry."; exit 1; }
+fi
+
 # ── Select the target phone ───────────────────────────────────────────────────
 # Robust to leftover/offline emulators and stale wireless-adb entries: pick the one
 # ONLINE physical device (or honor CALIMALI_DEVICE=<serial>), then pin every adb and
 # Expo command to it via ANDROID_SERIAL — so a dead 'emulator-xxxx' can't break us.
-ADB_TABLE="$("$ADB" devices 2>/dev/null | tr -d '\r' | tail -n +2 || true)"
+ADB_TABLE="$(adb_run 15 devices 2>/dev/null | tr -d '\r' | tail -n +2 || true)"
 ONLINE_SERIALS="$(printf '%s\n' "$ADB_TABLE" | awk '$2=="device"{print $1}')"
 if printf '%s\n' "$ADB_TABLE" | awk '$2=="unauthorized"{f=1} END{exit !f}'; then
-  warn "A device shows as 'unauthorized' — unlock the phone and tap 'Allow USB debugging' (check 'Always')."
+  err "The phone is plugged in but shows as 'unauthorized'."
+  err "Unlock it and tap 'Allow USB debugging' (tick 'Always allow from this computer'), then re-run."
+  err "No prompt? Revoke and retry: Developer options → 'Revoke USB debugging authorizations', then replug."
+  exit 1
 fi
 
 SERIAL="${CALIMALI_DEVICE:-}"
@@ -96,14 +118,14 @@ if [[ -z "$SERIAL" ]]; then
   exit 1
 fi
 export ANDROID_SERIAL="$SERIAL"   # adb + expo default to this device
-ADB_T=("$ADB" -s "$SERIAL")
+adb_dev() { adb_run "$1" -s "$SERIAL" "${@:2}"; }
 info "Target device: $SERIAL"
 
 # ── USB port-forwards (phone localhost → this PC) ─────────────────────────────
 info "Wiring USB port-forwards (adb reverse) — phone localhost → this PC"
-"${ADB_T[@]}" reverse "tcp:$BACKEND_PORT" "tcp:$BACKEND_PORT" >/dev/null \
-  || { err "adb reverse failed for $SERIAL."; exit 1; }
-"${ADB_T[@]}" reverse "tcp:$METRO_PORT" "tcp:$METRO_PORT" >/dev/null || true
+adb_dev 15 reverse "tcp:$BACKEND_PORT" "tcp:$BACKEND_PORT" >/dev/null \
+  || { err "adb reverse failed for $SERIAL — is the phone still unlocked and connected?"; exit 1; }
+adb_dev 15 reverse "tcp:$METRO_PORT" "tcp:$METRO_PORT" >/dev/null || true
 
 # ── Frontend env: point the app at THIS local backend over USB ────────────────
 # Bootstrap .env from the example if missing (holds CALIMALI_OPENAPI for gen:api
@@ -219,7 +241,29 @@ fi
 # re-inlined into the bundle (EXPO_PUBLIC_* vars are baked in at bundle time and
 # cached by source content, not by env value — a stale URL would otherwise persist).
 echo ""
-if "${ADB_T[@]}" shell pm list packages 2>/dev/null | tr -d '\r' | grep -q "^package:$APP_PACKAGE$"; then
+# Distinguish "adb answered, package absent" from "adb failed" — conflating them sends a
+# working phone into a multi-minute `expo run:android` native rebuild for no reason.
+# `set -o pipefail` is on, so the pipeline reports adb's status, not tr's.
+PKG_LIST=""
+PKG_QUERY_RC=0
+if ! PKG_LIST="$(adb_dev 30 shell pm list packages 2>/dev/null | tr -d '\r')"; then
+  PKG_QUERY_RC=$?
+fi
+if [[ "$PKG_QUERY_RC" -ne 0 ]]; then
+  err "Couldn't ask the phone which apps are installed (adb exit $PKG_QUERY_RC)."
+  err "Most often the phone dropped its USB authorization mid-run — unlock it and tap"
+  err "'Allow USB debugging', or replug the cable, then re-run."
+  exit 1
+fi
+# A real device always reports hundreds of packages. An empty list means the query
+# didn't actually reach the phone, which must not be read as "the app is missing".
+if [[ -z "${PKG_LIST//[[:space:]]/}" ]]; then
+  err "The phone returned an empty package list — the query didn't reach the device."
+  err "Replug the phone (and confirm the USB debugging prompt), then re-run."
+  exit 1
+fi
+
+if printf '%s\n' "$PKG_LIST" | grep -q "^package:$APP_PACKAGE$"; then
   info "Starting Metro for the dev build (expo start --dev-client --clear)."
   echo -e "  ${DIM}Open the Calimali app on your phone (or press 'a' here to launch it).${RESET}"
   echo -e "  ${DIM}All over USB — no Wi-Fi, no firewall. Wait for 'Android Bundled' before it loads.${RESET}"

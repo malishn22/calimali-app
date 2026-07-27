@@ -58,9 +58,10 @@ Calimali is a calisthenics fitness tracking mobile app. This repo is the **front
 | Purpose | Path |
 |---------|------|
 | Root layout | `app/_layout.tsx` |
-| Tab screens | `app/(tabs)/` — index, planner, profile, vault |
+| Tab screens | `app/(tabs)/` — index, planner, routines, vault, profile |
+| Routine editor | `app/routine-editor.tsx` → `components/routines/RoutineEditor/` |
 | Live session | `app/live-session.tsx` |
-| API services | `services/api/` — config.ts, exercises.ts, sessions.ts, profile.ts |
+| API services | `services/api/` — config.ts, exercises.ts, routines.ts, sessions.ts, profile.ts |
 | Types / enums | `constants/Types.ts`, `Enums.ts` |
 | Context providers | `context/` — CacheContext.tsx, CalendarContext.tsx |
 | Env config | `.env` (`.env.example` for reference) |
@@ -73,10 +74,27 @@ Calimali is a calisthenics fitness tracking mobile app. This repo is the **front
 - Read failures are caught in the service functions and return empty lists (no crash) so the UI
   degrades gracefully when the backend is unreachable.
 
+## Routines vs Planned Sessions
+Two separate ideas, deliberately kept apart:
+- **`Routine`** — the reusable workout ("Push Day"): name, color, ordered exercises.
+  Created and edited **only** on the Routines tab (`app/(tabs)/routines.tsx` →
+  `app/routine-editor.tsx`). Editing one changes it on every day it is scheduled.
+- **`PlannedSession`** — a placement of a routine on the calendar: `routineId` plus a
+  recurrence rule. Created from the Planner's `+` (`components/planner/RoutinePickerSheet.tsx`),
+  which only ever *picks* an existing routine — it never opens the editor.
+- Recurrence lives in `utilities/recurrence.ts`: `ONCE`, `WEEKLY` (weekday set) or
+  `INTERVAL` (every N days). "Daily" is `WEEKLY` with all seven days. The wire format is
+  an int bitmask (bit 0 = Sunday, matching `getDay()`); `services/api/` converts it to a
+  `number[]` so nothing above that layer thinks in bits. The calendar UI is Monday-first
+  — iterate `WEEK_ORDER`, never `0..6`.
+- Session history keys on **`routineId`**, not the schedule, so completion survives
+  routine edits and re-scheduling.
+
 ## Known Quirks
 - Domain models and the API are both camelCase; `services/api/*.ts` maps API DTOs to domain types (API-side shapes derive from generated types)
-- `ScheduledSession.exercises` and `SessionHistory.performanceData` are JSON-stringified fields
-- `updatePlannedSession` is a delete+re-create workaround (no PUT endpoint on backend)
+- `SessionHistory.performanceData` is a JSON-stringified field (`Routine.exercises` is a real array)
+- Date-only strings must go through `parseDateOnly` — `new Date("2026-07-28")` parses as
+  UTC midnight, i.e. the previous local day at any negative offset
 - Cleartext HTTP — no TLS; requires `usesCleartextTraffic: true` in `app.json`
 
 ## Counterpart

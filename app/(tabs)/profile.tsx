@@ -114,8 +114,8 @@ export default function ProfileScreen() {
                   />
                 </View>
                 <View>
-                  <Text className="text-white text-sm font-bold">
-                    Workout Session
+                  <Text className="text-white text-sm font-bold" numberOfLines={1}>
+                    {item.title || "Workout Session"}
                   </Text>
                   <Text className="text-zinc-500 text-[10px] mt-0.5 font-semibold">
                     {date} • {time}

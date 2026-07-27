@@ -38,30 +38,49 @@ export type ApiExercise = Clean<
   exerciseMuscleGroups: ApiMuscleGroup[];
 };
 
-export type ApiScheduledSession = Clean<
-  Pick<Schemas["PlannedSession"], "id" | "title" | "frequency" | "color">
+export type ApiRoutineExercise = Clean<
+  Pick<Schemas["RoutineExercise"], "exerciseId" | "orderIndex">
 > & {
-  startDate: string; // YYYY-MM-DD (DateOnly serialized)
-  exercises: {
-    exerciseId: string;
-    orderIndex: number;
-    targetSets?: number;
+  targetSets?: number;
+  targetReps?: number;
+  notes?: string;
+  sets?: {
+    setIndex: number;
     targetReps?: number;
-    notes?: string;
-    sets?: {
-      setIndex: number;
-      targetReps?: number;
-      targetSeconds?: number;
-      restSeconds?: number;
-    }[];
-    exercise: ApiExercise;
+    targetSeconds?: number;
+    restSeconds?: number;
   }[];
+  exercise: ApiExercise;
+};
+
+/** The reusable template. Carries no scheduling — see {@link ApiPlannedSession}. */
+export type ApiRoutine = Clean<
+  Pick<Schemas["Routine"], "id" | "name" | "color">
+> & {
+  exercises: ApiRoutineExercise[];
+};
+
+/**
+ * A calendar placement of a routine. `startDate`/`endDate` are `YYYY-MM-DD`; they are
+ * inside the `Pick` because the backend maps DateOnly to a string schema explicitly.
+ */
+export type ApiPlannedSession = Clean<
+  Pick<
+    Schemas["PlannedSession"],
+    "id" | "routineId" | "startDate" | "recurrenceType" | "daysOfWeek"
+  >
+> & {
+  // Genuinely nullable on the wire, so these keep their optionality instead of going
+  // through Clean — but they still index the schema, so a backend rename breaks tsc.
+  endDate?: Schemas["PlannedSession"]["endDate"];
+  intervalDays?: Schemas["PlannedSession"]["intervalDays"];
 };
 
 export type ApiSession = Clean<
   Pick<Schemas["Session"], "id" | "titleSnapshot" | "performedAt">
 > & {
-  plannedSessionId?: string;
+  /** Null for an ad-hoc workout that was not started from a routine. */
+  routineId?: Schemas["Session"]["routineId"];
   durationSeconds?: number;
   notes?: string;
   sessionExercises: {

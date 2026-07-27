@@ -1,18 +1,21 @@
 import SessionCard from "@/components/sessions/SessionCard";
-import { ScheduledSession, UserProfile } from "@/constants/Types";
+import { ScheduledEntry, UserProfile } from "@/constants/Types";
+import { useCalendarContext } from "@/context/CalendarContext";
 import { Api } from "@/services/api";
-import { isSessionActiveOnDate } from "@/utilities/SessionUtils";
+import { occursOn } from "@/utilities/recurrence";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Platform, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const [dailySessions, setDailySessions] = useState<ScheduledSession[]>([]);
-  const [completedSessionIds, setCompletedSessionIds] = useState<Set<string>>(
+  // Read schedules from the shared cache rather than re-fetching, so the Dashboard and
+  // Planner can't disagree about what is on today.
+  const { entries, refreshSessions } = useCalendarContext();
+  const [completedRoutineIds, setCompletedRoutineIds] = useState<Set<string>>(
     new Set(),
   );
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -27,19 +30,28 @@ export default function DashboardScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      loadDailySessions();
+      loadDashboard();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []),
   );
 
-  const loadDailySessions = async () => {
-    const allSessions = await Api.getPlannedSessions();
-    const history = await Api.getSessionHistory();
-    const profile = await Api.getUserProfile();
+  const dailyEntries = useMemo(() => {
+    const today = new Date();
+    return entries.filter((e) => occursOn(e.plannedSession, today));
+  }, [entries]);
+
+  const loadDashboard = async () => {
+    const [history, profile] = await Promise.all([
+      Api.getSessionHistory(),
+      Api.getUserProfile(),
+    ]);
     setUserProfile(profile);
+    await refreshSessions();
 
     const today = new Date();
 
-    // Find completed sessions for TODAY
+    // Completion is keyed on the routine, so it holds up across routine edits and
+    // schedule changes.
     const completedIds = new Set<string>();
     history.forEach((h) => {
       const hDate = new Date(h.date);
@@ -48,23 +60,17 @@ export default function DashboardScreen() {
         hDate.getMonth() === today.getMonth() &&
         hDate.getFullYear() === today.getFullYear()
       ) {
-        completedIds.add(h.sessionId);
+        completedIds.add(h.routineId);
       }
     });
 
-    // Filter for today
-    const todays = allSessions.filter((session) => {
-      return isSessionActiveOnDate(session, today);
-    });
-
-    setDailySessions(todays);
-    setCompletedSessionIds(completedIds);
+    setCompletedRoutineIds(completedIds);
   };
 
-  const handleStartSession = (session: ScheduledSession) => {
+  const handleStartSession = (entry: ScheduledEntry) => {
     router.push({
       pathname: "/live-session",
-      params: { session: JSON.stringify(session) },
+      params: { routine: JSON.stringify(entry.routine) },
     });
   };
 
@@ -126,13 +132,13 @@ export default function DashboardScreen() {
           </Text>
         </View>
 
-        {dailySessions.length > 0 ? (
-          dailySessions.map((session) => (
+        {dailyEntries.length > 0 ? (
+          dailyEntries.map((entry) => (
             <SessionCard
-              key={session.id}
-              session={session}
-              onPress={() => handleStartSession(session)}
-              isCompleted={completedSessionIds.has(session.id)}
+              key={entry.plannedSession.id}
+              routine={entry.routine}
+              onPress={() => handleStartSession(entry)}
+              isCompleted={completedRoutineIds.has(entry.routine.id)}
             />
           ))
         ) : (

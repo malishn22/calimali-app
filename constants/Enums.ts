@@ -64,3 +64,16 @@ export enum ExerciseUnit {
   REPS = "REPS",
   SECS = "SECS",
 }
+
+/**
+ * How a planned session repeats. "Daily" is not a member — it is WEEKLY with all seven
+ * weekdays selected, which keeps one code path instead of two.
+ */
+export enum RecurrenceType {
+  /** Fires on the start date only. */
+  ONCE = "ONCE",
+  /** Fires on the weekdays listed in `daysOfWeek`. */
+  WEEKLY = "WEEKLY",
+  /** Fires every `intervalDays` days, counting from the start date. */
+  INTERVAL = "INTERVAL",
+}
