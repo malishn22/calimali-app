@@ -13,8 +13,22 @@ Calimali is a calisthenics fitness tracking mobile app. This repo is the **front
 ## Development Workflow
 
 ### Running locally
-- `npx expo start` from the repo root
-- Set `EXPO_PUBLIC_API_URL` in `.env` to point at the backend (the app is API-only)
+- `npm run dev` (`scripts/dev.sh`, Git Bash) — one-command **isolated** dev **over USB**:
+  backend (`dotnet run` on `127.0.0.1:5035`) + Metro for the **development build**
+  (`com.calimali.app`), with the backend on a **local SQLite file** (`calimali_dev.db`).
+  `adb reverse` forwards the phone's localhost:5035/8081 to this PC, so **no Wi-Fi, no
+  open ports, no firewall**. This is a dev-build project (expo-dev-client + reanimated 4),
+  **not** Expo Go. First-time: plug phone in (USB debugging on); `dev.sh` installs the dev
+  build if missing (or `npm run android`). `./scripts/dev.sh --seed` seeds the SQLite DB;
+  reset by deleting the `.db` file and re-seeding. Prod untouched (PostgreSQL).
+- The script auto-writes `.env.development.local` with
+  `EXPO_PUBLIC_API_URL=http://<PC-LAN-IP>:5035`. `expo start` runs in *development*
+  mode and loads `.env.development.local` **above** `.env`, so the app targets the
+  local dev backend in dev; release builds run in *production* mode, ignore that
+  file, and use the prod `EXPO_PUBLIC_API_URL` in `.env`. Don't commit
+  `.env.development.local` (git-ignored, regenerated each run).
+- Manual/advanced: `npx expo start` with `EXPO_PUBLIC_API_URL` set in `.env` (the
+  app is API-only); the backend must be running separately.
 
 ### Release build
 - Built as an APK for Android — see `docs/RELEASE.md`; build profiles in `eas.json`

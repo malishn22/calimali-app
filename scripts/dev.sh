@@ -1,22 +1,44 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# One-command local dev for Calimali: starts the backend API (dotnet run) in the
-# background and the Expo dev server in the foreground, then tears the backend
-# down when you Ctrl+C out of Expo.
+# One-command local dev for Calimali, over USB (no Wi-Fi, no open ports, no firewall).
+# Starts the backend API (dotnet run, background) against a local SQLite file, wires
+# the phone's localhost to this PC with `adb reverse`, then runs Metro for the
+# installed development build (foreground). Ctrl+C tears the backend down.
 #
-# Run from Git Bash:  ./scripts/dev.sh   (or  npm run dev )
-# You run the app in Expo Go on your phone: scan the QR Expo prints below.
-# Phone and PC must be on the same Wi-Fi, and EXPO_PUBLIC_API_URL must use the
-# PC's LAN IP (see the hints the script prints).
+# The phone connects over the USB cable: `adb reverse` forwards the phone's
+# localhost:5035 (API) and localhost:8081 (Metro) to this PC. Nothing is exposed on
+# the network, so there is nothing to allow through the firewall.
+#
+# Run from Git Bash:  ./scripts/dev.sh          (or  npm run dev )
+#   First-time setup:  ./scripts/dev.sh --seed
+#     ( --seed creates the local SQLite schema and loads the system + exercise seed data )
+#
+# Requirements: phone plugged in via USB with Developer Options → USB debugging ON
+# (tap "Allow" on the phone the first time). The .NET 8 SDK, Node 20+, and the Android
+# SDK platform-tools (adb) must be installed. If the dev build isn't on the phone yet,
+# this script builds + installs it via `expo run:android` (first run only, a few min).
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP="$(dirname "$SCRIPT_DIR")"
 BACKEND="$APP/../calimali-backend"
 API_PROJECT="$BACKEND/CalimaliAPI"
 BACKEND_PORT=5035
+METRO_PORT=8081
+APP_PACKAGE="com.calimali.app"
 BACKEND_LOG="$APP/.dev-backend.log"
 DEV_SETTINGS="$API_PROJECT/appsettings.Development.json"
+DEV_ENV_FILE="$APP/.env.development.local"
+DEV_URL="http://localhost:$BACKEND_PORT"
+
+# Flags
+SEED=0
+for arg in "$@"; do
+  case "$arg" in
+    --seed) SEED=1 ;;
+    *) echo "Unknown option: $arg (supported: --seed)" >&2; exit 1 ;;
+  esac
+done
 
 AMBER='\033[0;33m'
 DIM='\033[2m'
@@ -29,49 +51,76 @@ backend() { echo -e "${AMBER}[backend]${RESET} $*"; }
 warn()    { echo -e "${AMBER}!  $*${RESET}"; }
 err()     { echo -e "${RED}✖  $*${RESET}" >&2; }
 
-# Best-effort: list the PC's private LAN IPv4 addresses (the phone reaches the
-# backend at one of these). Filters to 192.168/10/172.16-31, drops loopback.
-lan_ips() {
-  ipconfig 2>/dev/null | tr -d '\r' | grep -a 'IPv4' | sed 's/.*:[[:space:]]*//' \
-    | grep -E '^(192\.168|10|172\.(1[6-9]|2[0-9]|3[01]))\.' || true
-}
-
 # ── Tooling ───────────────────────────────────────────────────────────────────
 command -v dotnet >/dev/null || { err "dotnet not found — install the .NET 8 SDK."; exit 1; }
 command -v npx    >/dev/null || { err "npx/node not found — install Node 20+."; exit 1; }
 
-# ── Frontend .env ─────────────────────────────────────────────────────────────
-# Prefer a 192.168.* address (typical home Wi-Fi) over virtual/VPN 10.*/172.* adapters.
-IP_HINT="$(lan_ips | grep -E '^192\.168\.' | head -1)"
-[[ -z "$IP_HINT" ]] && IP_HINT="$(lan_ips | head -1)"
-IP_HINT="${IP_HINT:-<your-PC-LAN-IP>}"
+# Resolve adb: PATH first, then the standard Android SDK location(s). Expo's own
+# commands find adb via the SDK, but our explicit `adb reverse` calls need a path.
+ADB="$(command -v adb || true)"
+if [[ -z "$ADB" ]]; then
+  for base in "${ANDROID_HOME:-}" "${ANDROID_SDK_ROOT:-}" "${LOCALAPPDATA:-}/Android/Sdk"; do
+    [[ -n "$base" ]] || continue
+    cand="${base//\\//}/platform-tools/adb.exe"   # normalize backslashes for the bash test
+    if [[ -x "$cand" ]]; then ADB="$cand"; break; fi
+  done
+fi
+[[ -n "$ADB" ]] || { err "adb not found — install the Android SDK platform-tools (ships with Android Studio)."; exit 1; }
 
-if [[ ! -f "$APP/.env" ]]; then
-  info "Creating calimali-app/.env from .env.example"
-  cp "$APP/.env.example" "$APP/.env"
-  echo ""
-  echo -e "${AMBER}  .env was just created. Edit it before continuing:${RESET}"
-  echo "    EXPO_PUBLIC_API_URL=http://$IP_HINT:$BACKEND_PORT"
-  echo -e "    ${DIM}(your PC's LAN IP + backend port — your phone reaches the backend here; 'localhost' won't work from the phone)${RESET}"
-  echo ""
-  echo "  Then re-run: ./scripts/dev.sh"
+# ── Select the target phone ───────────────────────────────────────────────────
+# Robust to leftover/offline emulators and stale wireless-adb entries: pick the one
+# ONLINE physical device (or honor CALIMALI_DEVICE=<serial>), then pin every adb and
+# Expo command to it via ANDROID_SERIAL — so a dead 'emulator-xxxx' can't break us.
+ADB_TABLE="$("$ADB" devices 2>/dev/null | tr -d '\r' | tail -n +2 || true)"
+ONLINE_SERIALS="$(printf '%s\n' "$ADB_TABLE" | awk '$2=="device"{print $1}')"
+if printf '%s\n' "$ADB_TABLE" | awk '$2=="unauthorized"{f=1} END{exit !f}'; then
+  warn "A device shows as 'unauthorized' — unlock the phone and tap 'Allow USB debugging' (check 'Always')."
+fi
+
+SERIAL="${CALIMALI_DEVICE:-}"
+if [[ -z "$SERIAL" ]]; then
+  N_ONLINE="$(printf '%s\n' "$ONLINE_SERIALS" | grep -c . || true)"
+  if [[ "$N_ONLINE" -eq 1 ]]; then
+    SERIAL="$(printf '%s\n' "$ONLINE_SERIALS" | grep .)"
+  elif [[ "$N_ONLINE" -gt 1 ]]; then
+    # More than one online — prefer a single physical device over emulators.
+    PHYS="$(printf '%s\n' "$ONLINE_SERIALS" | grep -v '^emulator-' || true)"
+    [[ "$(printf '%s\n' "$PHYS" | grep -c . || true)" -eq 1 ]] && SERIAL="$(printf '%s\n' "$PHYS" | grep .)"
+  fi
+fi
+
+if [[ -z "$SERIAL" ]]; then
+  err "Couldn't pick a target device. adb currently sees:"
+  "$ADB" devices -l >&2 || true
+  err "Plug in your phone (USB debugging on, tap Allow), or pick one: CALIMALI_DEVICE=<serial> ./scripts/dev.sh"
   exit 1
 fi
+export ANDROID_SERIAL="$SERIAL"   # adb + expo default to this device
+ADB_T=("$ADB" -s "$SERIAL")
+info "Target device: $SERIAL"
 
-# Surface which backend the app will actually hit — the script starts a LOCAL
-# backend on :$BACKEND_PORT, but the app uses whatever EXPO_PUBLIC_API_URL points at.
-API_URL="$(grep -E '^EXPO_PUBLIC_API_URL=' "$APP/.env" | head -1 | cut -d= -f2- || true)"
-info "App will call: ${API_URL:-<unset>}"
-if echo "$API_URL" | grep -qiE 'localhost|127\.0\.0\.1|10\.0\.2\.2'; then
-  warn "That address can't be reached from Expo Go on a physical phone."
-  warn "Use your PC's LAN IP: EXPO_PUBLIC_API_URL=http://$IP_HINT:$BACKEND_PORT"
-elif ! echo "$API_URL" | grep -q ":$BACKEND_PORT"; then
-  warn "That is NOT the local backend this script starts (:$BACKEND_PORT)."
-  warn "To use the local one from your phone, set: EXPO_PUBLIC_API_URL=http://$IP_HINT:$BACKEND_PORT"
-  warn "Otherwise the app talks to the above URL and the local backend goes unused."
+# ── USB port-forwards (phone localhost → this PC) ─────────────────────────────
+info "Wiring USB port-forwards (adb reverse) — phone localhost → this PC"
+"${ADB_T[@]}" reverse "tcp:$BACKEND_PORT" "tcp:$BACKEND_PORT" >/dev/null \
+  || { err "adb reverse failed for $SERIAL."; exit 1; }
+"${ADB_T[@]}" reverse "tcp:$METRO_PORT" "tcp:$METRO_PORT" >/dev/null || true
+
+# ── Frontend env: point the app at THIS local backend over USB ────────────────
+# Bootstrap .env from the example if missing (holds CALIMALI_OPENAPI for gen:api
+# and the prod EXPO_PUBLIC_API_URL used by release builds). Not fatal if absent.
+if [[ ! -f "$APP/.env" && -f "$APP/.env.example" ]]; then
+  info "Creating calimali-app/.env from .env.example"
+  cp "$APP/.env.example" "$APP/.env"
 fi
-CANDIDATES="$(lan_ips | paste -sd ' ' -)"
-[[ -n "$CANDIDATES" ]] && info "PC LAN IP candidates: $CANDIDATES  (use one, with :$BACKEND_PORT)"
+
+# `expo start` loads .env.development.local ABOVE .env, so this wins in dev; release
+# builds run in production mode and ignore it. Over USB the phone's localhost is the PC.
+cat > "$DEV_ENV_FILE" <<EOF
+# Auto-generated by scripts/dev.sh — do not edit or commit (git-ignored).
+# Over USB the phone reaches this PC's backend at localhost via 'adb reverse'.
+EXPO_PUBLIC_API_URL=$DEV_URL
+EOF
+info "App dev target → $DEV_URL  (wrote $(basename "$DEV_ENV_FILE"), via adb reverse)"
 
 # ── Backend dev config sanity ─────────────────────────────────────────────────
 if [[ ! -f "$DEV_SETTINGS" ]]; then
@@ -88,9 +137,32 @@ if [[ ! -d "$APP/node_modules" ]]; then
   npm --prefix "$APP" install --silent
 fi
 
+# ── Dev database (local SQLite file) ──────────────────────────────────────────
+# The backend runs on a local SQLite file (calimali_dev.db in the CalimaliAPI
+# folder), configured in appsettings.Development.json as "Data Source=...". No
+# network, no Postgres, no Docker — the file is created on first run and is fully
+# isolated from production (which uses PostgreSQL). Delete the file to reset.
+info "Dev DB: local SQLite file (calimali-backend/CalimaliAPI/calimali_dev.db)"
+
+# ── Optional: create + seed a fresh dev DB (./scripts/dev.sh --seed) ───────────
+# Run once on first setup — creates the SQLite schema, then loads seed data.
+# Each command applies then exits.
+if [[ "$SEED" -eq 1 ]]; then
+  info "Seeding dev DB (create schema + system + exercises)"
+  (
+    cd "$API_PROJECT" \
+      && ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile -- --migrate \
+      && ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile -- --seed:system --apply \
+      && ASPNETCORE_ENVIRONMENT=Development dotnet run --no-launch-profile -- --seed:exercises --apply
+  )
+  backend "seed complete"
+fi
+
 # ── Launch backend (background, logged) ───────────────────────────────────────
 BACKEND_PID=""
 cleanup() {
+  # Tidy up the USB forward we added (best-effort).
+  [[ -n "${SERIAL:-}" ]] && "$ADB" -s "$SERIAL" reverse --remove "tcp:$BACKEND_PORT" >/dev/null 2>&1 || true
   [[ -n "$BACKEND_PID" ]] || return 0
   echo ""
   info "Shutting down backend..."
@@ -104,15 +176,15 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-# Bind all interfaces (0.0.0.0) so the phone on the LAN can reach it — not just
-# localhost. Set the env explicitly since we skip the launch profile; Development
-# loads appsettings.Development.json (DB connection + auth secrets).
-info "Starting backend (dotnet run) on http://0.0.0.0:$BACKEND_PORT (reachable on the LAN)"
+# Bind localhost only — the phone reaches it through the USB `adb reverse` forward,
+# so there's no need to expose the backend on the network. Set the env explicitly
+# since we skip the launch profile; Development loads appsettings.Development.json.
+info "Starting backend (dotnet run) on $DEV_URL (localhost — reached over USB)"
 info "Backend logs → $BACKEND_LOG"
 (
   cd "$API_PROJECT" \
     && ASPNETCORE_ENVIRONMENT=Development \
-       ASPNETCORE_URLS="http://0.0.0.0:$BACKEND_PORT" \
+       ASPNETCORE_URLS="http://127.0.0.1:$BACKEND_PORT" \
        dotnet run --no-launch-profile
 ) > "$BACKEND_LOG" 2>&1 &
 BACKEND_PID=$!
@@ -126,7 +198,7 @@ for _ in $(seq 1 40); do
     tail -n 20 "$BACKEND_LOG" >&2 || true
     exit 1
   fi
-  # Any HTTP response (even 503 when the DB is down) proves the host is listening.
+  # Any HTTP response proves the host is listening.
   if curl -s -o /dev/null "http://localhost:$BACKEND_PORT/health" 2>/dev/null; then
     UP=1
     break
@@ -135,17 +207,30 @@ for _ in $(seq 1 40); do
 done
 
 if [[ "$UP" -ne 1 ]]; then
-  warn "Backend didn't answer on :$BACKEND_PORT within 40s — starting Expo anyway."
-  warn "Check $BACKEND_LOG (is the dev Postgres reachable for startup migrations?)."
+  warn "Backend didn't answer on :$BACKEND_PORT within 40s — starting Metro anyway."
+  warn "Check $BACKEND_LOG (SQLite schema is created on first startup)."
 else
-  backend "up on http://localhost:$BACKEND_PORT"
+  backend "up on $DEV_URL"
 fi
 
-# ── Launch Expo (foreground, interactive) ─────────────────────────────────────
+# ── Launch Metro for the development build (foreground, interactive) ───────────
+# This is a dev-build project (expo-dev-client + reanimated 4), not an Expo Go one.
+# --clear wipes Metro's cache so the dev EXPO_PUBLIC_API_URL (written above) is
+# re-inlined into the bundle (EXPO_PUBLIC_* vars are baked in at bundle time and
+# cached by source content, not by env value — a stale URL would otherwise persist).
 echo ""
-info "Starting Expo. Open Expo Go on your phone and scan the QR below."
-echo -e "  ${DIM}Phone + PC on the same Wi-Fi. If the app can't reach the API, allow inbound${RESET}"
-echo -e "  ${DIM}TCP :$BACKEND_PORT in the PC firewall (or try 'npx expo start --tunnel').${RESET}"
-echo -e "  ${DIM}Backend logs: $BACKEND_LOG   ·   Ctrl+C to stop everything${RESET}"
-echo ""
-cd "$APP" && npx expo start
+if "${ADB_T[@]}" shell pm list packages 2>/dev/null | tr -d '\r' | grep -q "^package:$APP_PACKAGE$"; then
+  info "Starting Metro for the dev build (expo start --dev-client --clear)."
+  echo -e "  ${DIM}Open the Calimali app on your phone (or press 'a' here to launch it).${RESET}"
+  echo -e "  ${DIM}All over USB — no Wi-Fi, no firewall. Wait for 'Android Bundled' before it loads.${RESET}"
+  echo -e "  ${DIM}Verify on the Vault tab: 'Target:' should show $DEV_URL.${RESET}"
+  echo -e "  ${DIM}Backend logs: $BACKEND_LOG   ·   Ctrl+C to stop everything${RESET}"
+  echo ""
+  cd "$APP" && npx expo start --dev-client --clear
+else
+  warn "Dev build '$APP_PACKAGE' isn't installed on the phone yet."
+  info "Building & installing it over USB now (first run — a few minutes). Metro starts after."
+  echo -e "  ${DIM}If an old build named com.anonymous.calimaliapp is on the phone, uninstall it.${RESET}"
+  echo ""
+  cd "$APP" && npx expo run:android
+fi

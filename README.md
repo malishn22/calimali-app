@@ -10,24 +10,39 @@ Mobile client for Calimali — a calisthenics fitness tracking app. Browse exerc
 
 ## Quick Start
 
-### One command (backend + app)
+### One command (over USB — no Wi-Fi, no ports, no firewall)
 
-From **Git Bash**, this starts the backend API (background, bound to `0.0.0.0:5035`
-so your phone can reach it) and the Expo dev server (foreground), then stops the
-backend when you Ctrl+C:
+This is a **development-build** project (expo-dev-client + reanimated 4), so it runs
+as your installed dev build (`com.calimali.app`), **not** Expo Go. Dev runs entirely
+on this PC and reaches the phone over the **USB cable** via `adb reverse` — the phone's
+`localhost` is forwarded to this PC, so there's nothing to open in the firewall. The
+backend uses a **local SQLite file** (`calimali_dev.db`) — no Postgres/Docker/homelab,
+and production is untouched.
+
+**One-time:** plug the phone in, enable **Developer Options → USB debugging**, tap
+**Allow** on the phone. Then, if the dev build isn't installed yet, `dev.sh` builds and
+installs it for you (or run `npm run android` once).
+
+From **Git Bash**:
 
 ```bash
-./scripts/dev.sh
+./scripts/dev.sh --seed       # first-time: create the SQLite schema + seed data, then run
+./scripts/dev.sh              # daily run
 ```
 
-Open **Expo Go on your phone** and scan the QR. Requirements:
-- Phone and PC on the **same Wi-Fi**.
-- `EXPO_PUBLIC_API_URL=http://<PC-LAN-IP>:5035` in `.env` (the script prints your
-  LAN IP candidates; `localhost`/`10.0.2.2` won't work from a physical phone).
-- If the app can't reach the API, allow inbound TCP `:5035` in the PC firewall (or
-  run `npx expo start --tunnel`).
+What it does: verifies a USB device is connected, sets `adb reverse` for `5035` (API)
+and `8081` (Metro), writes `.env.development.local` with
+`EXPO_PUBLIC_API_URL=http://localhost:5035` (loaded above `.env`, so dev targets this
+local backend while release builds keep the prod URL), starts the backend on
+`127.0.0.1:5035`, and runs Metro for the dev build (`expo start --dev-client`). Open the
+Calimali app on the phone (or press `a` in the terminal to launch it).
 
-Backend logs stream to `.dev-backend.log`.
+Requirements: **.NET 8 SDK**, **Node 20+**, and the **Android SDK platform-tools**
+(`adb`, resolved from PATH or the default SDK location).
+
+Backend logs stream to `.dev-backend.log`. To reset the dev data, delete
+`../calimali-backend/CalimaliAPI/calimali_dev.db` and run `./scripts/dev.sh --seed`
+again.
 
 ### Manual
 
