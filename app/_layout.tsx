@@ -17,13 +17,12 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { cssInterop } from "nativewind";
 import { useEffect } from "react";
-import { Platform, useColorScheme } from "react-native";
+import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import {
@@ -88,12 +87,6 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-
-  useEffect(() => {
-    if (Platform.OS === "android") {
-      NavigationBar.setVisibilityAsync("hidden");
-    }
-  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

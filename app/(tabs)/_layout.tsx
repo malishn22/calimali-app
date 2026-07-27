@@ -1,8 +1,10 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs } from "expo-router";
 import React from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/Colors";
+import { TAB_BAR_BOTTOM_GAP, TAB_BAR_HEIGHT } from "@/constants/Layout";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 function TabBarIcon(props: {
@@ -14,6 +16,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -27,9 +30,11 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: Colors["dark"].navigationBackground,
           borderTopColor: Colors["dark"].card,
-          height: 80, // Increased for visibility on phones
+          // Inset-aware so the bar clears the Android nav buttons / iOS home
+          // indicator with a small gap, instead of overlapping them.
+          height: TAB_BAR_HEIGHT + insets.bottom,
           paddingTop: 10,
-          paddingBottom: 20, // Added bottom padding
+          paddingBottom: insets.bottom + TAB_BAR_BOTTOM_GAP,
         },
       }}
     >
