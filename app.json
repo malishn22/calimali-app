@@ -22,7 +22,7 @@
         "backgroundColor": "#1E1D23"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.calimaliapp"
+      "package": "com.calimali.app"
     },
     "web": {
       "bundler": "metro",

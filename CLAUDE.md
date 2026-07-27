@@ -18,6 +18,9 @@ Calimali is a calisthenics fitness tracking mobile app. This repo is the **front
 
 ### Release build
 - Built as an APK for Android — see `docs/RELEASE.md`; build profiles in `eas.json`
+- Local one-command build: `npm run build:android` (`scripts/build-android-release.sh`, Git Bash on
+  Windows) → prebuild + `gradlew assembleRelease` → APK at
+  `android/app/build/outputs/apk/release/app-release.apk`
 - CI: `.github/workflows/app-ci.yml` runs `npm ci` + `npm run typecheck` on PRs/`main`
 
 ### Scripts
