@@ -251,7 +251,15 @@ if ! PKG_LIST="$(adb_dev 30 shell pm list packages 2>/dev/null | tr -d '\r')"; t
 fi
 if [[ "$PKG_QUERY_RC" -ne 0 ]]; then
   err "Couldn't ask the phone which apps are installed (adb exit $PKG_QUERY_RC)."
-  err "Unplug and replug the phone (or toggle USB debugging off/on), then re-run."
+  err "Most often the phone dropped its USB authorization mid-run — unlock it and tap"
+  err "'Allow USB debugging', or replug the cable, then re-run."
+  exit 1
+fi
+# A real device always reports hundreds of packages. An empty list means the query
+# didn't actually reach the phone, which must not be read as "the app is missing".
+if [[ -z "${PKG_LIST//[[:space:]]/}" ]]; then
+  err "The phone returned an empty package list — the query didn't reach the device."
+  err "Replug the phone (and confirm the USB debugging prompt), then re-run."
   exit 1
 fi
 
