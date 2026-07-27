@@ -23,8 +23,13 @@ export default function LoginScreen() {
     try {
       await signIn(username.trim(), password);
       // On success the auth gate swaps to the tabs automatically.
-    } catch {
-      setError("Invalid username or password.");
+    } catch (e) {
+      // Surface the thrown message: ApiNetworkError => "can't reach server", the
+      // auth service => "invalid credentials" (401) or "something went wrong" (5xx).
+      // Never assume bad credentials for a transport failure we couldn't classify.
+      setError(
+        e instanceof Error ? e.message : "Invalid username or password.",
+      );
     } finally {
       setSubmitting(false);
     }

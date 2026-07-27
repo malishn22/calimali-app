@@ -29,24 +29,57 @@ export interface ApiFetchOptions {
   skipAuthRedirect?: boolean;
 }
 
+/** Per-request timeout. React Native's fetch has no default JS-level timeout, so
+ * without this a slow/unreachable backend hangs until the native socket timeout
+ * (minutes). Kept at 30s to tolerate cold starts over Tailscale/LAN. */
+const REQUEST_TIMEOUT_MS = 30_000;
+
+/**
+ * Thrown when a request never produces an HTTP response — a timeout, DNS failure,
+ * or refused connection. Distinct from a non-2xx `Response` so callers can tell a
+ * transport failure ("can't reach server") apart from a real 401 ("bad credentials").
+ */
+export class ApiNetworkError extends Error {
+  constructor(cause?: unknown) {
+    super("Can't reach the server. Check your connection and try again.");
+    this.name = "ApiNetworkError";
+    this.cause = cause;
+  }
+}
+
 /**
  * Single chokepoint for every API request. Injects the JSON + bearer headers and
  * routes 401s to the registered handler (sign-out). Returns the raw Response so
  * callers keep their existing `.ok` handling. `path` must start with "/".
+ *
+ * Bounded by a {@link REQUEST_TIMEOUT_MS} abort timeout; transport failures are
+ * rethrown as {@link ApiNetworkError}.
  */
 export async function apiFetch(
   path: string,
   init: RequestInit = {},
   options: ApiFetchOptions = {},
 ): Promise<Response> {
-  const response = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-      ...(init.headers ?? {}),
-    },
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...init,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        ...(init.headers ?? {}),
+      },
+    });
+  } catch (e) {
+    // Timeout (AbortError) or network failure (TypeError) — never an HTTP response.
+    throw new ApiNetworkError(e);
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (response.status === 401 && !options.skipAuthRedirect) {
     onUnauthorized?.();

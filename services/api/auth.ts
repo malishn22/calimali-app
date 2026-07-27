@@ -17,7 +17,13 @@ export async function login(
   );
 
   if (!response.ok) {
-    throw new Error("Invalid username or password.");
+    // 401 => the server evaluated the credentials and rejected them. Any other
+    // non-2xx is a server-side problem, not the user's password.
+    throw new Error(
+      response.status === 401
+        ? "Invalid username or password."
+        : "Something went wrong. Please try again.",
+    );
   }
 
   return response.json();
