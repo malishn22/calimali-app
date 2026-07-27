@@ -1,5 +1,5 @@
 import LiveSession from "@/components/sessions/LiveSession";
-import { ScheduledSession, SessionHistory } from "@/constants/Types";
+import { Routine, SessionHistory } from "@/constants/Types";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Text, View } from "react-native";
@@ -8,14 +8,14 @@ export default function LiveSessionScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  let session: ScheduledSession | null = null;
+  let routine: Routine | null = null;
 
   try {
-    if (typeof params.session === "string") {
-      session = JSON.parse(params.session);
+    if (typeof params.routine === "string") {
+      routine = JSON.parse(params.routine);
     }
   } catch (e) {
-    console.error("Failed to parse session param", e);
+    console.error("Failed to parse routine param", e);
   }
 
   const handleClose = () => {
@@ -28,7 +28,7 @@ export default function LiveSessionScreen() {
     });
   };
 
-  if (!session) {
+  if (!routine) {
     return (
       <View className="flex-1 bg-background-dark items-center justify-center">
         <Text className="text-white">Error loading session.</Text>
@@ -38,7 +38,7 @@ export default function LiveSessionScreen() {
 
   return (
     <LiveSession
-      session={session}
+      routine={routine}
       onClose={handleClose}
       onComplete={handleComplete}
     />

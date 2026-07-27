@@ -1,4 +1,4 @@
-import { ScheduledSession } from "@/constants/Types";
+import { Routine } from "@/constants/Types";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useMemo } from "react";
@@ -8,7 +8,7 @@ import { SessionColors } from "@/constants/Colors";
 import { calculateSessionXP } from "@/utilities/Gamification";
 
 interface SessionCardProps {
-  session: ScheduledSession;
+  routine: Routine;
   onPress?: () => void;
   isCompleted?: boolean;
 }
@@ -24,24 +24,16 @@ const GradientMap: Record<string, string> = {
 };
 
 export default function SessionCard({
-  session,
+  routine,
   onPress,
   isCompleted = false,
 }: SessionCardProps) {
-  const gradientStart = GradientMap[session.color] || session.color; // Fallback
+  const gradientStart = GradientMap[routine.color] || routine.color; // Fallback
 
-  const totalSets = useMemo(() => {
-    try {
-      const exercises = JSON.parse(session.exercises);
-      return exercises.reduce(
-        (acc: number, ex: any) =>
-          acc + (typeof ex.sets === "number" ? ex.sets : ex.sets?.length || 0),
-        0,
-      );
-    } catch {
-      return 0;
-    }
-  }, [session.exercises]);
+  const totalSets = useMemo(
+    () => routine.exercises.reduce((acc, ex) => acc + (ex.sets || 0), 0),
+    [routine.exercises],
+  );
 
   return (
     <Pressable
@@ -69,7 +61,7 @@ export default function SessionCard({
               isCompleted ? "text-zinc-400 line-through" : ""
             }`}
           >
-            {session.title}
+            {routine.name}
           </Text>
           {isCompleted && (
             <View className="bg-green-500/15 py-1.5 px-3 rounded-xl border border-green-500/30">
@@ -112,7 +104,7 @@ export default function SessionCard({
           ) : (
             <View
               className="w-12 h-12 rounded-2xl items-center justify-center"
-              style={{ backgroundColor: session.color }}
+              style={{ backgroundColor: routine.color }}
             >
               <FontAwesome
                 name="play"

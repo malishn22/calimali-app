@@ -10,6 +10,8 @@ export const BOTTOM_SHEET_BACKGROUND_STYLE = { backgroundColor: "#1c1c1e" as con
 export interface UseBottomSheetModalOptions {
   /** Backdrop opacity (default 0.6). */
   backdropOpacity?: number;
+  /** Override the sheet height (default `["85%"]`). */
+  snapPoints?: string[];
 }
 
 /**
@@ -22,9 +24,14 @@ export function useBottomSheetModal(
   onClose: () => void,
   options: UseBottomSheetModalOptions = {}
 ) {
-  const { backdropOpacity = 0.6 } = options;
+  const { backdropOpacity = 0.6, snapPoints: snapPointsOption } = options;
   const ref = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => [...SNAP_POINTS], []);
+  const snapPointsKey = snapPointsOption?.join(",");
+  const snapPoints = useMemo(
+    () => snapPointsOption ?? [...SNAP_POINTS],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [snapPointsKey],
+  );
 
   useEffect(() => {
     if (visible && hasData) {

@@ -133,7 +133,7 @@ function RootStack() {
           options={{ headerShown: false, animation: "slide_from_right" }}
         />
         <Stack.Screen
-          name="session-wizard"
+          name="routine-editor"
           options={{ headerShown: false, animation: "slide_from_right" }}
         />
       </Stack.Protected>

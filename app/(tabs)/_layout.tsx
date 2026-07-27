@@ -61,6 +61,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="routines"
+        options={{
+          title: "Routines",
+          tabBarIcon: ({ color }) => <TabBarIcon name="list-ul" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="vault"
         options={{
           title: "Vault",

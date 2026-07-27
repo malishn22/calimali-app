@@ -9,8 +9,6 @@ interface Props {
   setTitle: (t: string) => void;
   color: string;
   setColor: (c: string) => void;
-  frequency: "ONCE" | "DAILY" | "WEEKLY" | "EVERY 2 DAYS";
-  setFrequency: (f: any) => void;
 }
 
 const COLORS = [
@@ -21,21 +19,8 @@ const COLORS = [
   "#8B5CF6",
   "#EC4899",
 ];
-const FREQUENCIES = [
-  { label: "Once", value: "ONCE" },
-  { label: "Daily", value: "DAILY" },
-  { label: "Weekly", value: "WEEKLY" },
-  { label: "Every 2 Days", value: "EVERY 2 DAYS" },
-];
 
-export function WizardFinalStep({
-  title,
-  setTitle,
-  color,
-  setColor,
-  frequency,
-  setFrequency,
-}: Props) {
+export function WizardFinalStep({ title, setTitle, color, setColor }: Props) {
   return (
     <WizardScreenWrapper>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -43,12 +28,12 @@ export function WizardFinalStep({
 
         <View className="mb-8">
           <Text className="text-zinc-400 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">
-            WORKOUT TITLE
+            ROUTINE NAME
           </Text>
           <Input
             value={title}
             onChangeText={setTitle}
-            placeholder="E.g., Morning Push"
+            placeholder="E.g., Push Day"
             inputContainerClassName="bg-zinc-900 border border-zinc-700 py-5"
             className="text-lg"
           />
@@ -72,34 +57,10 @@ export function WizardFinalStep({
           </View>
         </View>
 
-        {/* Frequency */}
-        <View className="mb-8">
-          <Text className="text-zinc-400 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">
-            FREQUENCY
-          </Text>
-          <View className="flex-row flex-wrap gap-3">
-            {FREQUENCIES.map((freq) => {
-              const isSelected = frequency === freq.value;
-              return (
-                <Pressable
-                  key={freq.value}
-                  onPress={() => setFrequency(freq.value)}
-                  className={`w-[48%] py-5 rounded-xl border items-center justify-center ${isSelected
-                      ? "bg-white border-white"
-                      : "bg-zinc-900 border-zinc-700"
-                    }`}
-                >
-                  <Text
-                    className={`text-sm font-bold ${isSelected ? "text-black" : "text-zinc-400"
-                      }`}
-                  >
-                    {freq.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
+        <Text className="text-zinc-500 text-xs leading-5 px-1">
+          Save this routine, then add it to your calendar from the Planner — you can
+          schedule the same routine on as many days as you like.
+        </Text>
       </ScrollView>
     </WizardScreenWrapper>
   );

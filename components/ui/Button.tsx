@@ -1,6 +1,6 @@
 /**
  * General-purpose button for forms, wizard steps, edit/delete actions, etc.
- * For session flows (SessionWizard, LiveSession), use SessionButton instead.
+ * For session flows (RoutineEditor, LiveSession), use SessionButton instead.
  */
 import Colors from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";

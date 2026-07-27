@@ -1,5 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { BottomActionPanel } from "../SessionWizard/BottomActionPanel";
+import { BottomActionPanel } from "@/components/routines/RoutineEditor/BottomActionPanel";
 
 interface Props {
   onBack: () => void;

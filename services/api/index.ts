@@ -1,10 +1,12 @@
 import { ADMIN_RESET_TOKEN, apiFetch } from "./config";
 import * as Exercises from "./exercises";
 import * as Profile from "./profile";
+import * as Routines from "./routines";
 import * as Sessions from "./sessions";
 
 export const Api = {
   ...Exercises,
+  ...Routines,
   ...Sessions,
   ...Profile,
   async resetUserData(): Promise<void> {
@@ -20,5 +22,6 @@ export * from "./auth";
 
 export * from "./exercises";
 export * from "./profile";
+export * from "./routines";
 export * from "./sessions";
 export * from "./types";

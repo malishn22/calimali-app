@@ -5,6 +5,7 @@ import {
   ExerciseEquipment,
   ExerciseImpact,
   ExerciseUnit,
+  RecurrenceType,
 } from "./Enums";
 
 export interface MuscleWork {
@@ -48,18 +49,43 @@ export interface SessionExercise {
   categorySlug?: string;
 }
 
-export interface ScheduledSession {
+/**
+ * A reusable, named workout ("Push Day"). Says *what* you do; {@link PlannedSession}
+ * says *when*. Editing a routine changes it on every day it is scheduled.
+ */
+export interface Routine {
   id: string;
-  title: string;
-  date: string;
-  frequency: "ONCE" | "DAILY" | "WEEKLY" | "EVERY 2 DAYS";
+  name: string;
   color: string;
-  exercises: string;
+  exercises: SessionExercise[];
+}
+
+/** A placement of a {@link Routine} on the calendar, with a recurrence rule. */
+export interface PlannedSession {
+  id: string;
+  routineId: string;
+  /** YYYY-MM-DD. Occurrences never fire before this day. */
+  startDate: string;
+  /** YYYY-MM-DD, or null to run indefinitely. */
+  endDate?: string | null;
+  recurrenceType: RecurrenceType;
+  /** 0=Sun .. 6=Sat, matching Date#getDay. Used by WEEKLY. */
+  daysOfWeek: number[];
+  /** Day gap used by INTERVAL. */
+  intervalDays?: number | null;
+}
+
+/** A planned session resolved against its routine, ready to render for a given day. */
+export interface ScheduledEntry {
+  plannedSession: PlannedSession;
+  routine: Routine;
 }
 
 export interface SessionHistory {
   id: string;
-  sessionId: string;
+  /** The routine this workout came from; "" for an ad-hoc session. */
+  routineId: string;
+  title: string;
   date: string;
   performanceData: string; // JSON of what happened
 }

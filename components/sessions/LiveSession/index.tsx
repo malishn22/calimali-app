@@ -1,5 +1,5 @@
 import { getCategoryColor } from "@/constants/Colors";
-import { Exercise, ScheduledSession, SessionHistory } from "@/constants/Types";
+import { Exercise, Routine, SessionHistory } from "@/constants/Types";
 import { TintedSurface } from "@/components/ui/TintedSurface";
 import { Api } from "@/services/api";
 import {
@@ -20,13 +20,13 @@ import { SessionControls } from "./SessionControls";
 import { SessionHeader } from "./SessionHeader";
 
 interface LiveSessionProps {
-  session: ScheduledSession;
+  routine: Routine;
   onClose: () => void;
   onComplete: (data: SessionHistory) => void;
 }
 
 export default function LiveSession({
-  session,
+  routine,
   onClose,
   onComplete,
 }: LiveSessionProps) {
@@ -52,10 +52,10 @@ export default function LiveSession({
   const exerciseCacheRef = useRef<Record<string, Exercise>>({});
 
   useEffect(() => {
-    if (session) {
-      setExercises(JSON.parse(session.exercises));
+    if (routine) {
+      setExercises(routine.exercises);
     }
-  }, [session]);
+  }, [routine]);
 
   const steps = useMemo(() => {
     if (!exercises) return [];
@@ -314,10 +314,13 @@ export default function LiveSession({
   };
 
   const handleSaveData = async () => {
-    if (!session) return;
+    if (!routine) return;
     const historyData: SessionHistory = {
       id: Date.now().toString(),
-      sessionId: session.id,
+      // Keyed on the routine so "completed today" survives routine edits and the
+      // schedule being removed or re-added.
+      routineId: routine.id,
+      title: routine.name,
       date: new Date().toISOString(),
       performanceData: JSON.stringify({
         elapsedTime,
@@ -438,7 +441,7 @@ export default function LiveSession({
     setEditModalVisible(false);
   };
 
-  if (!session || !currentStep) return null;
+  if (!routine || !currentStep) return null;
 
   const isCurrentSetCompleted = !!completedSets[
     `${currentStep.exerciseIndex}-${currentStep.setIndex}-${(currentStep as any).side || "BILATERAL"}`
@@ -508,7 +511,7 @@ export default function LiveSession({
       className="flex-1 bg-background-dark"
     >
       <SessionHeader
-        title={session.title}
+        title={routine.name}
         elapsedTime={elapsedTime}
         progress={progress}
         onClose={() => {

@@ -1,103 +1,82 @@
-import { ScheduledSession, SessionHistory } from "@/constants/Types";
+import { PlannedSession, SessionHistory } from "@/constants/Types";
 import { apiFetch } from "./config";
-import { ApiScheduledSession, ApiSession } from "./types";
+import { ApiPlannedSession, ApiSession } from "./types";
 
-// Planned Sessions
-export const getPlannedSessions = async (): Promise<ScheduledSession[]> => {
+// --- Weekday bitmask <-> array ---------------------------------------------------
+// The wire format is an int bitmask (bit 0 = Sunday, matching Date#getDay), which keeps
+// the column indexable. The domain type is an array, so nothing above this layer has to
+// think in bits.
+
+const DAY_BITS = [0, 1, 2, 3, 4, 5, 6];
+
+const maskToDays = (mask: number): number[] =>
+  DAY_BITS.filter((bit) => (mask >> bit) & 1);
+
+const daysToMask = (days: number[]): number =>
+  days.reduce((mask, day) => mask | (1 << day), 0);
+
+// --- Planned sessions (calendar placements) --------------------------------------
+
+const fromApi = (p: ApiPlannedSession): PlannedSession => ({
+  id: p.id,
+  routineId: p.routineId,
+  startDate: p.startDate,
+  endDate: p.endDate ?? null,
+  recurrenceType: p.recurrenceType as PlannedSession["recurrenceType"],
+  daysOfWeek: maskToDays(p.daysOfWeek),
+  intervalDays: p.intervalDays ?? null,
+});
+
+const toRequestBody = (plan: Omit<PlannedSession, "id">) => ({
+  routineId: plan.routineId,
+  startDate: plan.startDate,
+  endDate: plan.endDate ?? null,
+  recurrenceType: plan.recurrenceType,
+  daysOfWeek: daysToMask(plan.daysOfWeek),
+  intervalDays: plan.intervalDays ?? null,
+});
+
+export const getPlannedSessions = async (): Promise<PlannedSession[]> => {
   try {
     const response = await apiFetch("/planned-sessions");
     if (!response.ok) throw new Error("Failed to fetch planned sessions");
-    const data: ApiScheduledSession[] = await response.json();
-
-    // Map to frontend ScheduledSession type
-    return data.map((s) => ({
-      id: s.id,
-      title: s.title,
-      date: s.startDate,
-      frequency: s.frequency as any,
-      color: s.color,
-      exercises: JSON.stringify(
-        s.exercises.map((e) => ({
-          exerciseId: e.exerciseId,
-          name: e.exercise?.name || "Unknown Exercise",
-          description: e.exercise?.description,
-          categorySlug: e.exercise?.category?.slug,
-          muscleGroups: e.exercise?.exerciseMuscleGroups?.map((mg: any) => ({
-            muscleDescription: mg.muscleGroup?.code,
-            impact: mg.impact as any,
-            effect: mg.effect as any,
-          })),
-          isUnilateral: e.exercise?.isUnilateral,
-          sets:
-            e.sets && e.sets.length > 0
-              ? e.exercise?.isUnilateral
-                ? Math.ceil(e.sets.length / 2)
-                : e.sets.length
-              : e.targetSets || 3,
-          reps:
-            e.sets && e.sets.length > 0
-              ? e.sets.sort((a, b) => a.setIndex - b.setIndex).map((s) => s.targetReps || 0)
-              : e.targetReps || 10,
-        })),
-      ),
-    }));
+    const data: ApiPlannedSession[] = await response.json();
+    return data.map(fromApi);
   } catch (error) {
-    // console.warn("getPlannedSessions failed, returning empty list.");
     return [];
   }
 };
 
-export const postPlannedSession = async (session: ScheduledSession) => {
-  // Parse exercises string if needed, or assume it's already an object if types were strict.
-  // Frontend uses stringified JSON for local DB.
-  // We need to decode it to send to API.
-  const exercises =
-    typeof session.exercises === "string"
-      ? JSON.parse(session.exercises)
-      : session.exercises;
-
-  const body = {
-    title: session.title,
-    // Fix: Convert to Local YYYY-MM-DD to avoid UTC timezone shift (e.g. 21:00 Z previous day)
-    startDate: (() => {
-      const d = new Date(session.date);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    })(),
-    frequency: session.frequency,
-    color: session.color,
-    exercises: exercises.map((e: any, idx: number) => ({
-      exerciseId: e.exerciseId || e.id, // Handle legacy 'id' usage
-      orderIndex: idx,
-      targetSets: e.sets,
-      targetReps: Array.isArray(e.reps) ? e.reps[0] : e.reps, // Legacy support
-      sets: Array.isArray(e.reps)
-        ? e.reps.map((r: number, i: number) => ({
-            setIndex: i,
-            targetReps: r,
-            targetSeconds: 0,
-            restSeconds: 0,
-          }))
-        : Array.from({ length: e.sets || 1 }).map((_, i) => ({
-            setIndex: i,
-            targetReps: e.reps,
-            targetSeconds: 0,
-            restSeconds: 0,
-          })),
-    })),
-  };
-
+export const createPlannedSession = async (
+  plan: Omit<PlannedSession, "id">,
+): Promise<PlannedSession> => {
   const response = await apiFetch("/planned-sessions", {
     method: "POST",
-    body: JSON.stringify(body),
+    body: JSON.stringify(toRequestBody(plan)),
   });
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Failed to post session: ${response.status} ${text}`);
+    throw new Error(`Failed to create planned session: ${response.status} ${text}`);
   }
+
+  return fromApi(await response.json());
+};
+
+export const updatePlannedSession = async (
+  plan: PlannedSession,
+): Promise<PlannedSession> => {
+  const response = await apiFetch(`/planned-sessions/${plan.id}`, {
+    method: "PUT",
+    body: JSON.stringify(toRequestBody(plan)),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Failed to update planned session: ${response.status} ${text}`);
+  }
+
+  return fromApi(await response.json());
 };
 
 export const deletePlannedSession = async (id: string) => {
@@ -109,20 +88,8 @@ export const deletePlannedSession = async (id: string) => {
   }
 };
 
-export const updatePlannedSession = async (session: ScheduledSession) => {
-  // WORKAROUND: Delete and Re-create since PUT is not fully ready/verified on backend
-  if (session.id) {
-    // We try to delete, but if it fails (e.g. 404), we proceed to post
-    try {
-      await deletePlannedSession(session.id);
-    } catch (e) {
-      console.warn("Update: Delete failed, proceeding to create", e);
-    }
-  }
-  await postPlannedSession(session);
-};
+// --- Session history -------------------------------------------------------------
 
-// Session History
 export const getSessionHistory = async (): Promise<SessionHistory[]> => {
   try {
     const response = await apiFetch("/sessions");
@@ -131,7 +98,8 @@ export const getSessionHistory = async (): Promise<SessionHistory[]> => {
 
     return data.map((s) => ({
       id: s.id,
-      sessionId: s.plannedSessionId || "",
+      routineId: s.routineId || "",
+      title: s.titleSnapshot,
       date: s.performedAt,
       performanceData: JSON.stringify({
         // Reconstruct expected frontend object for History
@@ -145,70 +113,45 @@ export const getSessionHistory = async (): Promise<SessionHistory[]> => {
       }),
     }));
   } catch (error) {
-    // console.warn("getSessionHistory failed, returning empty list.");
     return [];
   }
 };
 
-export const postSession = async (data: any) => {
-  try {
-    // FE passes 'data' which matches SessionHistory but might be loose.
-    // We need to map it to CreateSessionDto for the backend.
-    // Expected FE data structure when saving:
-    // {
-    //   sessionId: string (planned session id or null),
-    //   date: string (ISO),
-    //   performanceData: string (JSON string of exercises) OR object?
-    // }
-    // The `LiveSession/index.tsx` calls `saveSessionHistory` (now postSession) with:
-    // {
-    //    id: uuid(),
-    //    sessionId: activeSessionId,
-    //    date: new Date().toISOString(),
-    //    performanceData: JSON.stringify(results)
-    // }
+export interface PostSessionInput {
+  /** Routine this workout came from; omit for an ad-hoc session. */
+  routineId?: string | null;
+  /** Routine name at the time of the workout, snapshotted into history. */
+  title?: string;
+  date: string;
+  performanceData: string;
+}
 
-    // So we need to PARSE performanceData string.
+export const postSession = async (data: PostSessionInput) => {
+  try {
     const parsedData =
       typeof data.performanceData === "string"
         ? JSON.parse(data.performanceData)
         : data.performanceData;
 
     const body = {
-      plannedSessionId: data.sessionId || null, // Might need UUID validation? string empty vs null
-      titleSnapshot: "Workout", // Default title if not provided
+      routineId: data.routineId || null,
+      titleSnapshot: data.title?.trim() || "Workout",
       performedAt: data.date,
-      durationSeconds: parsedData.elapsedTime || 0, // Get actual duration from parsed data
+      durationSeconds: parsedData.elapsedTime || 0,
       notes: "",
       exercises: parsedData.exercises.map((ex: any, idx: number) => ({
-        // exercises.exercises because structure in LiveSession is { exercises: [], ... }
-        exerciseId: ex.id || ex.exerciseId, // Check structure in LiveSession
+        exerciseId: ex.id || ex.exerciseId,
         orderIndex: idx,
         exerciseNameSnapshot: ex.name,
         unitSnapshot: ex.unit || "REPS",
-        sets: Array.from({ length: ex.sets }).map((_, sIdx) => {
-          // We need to map completed sets.
-          // LiveSession structure: `completedSets` map, `exercises` array with `reps` array.
-          // Reconstructing `postSession` logic is complex.
-          // Let's rely on `LiveSession` sending us the right data?
-          // No, `LiveSession` sends `performanceData` which contains the raw state.
-          // I need to parse that state here.
-          // See `LiveSession/index.tsx` `handleSaveData`:
-          // performanceData: { elapsedTime, exercises, completedSets }
-
-          // Let's parse it:
-          return {
-            setIndex: sIdx,
-            reps: Array.isArray(ex.reps) ? ex.reps[sIdx] : ex.reps,
-            weight: 0,
-            seconds: 0,
-          };
-        }),
+        sets: Array.from({ length: ex.sets }).map((_, sIdx) => ({
+          setIndex: sIdx,
+          reps: Array.isArray(ex.reps) ? ex.reps[sIdx] : ex.reps,
+          weight: 0,
+          seconds: 0,
+        })),
       })),
     };
-
-    // Fix plannedSessionId being empty string
-    if (body.plannedSessionId === "") body.plannedSessionId = null;
 
     const response = await apiFetch("/sessions", {
       method: "POST",

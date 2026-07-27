@@ -1,5 +1,5 @@
-import { WizardFooter } from "@/components/sessions/SessionWizard/WizardFooter";
-import { Exercise, ScheduledSession, SessionExercise } from "@/constants/Types";
+import { WizardFooter } from "@/components/routines/RoutineEditor/WizardFooter";
+import { Exercise, Routine, SessionExercise } from "@/constants/Types";
 import { Api } from "@/services/api";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
@@ -47,19 +47,22 @@ export function parseRoutineClipboard(text: string): SessionExercise[] | null {
   }
 }
 
-interface SessionWizardProps {
+interface RoutineEditorProps {
   onClose: () => void;
   onSave: () => void;
-  selectedDate: Date;
-  initialSession?: ScheduledSession | null;
+  /** Existing routine to edit; omit to create a new one. */
+  initialRoutine?: Routine | null;
 }
 
-export default function SessionWizard({
+/**
+ * Builds a reusable routine. Deliberately knows nothing about dates or recurrence —
+ * scheduling happens on the Planner, against a routine that already exists.
+ */
+export default function RoutineEditor({
   onClose,
   onSave,
-  selectedDate,
-  initialSession,
-}: SessionWizardProps) {
+  initialRoutine,
+}: RoutineEditorProps) {
   const [step, setStep] = useState<WizardStep>("LIST");
 
   // Form State
@@ -68,9 +71,6 @@ export default function SessionWizard({
   );
   const [title, setTitle] = useState("");
   const [color, setColor] = useState("#3B82F6"); // Default blue
-  const [frequency, setFrequency] = useState<
-    "ONCE" | "DAILY" | "WEEKLY" | "EVERY 2 DAYS"
-  >("ONCE");
 
   // Selection State
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
@@ -78,25 +78,15 @@ export default function SessionWizard({
   );
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  // Load initial session on mount
+  // Load the routine being edited on mount
   useEffect(() => {
-    if (initialSession) {
-      setTitle(initialSession.title);
-      setFrequency(initialSession.frequency as any);
-      setColor(initialSession.color);
-      setSessionExercises(JSON.parse(initialSession.exercises));
+    if (initialRoutine) {
+      setTitle(initialRoutine.name);
+      setColor(initialRoutine.color);
+      setSessionExercises(initialRoutine.exercises);
     }
     setStep("LIST");
   }, []);
-
-  const resetForm = () => {
-    setTitle("");
-    setFrequency("ONCE");
-    setColor("#3B82F6");
-    setSessionExercises([]);
-    setStep("LIST");
-    setEditingIndex(null);
-  };
 
   const handleAddExercise = () => {
     setEditingIndex(null);
@@ -184,40 +174,35 @@ export default function SessionWizard({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  const handleSaveSession = async () => {
+  const handleSaveRoutine = async () => {
     if (sessionExercises.length === 0) {
-      Alert.alert("Empty Session", "Please add at least one exercise.");
+      Alert.alert("Empty Routine", "Please add at least one exercise.");
       return;
     }
 
-    // Default to "New Session" if empty
-    const finalTitle = title.trim() || "New Session";
+    const finalName = title.trim() || "New Routine";
 
     try {
-      const exerciseJson = JSON.stringify(sessionExercises);
-      if (initialSession?.id) {
-        await Api.updatePlannedSession({
-          id: initialSession.id,
-          title: finalTitle,
-          date: initialSession.date,
-          exercises: exerciseJson,
-          frequency,
+      if (initialRoutine?.id) {
+        // Updating in place keeps the id, so every day this routine is scheduled on
+        // picks up the change and past workouts stay linked to it.
+        await Api.updateRoutine({
+          id: initialRoutine.id,
+          name: finalName,
           color,
+          exercises: sessionExercises,
         });
       } else {
-        await Api.postPlannedSession({
-          id: "", // Server generated
-          title: finalTitle,
-          date: selectedDate.toISOString(),
-          frequency,
+        await Api.createRoutine({
+          name: finalName,
           color,
-          exercises: exerciseJson,
+          exercises: sessionExercises,
         });
       }
       onSave();
       onClose();
     } catch (e: any) {
-      Alert.alert("Error", e.message || "Failed to save session.");
+      Alert.alert("Error", e.message || "Failed to save routine.");
     }
   };
 
@@ -238,7 +223,7 @@ export default function SessionWizard({
   const handleNext = () => {
     if (step === "LIST") {
       if (sessionExercises.length === 0) {
-        Alert.alert("Empty Session", "Please add at least one exercise.");
+        Alert.alert("Empty Routine", "Please add at least one exercise.");
       } else {
         setStep("FINAL");
       }
@@ -297,8 +282,6 @@ export default function SessionWizard({
             setTitle={setTitle}
             color={color}
             setColor={setColor}
-            frequency={frequency}
-            setFrequency={setFrequency}
           />
         )}
       </View>
@@ -308,7 +291,7 @@ export default function SessionWizard({
         step={step}
         onBack={handleBack}
         onNext={handleNext}
-        onSave={handleSaveSession}
+        onSave={handleSaveRoutine}
         canGoNext={sessionExercises.length > 0}
       />
     </SafeAreaView>

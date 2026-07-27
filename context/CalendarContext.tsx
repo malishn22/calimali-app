@@ -1,10 +1,13 @@
-import { ScheduledSession } from "@/constants/Types";
+import { Routine, ScheduledEntry } from "@/constants/Types";
 import React, { createContext, useContext, useState } from "react";
 import { useCache } from "./CacheContext";
 
 interface CalendarContextType {
   // Data (Read from Cache)
-  sessions: ScheduledSession[];
+  /** Placements resolved against their routine. */
+  entries: ScheduledEntry[];
+  /** Every saved routine, whether scheduled or not. */
+  routines: Routine[];
   markedDates: Record<string, any>;
 
   // View State
@@ -12,6 +15,7 @@ interface CalendarContextType {
   setSelectedDate: (date: Date) => void;
 
   // Actions
+  /** Re-reads routines and placements together. */
   refreshSessions: () => Promise<void>;
 }
 
@@ -46,7 +50,8 @@ export function CalendarContextWrapper({
   return (
     <CalendarContext.Provider
       value={{
-        sessions: calendarData.sessions,
+        entries: calendarData.entries,
+        routines: calendarData.routines,
         markedDates: calendarData.markedDates,
         selectedDate,
         setSelectedDate,
