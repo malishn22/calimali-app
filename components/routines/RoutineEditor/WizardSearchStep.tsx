@@ -1,3 +1,4 @@
+import { Chip } from "@/components/ui/Chip";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
 import { DifficultyColors, getCategoryColor, palette } from "@/constants/Colors";
@@ -74,32 +75,19 @@ export function WizardSearchStep({ onSelect }: Props) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 8 }}
         >
-          <Pressable
+          <Chip
+            label="All"
+            selected={selectedFilter === "all"}
             onPress={() => setSelectedFilter("all")}
-            className={`px-5 py-2 rounded-2xl justify-center ${selectedFilter === "all" ? "bg-white" : "bg-card-dark"}`}
-          >
-            <Text
-              className={`font-bold text-xs ${selectedFilter === "all" ? "text-black" : "text-zinc-500"}`}
-            >
-              All
-            </Text>
-          </Pressable>
-          {categories.map((cat) => {
-            const isSelected = selectedFilter === cat.slug;
-            return (
-              <Pressable
-                key={cat.id}
-                onPress={() => setSelectedFilter(cat.slug)}
-                className={`px-5 py-2 rounded-2xl justify-center ${isSelected ? "bg-white" : "bg-card-dark"}`}
-              >
-                <Text
-                  className={`font-bold text-xs ${isSelected ? "text-black" : "text-zinc-500"}`}
-                >
-                  {cat.name}
-                </Text>
-              </Pressable>
-            );
-          })}
+          />
+          {categories.map((cat) => (
+            <Chip
+              key={cat.id}
+              label={cat.name}
+              selected={selectedFilter === cat.slug}
+              onPress={() => setSelectedFilter(cat.slug)}
+            />
+          ))}
         </ScrollView>
       </View>
 
