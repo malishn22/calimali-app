@@ -9,7 +9,6 @@ interface EditSetModalProps {
   initialReps: number;
   onClose: () => void;
   onSave: (newReps: number) => void;
-  onDelete: () => void;
 }
 
 export default function EditSetModal({
@@ -17,7 +16,6 @@ export default function EditSetModal({
   initialReps,
   onClose,
   onSave,
-  onDelete,
 }: EditSetModalProps) {
   const [reps, setReps] = useState(initialReps || 0);
 
@@ -32,7 +30,7 @@ export default function EditSetModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 bg-black/70 justify-center items-center">
         <View className="w-[80%] bg-card-dark rounded-3xl p-6 items-center">
           {/* Header */}
@@ -61,25 +59,12 @@ export default function EditSetModal({
 
           {/* Actions */}
           <Pressable
-            className="w-full py-4 rounded-2xl items-center mb-4 bg-green-500"
+            className="w-full py-4 rounded-2xl items-center bg-green-500"
             onPress={() => onSave(reps)}
           >
             <Text className="text-black font-extrabold text-base">
               Save Changes
             </Text>
-          </Pressable>
-
-          <Pressable
-            className="w-full py-4 rounded-2xl flex-row items-center justify-center border border-red-500"
-            onPress={onDelete}
-          >
-            <FontAwesome
-              name="trash"
-              size={16}
-              color={Colors.palette.crimsonRed}
-              style={{ marginRight: 8 }}
-            />
-            <Text className="text-red-500 font-bold text-base">Delete Set</Text>
           </Pressable>
         </View>
       </View>

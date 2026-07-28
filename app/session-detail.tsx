@@ -1,9 +1,9 @@
+import { BackButton } from "@/components/ui/BackButton";
 import SessionDetailContent from "@/components/sessions/SessionDetailContent";
 import { SessionHistory } from "@/constants/Types";
-import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { Platform, Pressable, StatusBar, Text, View } from "react-native";
+import { Platform, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SessionDetailScreen() {
@@ -38,12 +38,7 @@ export default function SessionDetailScreen() {
     >
       {/* Back button */}
       <View className="px-4 py-3">
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Feather name="arrow-left" size={22} color="#A1A1AA" />
-        </Pressable>
+        <BackButton onPress={() => router.back()} />
       </View>
 
       <SessionDetailContent session={session} />

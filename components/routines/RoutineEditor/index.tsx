@@ -1,10 +1,11 @@
 import { WizardFooter } from "@/components/routines/RoutineEditor/WizardFooter";
 import { Exercise, Routine, SessionExercise } from "@/constants/Types";
 import { Api } from "@/services/api";
+import { useFocusEffect } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useState } from "react";
-import { Alert, View } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { Alert, BackHandler, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WizardConfigStep } from "./WizardConfigStep";
 import { WizardFinalStep } from "./WizardFinalStep";
@@ -206,7 +207,7 @@ export default function RoutineEditor({
     }
   };
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (step === "SEARCH") setStep("LIST");
     else if (step === "CONFIG") {
       // If editing, go back to LIST, else SEARCH
@@ -218,7 +219,22 @@ export default function RoutineEditor({
       }
     } else if (step === "FINAL") setStep("LIST");
     else onClose(); // Close on first step back
-  };
+  }, [step, editingIndex, onClose]);
+
+  // Mirror the top-left back button on Android's hardware back button: step
+  // back through the wizard, and only at the first step (LIST) let the
+  // default OS/nav behavior proceed (pop the screen / background the app)
+  // instead of swallowing the press.
+  useFocusEffect(
+    useCallback(() => {
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        if (step === "LIST") return false;
+        handleBack();
+        return true;
+      });
+      return () => sub.remove();
+    }, [step, handleBack]),
+  );
 
   const handleNext = () => {
     if (step === "LIST") {
@@ -246,11 +262,12 @@ export default function RoutineEditor({
             onReorder={handleReorderExercises}
             onCopyRoutine={handleCopyRoutine}
             onPasteRoutine={handlePasteRoutine}
+            onBack={handleBack}
           />
         )}
 
         {step === "SEARCH" && (
-          <WizardSearchStep onSelect={handleSelectExercise} />
+          <WizardSearchStep onSelect={handleSelectExercise} onBack={handleBack} />
         )}
 
         {step === "CONFIG" && selectedExercise && (
@@ -282,6 +299,7 @@ export default function RoutineEditor({
             setTitle={setTitle}
             color={color}
             setColor={setColor}
+            onBack={handleBack}
           />
         )}
       </View>
@@ -289,7 +307,6 @@ export default function RoutineEditor({
       {/* Unified Footer */}
       <WizardFooter
         step={step}
-        onBack={handleBack}
         onNext={handleNext}
         onSave={handleSaveRoutine}
         canGoNext={sessionExercises.length > 0}

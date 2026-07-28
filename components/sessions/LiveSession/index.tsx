@@ -1,17 +1,22 @@
 import { getCategoryColor } from "@/constants/Colors";
+import { ExerciseUnit } from "@/constants/Enums";
 import { Exercise, Routine, SessionHistory } from "@/constants/Types";
 import { TintedSurface } from "@/components/ui/TintedSurface";
+import { Toast } from "@/components/ui/Toast";
 import { Api } from "@/services/api";
 import {
   calculateSessionXP,
   XP_PER_SET,
 } from "@/utilities/Gamification";
 import { FontAwesome } from "@expo/vector-icons";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, BackHandler, Text, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { ActiveSessionView } from "./ActiveSessionView";
 import EditSetModal from "./EditSetModal";
+import { ExerciseListOverview } from "./ExerciseListOverview";
+import { RestView } from "./RestView";
 import {
   SessionCompletion,
   SessionCompletionHandle,
@@ -19,10 +24,36 @@ import {
 import { SessionControls } from "./SessionControls";
 import { SessionHeader } from "./SessionHeader";
 
+// Deferred: user-configurable (Off/10s/30s/1m/2m/5m) via a future settings
+// feature, appearing in both Live Session and app Settings.
+const REST_DURATION_SECONDS = 60;
+
+interface ActiveTimer {
+  type: "hold" | "rest";
+  stepIndex: number;
+  remaining: number;
+  total: number;
+}
+
+function formatSeconds(seconds: number) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+}
+
 interface LiveSessionProps {
   routine: Routine;
   onClose: () => void;
   onComplete: (data: SessionHistory) => void;
+}
+
+export interface SessionStep {
+  exerciseIndex: number;
+  setIndex: number;
+  exercise: any;
+  totalSets: number;
+  side?: "LEFT" | "RIGHT";
+  repIndex?: number;
 }
 
 export default function LiveSession({
@@ -33,6 +64,11 @@ export default function LiveSession({
   // State
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [isSessionStarted, setIsSessionStarted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [overviewVisible, setOverviewVisible] = useState(false);
+  const [activeTimer, setActiveTimer] = useState<ActiveTimer | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   const [completedSets, setCompletedSets] = useState<Record<string, boolean>>(
     {},
@@ -50,6 +86,7 @@ export default function LiveSession({
   const [currentExerciseDetails, setCurrentExerciseDetails] =
     useState<Exercise | null>(null);
   const exerciseCacheRef = useRef<Record<string, Exercise>>({});
+  const [exerciseUnits, setExerciseUnits] = useState<Record<string, ExerciseUnit>>({});
 
   useEffect(() => {
     if (routine) {
@@ -57,19 +94,30 @@ export default function LiveSession({
     }
   }, [routine]);
 
+  // Fetch every exercise's unit (REPS vs SECS) up front so the overview can
+  // label rows correctly even before the user has browsed to them.
+  useEffect(() => {
+    if (!exercises.length) return;
+    const ids = Array.from(
+      new Set(exercises.map((ex: any) => ex.exerciseId).filter(Boolean)),
+    );
+    let cancelled = false;
+    ids.forEach((id) => {
+      Api.getExercise(id).then((ex) => {
+        if (cancelled || !ex) return;
+        exerciseCacheRef.current[id] = ex;
+        setExerciseUnits((prev) => ({ ...prev, [id]: ex.unit }));
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [exercises]);
+
   const steps = useMemo(() => {
     if (!exercises) return [];
 
     // Flatten: Each set is a step
-    interface SessionStep {
-      exerciseIndex: number;
-      setIndex: number;
-      exercise: any;
-      totalSets: number;
-      side?: "LEFT" | "RIGHT";
-      repIndex?: number;
-    }
-
     const _steps: SessionStep[] = [];
 
     exercises.forEach((ex: any, exIndex: number) => {
@@ -111,7 +159,6 @@ export default function LiveSession({
 
   const currentStep = steps[activeStepIndex];
   const totalSteps = steps.length;
-  const progress = totalSteps > 0 ? (activeStepIndex / totalSteps) * 100 : 0;
 
   useEffect(() => {
     const exerciseId = currentStep?.exercise?.exerciseId;
@@ -146,7 +193,7 @@ export default function LiveSession({
   }, [currentStep?.exercise?.exerciseId, activeStepIndex, steps]);
 
   useEffect(() => {
-    if (isSessionStarted) {
+    if (isSessionStarted && !isPaused) {
       startTimer();
     } else {
       stopTimer();
@@ -157,7 +204,25 @@ export default function LiveSession({
       stopTimer();
       completedDataRef.current = null;
     };
-  }, [isSessionStarted]);
+  }, [isSessionStarted, isPaused]);
+
+  // Android hardware back: close the exercise list overview if it's open,
+  // instead of falling through to the default (pop the whole live-session
+  // route back to the dashboard). Modals (EditSetModal, ConfirmationDialog)
+  // handle their own back-press via onRequestClose and take priority since
+  // BackHandler's listener stack is LIFO.
+  useFocusEffect(
+    useCallback(() => {
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        if (overviewVisible) {
+          setOverviewVisible(false);
+          return true;
+        }
+        return false;
+      });
+      return () => sub.remove();
+    }, [overviewVisible]),
+  );
 
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -190,9 +255,68 @@ export default function LiveSession({
     return `${step.exerciseIndex}-${step.setIndex}-${step.side || "BILATERAL"}`;
   };
 
+  // What happens once a set (rep-based tap, or a hold countdown finishing)
+  // is marked complete: finish the session on the last step (no rest, ever),
+  // otherwise start a rest countdown, unless rest is Off.
+  const advanceAfterSetComplete = (stepIndex: number) => {
+    if (stepIndex >= totalSteps - 1) {
+      handleFinish();
+      return;
+    }
+    if (REST_DURATION_SECONDS > 0) {
+      setActiveTimer({
+        type: "rest",
+        stepIndex,
+        remaining: REST_DURATION_SECONDS,
+        total: REST_DURATION_SECONDS,
+      });
+    } else {
+      setActiveStepIndex(stepIndex + 1);
+    }
+  };
+
+  // Countdown tick: only recreated when a new timer starts (type/stepIndex)
+  // or pause toggles — not every second, since the interval itself drives
+  // the per-second decrement via a functional update.
+  useEffect(() => {
+    if (!activeTimer || isPaused) return;
+    const id = setInterval(() => {
+      setActiveTimer((prev) => (prev ? { ...prev, remaining: prev.remaining - 1 } : prev));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [activeTimer?.type, activeTimer?.stepIndex, activeTimer?.total, isPaused]);
+
+  // Transition when a countdown reaches zero. Kept separate from the tick
+  // effect so side effects (marking a set complete, starting rest, advancing
+  // the step, finishing the session) never run inside a setState updater.
+  useEffect(() => {
+    if (!activeTimer || activeTimer.remaining > 0) return;
+    if (activeTimer.type === "hold") {
+      const stepIndex = activeTimer.stepIndex;
+      markSetComplete(stepIndex);
+      setActiveTimer(null);
+      advanceAfterSetComplete(stepIndex);
+    } else {
+      const nextIndex = activeTimer.stepIndex + 1;
+      setActiveTimer(null);
+      setActiveStepIndex(nextIndex);
+    }
+  }, [activeTimer]);
+
   const handleMainAction = () => {
     if (!isSessionStarted) {
       setIsSessionStarted(true);
+      return;
+    }
+
+    if (isHoldExercise && !isCurrentSetCompleted) {
+      const holdSeconds = getRepCountForStep(activeStepIndex);
+      setActiveTimer({
+        type: "hold",
+        stepIndex: activeStepIndex,
+        remaining: holdSeconds,
+        total: holdSeconds,
+      });
       return;
     }
 
@@ -203,12 +327,7 @@ export default function LiveSession({
       markSetComplete(activeStepIndex);
     }
 
-    // If Last Step
-    if (activeStepIndex >= totalSteps - 1) {
-      handleFinish();
-    } else {
-      setActiveStepIndex((prev) => prev + 1);
-    }
+    advanceAfterSetComplete(activeStepIndex);
   };
 
   const handleFinish = async () => {
@@ -344,20 +463,32 @@ export default function LiveSession({
     }
   };
 
-  const handleBack = () => {
-    if (activeStepIndex > 0 && isSessionStarted) {
-      setActiveStepIndex((prev) => prev - 1);
-    } else {
-      // Exit confirmation
-      Alert.alert("End Session?", "Progress won't be saved.", [
-        { text: "Cancel", style: "cancel" },
-        { text: "End", style: "destructive", onPress: onClose },
-      ]);
-    }
+  const handlePrevStep = () => {
+    if (activeStepIndex > 0) setActiveStepIndex((prev) => prev - 1);
   };
 
-  const handleEditSet = () => {
-    setEditingStepIndex(activeStepIndex);
+  const handleNextStep = () => {
+    if (activeStepIndex < totalSteps - 1) setActiveStepIndex((prev) => prev + 1);
+  };
+
+  const handleTogglePause = () => setIsPaused((prev) => !prev);
+
+  const handleEndSession = () => {
+    Alert.alert("End Session?", "Progress won't be saved.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "End", style: "destructive", onPress: onClose },
+    ]);
+  };
+
+  // Overview already receives `steps`, so it resolves exercise/set/side taps
+  // to a step index itself before calling this back.
+  const handleSelectStepFromOverview = (index: number) => {
+    if (index >= 0) setActiveStepIndex(index);
+    setOverviewVisible(false);
+  };
+
+  const handleEditSet = (stepIndex: number) => {
+    setEditingStepIndex(stepIndex);
     setEditModalVisible(true);
   };
 
@@ -421,9 +552,8 @@ export default function LiveSession({
     return ex.reps ?? 0;
   };
 
-  const handleDeleteSet = () => {
-    if (editingStepIndex === null) return;
-    const step = steps[editingStepIndex];
+  const handleDeleteSet = (stepIndex: number) => {
+    const step = steps[stepIndex];
     if (!step) return;
 
     const newExercises = [...exercises];
@@ -436,38 +566,28 @@ export default function LiveSession({
         if (activeStepIndex > 0) setActiveStepIndex(activeStepIndex - 1);
       }
     } else {
-      Alert.alert("Cannot delete", "You must have at least one set.");
+      setToastMessage("You must have at least one set.");
     }
-    setEditModalVisible(false);
+  };
+
+  const handleAddSet = (exerciseIndex: number) => {
+    const newExercises = [...exercises];
+    const exercise = newExercises[exerciseIndex];
+    const reps = Array.isArray(exercise.reps) ? [...exercise.reps] : [exercise.reps];
+    const lastRep = reps.length > 0 ? reps[reps.length - 1] : 10;
+
+    if (exercise.isUnilateral) {
+      reps.push(lastRep, lastRep);
+    } else {
+      reps.push(lastRep);
+    }
+
+    exercise.reps = reps;
+    exercise.sets += 1;
+    setExercises(newExercises);
   };
 
   if (!routine || !currentStep) return null;
-
-  const isCurrentSetCompleted = !!completedSets[
-    `${currentStep.exerciseIndex}-${currentStep.setIndex}-${(currentStep as any).side || "BILATERAL"}`
-  ];
-
-  let mainActionLabel = "Next";
-  let mainActionVariant: "primary" | "completed" | "start" = "primary";
-  let mainActionIcon: keyof typeof FontAwesome.glyphMap | undefined = undefined;
-
-  if (!isSessionStarted) {
-    mainActionLabel = "Start Session";
-    mainActionVariant = "start";
-    mainActionIcon = "bolt";
-  } else if (activeStepIndex >= totalSteps - 1) {
-    mainActionLabel = "Complete Session";
-    mainActionVariant = "completed";
-    mainActionIcon = "bolt";
-  } else if (isCurrentSetCompleted) {
-    mainActionLabel = "Next";
-    mainActionVariant = "primary";
-    mainActionIcon = "chevron-right";
-  } else {
-    mainActionLabel = "Complete Set";
-    mainActionVariant = "completed";
-    mainActionIcon = "check";
-  }
 
   const currentId = currentStep?.exercise?.exerciseId;
   const displayExercise =
@@ -476,9 +596,56 @@ export default function LiveSession({
       ? currentExerciseDetails
       : exerciseCacheRef.current[currentId] ?? null);
 
+  // SessionExercise (the routine's lightweight copy) doesn't carry `unit` —
+  // only the fetched Exercise does. Falls back to REPS until it resolves.
+  const isHoldExercise = displayExercise?.unit === ExerciseUnit.SECS;
+
+  const isCurrentSetCompleted = !!completedSets[
+    `${currentStep.exerciseIndex}-${currentStep.setIndex}-${(currentStep as any).side || "BILATERAL"}`
+  ];
+
+  // A completed, non-final step is only reachable by browsing back with the
+  // StepNavPill — there's nothing left to "do" there, so the primary button
+  // goes inert instead of offering a second, redundant "Next" control.
+  const isRevisitingCompletedStep =
+    isSessionStarted && activeStepIndex < totalSteps - 1 && isCurrentSetCompleted;
+
+  const isTimerActive = activeTimer !== null;
+
+  let mainActionLabel = "Complete";
+  let mainActionVariant: "primary" | "completed" | "start" = "primary";
+  let mainActionIcon: keyof typeof FontAwesome.glyphMap | undefined = undefined;
+
+  if (!isSessionStarted) {
+    mainActionLabel = "Start";
+    mainActionVariant = "start";
+    mainActionIcon = "bolt";
+  } else if (isRevisitingCompletedStep) {
+    mainActionLabel = "Set Complete";
+    mainActionVariant = "completed";
+    mainActionIcon = "check";
+  } else if (isHoldExercise && !isCurrentSetCompleted) {
+    mainActionLabel = "Start";
+    mainActionVariant = "start";
+    mainActionIcon = "bolt";
+  } else if (activeStepIndex >= totalSteps - 1) {
+    mainActionLabel = "Complete";
+    mainActionVariant = "completed";
+    mainActionIcon = "bolt";
+  } else {
+    mainActionLabel = "Complete";
+    mainActionVariant = "completed";
+    mainActionIcon = "check";
+  }
+
   const categorySlug =
     displayExercise?.category?.slug?.toUpperCase() ??
     (currentStep?.exercise as { categorySlug?: string })?.categorySlug?.toUpperCase();
+
+  const holdTimer =
+    activeTimer?.type === "hold" && activeTimer.stepIndex === activeStepIndex
+      ? { remaining: activeTimer.remaining, total: activeTimer.total }
+      : null;
 
   const mainContent = (
     <ActiveSessionView
@@ -498,9 +665,9 @@ export default function LiveSession({
           : currentStep.exercise.sets || 1
       }
       isSetCompleted={!!isCurrentSetCompleted}
-      onEditSet={handleEditSet}
       side={(currentStep as any).side}
       currentReps={getRepCountForStep(activeStepIndex)}
+      holdTimer={holdTimer}
     />
   );
 
@@ -510,20 +677,25 @@ export default function LiveSession({
       edges={["top", "left", "right"]}
       className="flex-1 bg-background-dark"
     >
-      <SessionHeader
-        title={routine.name}
-        elapsedTime={elapsedTime}
-        progress={progress}
-        onClose={() => {
-          Alert.alert("End Session?", "Progress won't be saved.", [
-            { text: "Cancel", style: "cancel" },
-            { text: "End", style: "destructive", onPress: onClose },
-          ]);
-        }}
-      />
+      <Text
+        className="absolute right-6 text-white font-mono font-bold text-sm tracking-widest z-10"
+        style={{ top: insets.top + 16 }}
+      >
+        {formatSeconds(elapsedTime)}
+      </Text>
 
       <View style={{ flex: 1 }}>
-        {categorySlug ? (
+        {activeTimer?.type === "rest" ? (
+          <RestView
+            remainingSeconds={activeTimer.remaining}
+            totalSeconds={activeTimer.total}
+            onSkip={() => {
+              const nextIndex = activeTimer.stepIndex + 1;
+              setActiveTimer(null);
+              setActiveStepIndex(nextIndex);
+            }}
+          />
+        ) : categorySlug ? (
           <TintedSurface
             tintColor={getCategoryColor(categorySlug)}
             variant="gradient"
@@ -537,13 +709,19 @@ export default function LiveSession({
           <View style={{ flex: 1 }}>{mainContent}</View>
         )}
         <View className="bg-background-dark">
+          <SessionHeader onOpenOverview={() => setOverviewVisible(true)} />
           <SessionControls
-            onBack={handleBack}
             onMainAction={handleMainAction}
             mainActionLabel={mainActionLabel}
             mainActionIcon={mainActionIcon}
             mainActionVariant={mainActionVariant}
-            backLabel={""}
+            disabled={isPaused || isRevisitingCompletedStep || isTimerActive}
+            onPrevious={handlePrevStep}
+            onNext={handleNextStep}
+            canGoPrevious={activeStepIndex > 0 && !isPaused}
+            canGoNext={activeStepIndex < totalSteps - 1 && !isPaused}
+            isPaused={isPaused}
+            onTogglePause={handleTogglePause}
           />
         </View>
       </View>
@@ -555,7 +733,6 @@ export default function LiveSession({
           initialReps={getRepCountForStep(editingStepIndex)}
           onClose={() => setEditModalVisible(false)}
           onSave={handleSaveSet}
-          onDelete={handleDeleteSet}
         />
       )}
 
@@ -563,6 +740,28 @@ export default function LiveSession({
         ref={completionModalRef}
         elapsedTime={elapsedTime}
         onContinue={handleCompletionContinue}
+      />
+
+      <ExerciseListOverview
+        visible={overviewVisible}
+        exercises={exercises}
+        exerciseUnits={exerciseUnits}
+        steps={steps}
+        completedSets={completedSets}
+        activeStepIndex={activeStepIndex}
+        onSelectStep={handleSelectStepFromOverview}
+        onEditSet={handleEditSet}
+        onDeleteSet={handleDeleteSet}
+        onAddSet={handleAddSet}
+        onEndSession={handleEndSession}
+        onClose={() => setOverviewVisible(false)}
+      />
+
+      <Toast
+        visible={!!toastMessage}
+        message={toastMessage ?? ""}
+        variant="error"
+        onHide={() => setToastMessage(null)}
       />
     </SafeAreaView>
   );

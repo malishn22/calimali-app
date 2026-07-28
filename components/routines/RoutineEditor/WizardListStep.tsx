@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { MoreMenuButton } from "@/components/ui/MoreMenuButton";
 import { SideActionButton } from "@/components/ui/SideActionButton";
@@ -25,6 +26,7 @@ interface Props {
   onReorder: (data: SessionExercise[]) => void;
   onCopyRoutine: () => void | Promise<void>;
   onPasteRoutine: () => void | Promise<void>;
+  onBack: () => void;
 }
 
 export function WizardListStep({
@@ -35,6 +37,7 @@ export function WizardListStep({
   onReorder,
   onCopyRoutine,
   onPasteRoutine,
+  onBack,
 }: Props) {
   const [pasteDisabled, setPasteDisabled] = useState(true);
 
@@ -108,6 +111,7 @@ export function WizardListStep({
         <WizardHeader
           title="Plan Routine"
           className="mb-4"
+          leftAccessory={<BackButton onPress={onBack} />}
           rightAccessory={
             <MoreMenuButton
               onOpen={checkClipboard}

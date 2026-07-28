@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import { Input } from "@/components/ui/Input";
 import { WizardHeader } from "@/components/ui/WizardHeader";
 import React from "react";
@@ -9,6 +10,7 @@ interface Props {
   setTitle: (t: string) => void;
   color: string;
   setColor: (c: string) => void;
+  onBack: () => void;
 }
 
 const COLORS = [
@@ -20,11 +22,21 @@ const COLORS = [
   "#EC4899",
 ];
 
-export function WizardFinalStep({ title, setTitle, color, setColor }: Props) {
+export function WizardFinalStep({
+  title,
+  setTitle,
+  color,
+  setColor,
+  onBack,
+}: Props) {
   return (
     <WizardScreenWrapper>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <WizardHeader title="Final Details" className="mb-8" />
+        <WizardHeader
+          title="Final Details"
+          className="mb-8"
+          leftAccessory={<BackButton onPress={onBack} />}
+        />
 
         <View className="mb-8">
           <Text className="text-zinc-400 text-[10px] font-bold tracking-widest mb-3 uppercase pl-1">

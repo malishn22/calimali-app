@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import { Chip } from "@/components/ui/Chip";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
@@ -24,9 +25,10 @@ const rowShadow = Platform.select({
 
 interface Props {
   onSelect: (ex: Exercise) => void;
+  onBack: () => void;
 }
 
-export function WizardSearchStep({ onSelect }: Props) {
+export function WizardSearchStep({ onSelect, onBack }: Props) {
   const [search, setSearch] = useState("");
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [categories, setCategories] = useState<ExerciseCategoryModel[]>([]);
@@ -58,7 +60,11 @@ export function WizardSearchStep({ onSelect }: Props) {
 
   return (
     <WizardScreenWrapper>
-      <WizardHeader title="Search Movement" className="mb-4" />
+      <WizardHeader
+        title="Search Movement"
+        className="mb-4"
+        leftAccessory={<BackButton onPress={onBack} />}
+      />
 
       <SearchBar
         value={search}

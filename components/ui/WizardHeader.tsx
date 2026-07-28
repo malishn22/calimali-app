@@ -44,13 +44,13 @@ export function WizardHeader({
     >
       {hasTopRowAccessories ? (
         <View className="mb-1 w-full flex-row items-center self-stretch">
-          <View className="min-h-10 flex-1 flex-row items-center justify-start">
+          <View className="min-h-10 w-10 flex-row items-center justify-start">
             {leftAccessory}
           </View>
           <View className="min-h-10 flex-1 items-center justify-center px-1">
             <Text className={`text-center font-bold ${titleTextClass}`}>{title}</Text>
           </View>
-          <View className="min-h-10 flex-1 flex-row items-center justify-end">
+          <View className="min-h-10 w-10 flex-row items-center justify-end">
             {rightAccessory}
           </View>
         </View>

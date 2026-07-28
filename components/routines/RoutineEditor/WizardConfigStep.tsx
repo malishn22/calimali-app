@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import { SetRepsArea } from "@/components/ui/SetRepsArea";
 import { UnilateralIndicator } from "@/components/ui/UnilateralIndicator";
 import { WizardHeader } from "@/components/ui/WizardHeader";
@@ -106,7 +107,11 @@ export function WizardConfigStep({
   return (
     <View className="flex-1">
       <WizardScreenWrapper className="pb-0">
-        <WizardHeader title="Configure Sets" className="mb-4" />
+        <WizardHeader
+          title="Configure Sets"
+          className="mb-4"
+          leftAccessory={<BackButton onPress={onBack} />}
+        />
 
         <View className="items-center mb-4">
           <Text className="text-3xl font-extrabold text-white text-center leading-tight mb-1">
@@ -141,7 +146,6 @@ export function WizardConfigStep({
         primaryLabel="CONFIRM"
         primaryIcon="check"
         onPrimaryPress={() => onConfirm(sets, reps)}
-        onBack={onBack}
       />
     </View>
   );
